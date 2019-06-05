@@ -4,7 +4,7 @@ const Websocket = require("ws");
 const websocketServer = new Websocket.Server({ port: 8080 });
 const users = {};
 
-websocketServer.on("connection", (websocketToClient) => {
+websocketServer.on("connection", (websocketToClient: WebSocket) => {
     console.log("User connected FRESH");
 
     websocketToClient.on("message", (message) => {

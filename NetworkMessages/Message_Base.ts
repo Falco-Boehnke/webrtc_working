@@ -1,3 +1,5 @@
+//TODO Namespaces anlegen
+
 export enum MessageType {
     LOGIN = "login",
     RTC_OFFER = "offer",

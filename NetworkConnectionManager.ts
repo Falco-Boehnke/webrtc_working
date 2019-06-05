@@ -94,7 +94,7 @@ export class NetworkConnectionManager {
         }
     }
 
-    public loginLogic = (event): void => {
+    public loginLogic = (): void => {
         // this.usernameField =  document.getElementById("username") as HTMLInputElement;
         // this.username = this.usernameField.value;
 
