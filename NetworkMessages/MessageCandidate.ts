@@ -1,20 +1,13 @@
-import { IMessage_Base, MessageType } from "./Message_Base";
+import { MESSAGE_TYPE, MessageBase } from "./MessageBase";
 
-export class MessageCandidate implements IMessage_Base {
-    
-    public messageType: import("./Message_Base").MessageType = MessageType.RTC_CANDIDATE;
+export class MessageCandidate implements MessageBase {
+
+    public messageType: import("./MessageBase").MESSAGE_TYPE = MESSAGE_TYPE.RTC_CANDIDATE;
     public userNameToConnectTo: string;
-    public candidate: string;
-    constructor(userNameToConnectTo: string, candidate: string)
-    {
+    public candidate: RTCIceCandidate;
+    constructor(userNameToConnectTo: string, candidate: RTCIceCandidate) {
         this.userNameToConnectTo = userNameToConnectTo;
         this.candidate = candidate;
     }
-
-
-
-
-
-
 
 }

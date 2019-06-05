@@ -1,14 +1,15 @@
 //TODO Namespaces anlegen
 
-export enum MessageType {
+export enum MESSAGE_TYPE {
+    UNDEFINED = "undefined",
     LOGIN = "login",
     RTC_OFFER = "offer",
     RTC_ANSWER = "answer",
     RTC_CANDIDATE = "candidate",
 }
 
-export interface IMessage_Base {
+export interface MessageBase {
 
-messageType: MessageType;
+messageType: MESSAGE_TYPE;
 
 }

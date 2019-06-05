@@ -1,24 +1,27 @@
-import { UiElementHandler } from "./UiElementHandler";
-import { MessageLoginRequest } from "./NetworkMessages/MessageLoginRequest";
-import { MessageOffer } from "./NetworkMessages/MessageOffer";
+import { stringify } from "querystring";
 import { MessageAnswer } from "./NetworkMessages/MessageAnswer";
 import { MessageCandidate } from "./NetworkMessages/MessageCandidate";
-import { stringify } from "querystring";
-
+import { MessageLoginRequest } from "./NetworkMessages/MessageLoginRequest";
+import { MessageOffer } from "./NetworkMessages/MessageOffer";
+import { UiElementHandler } from "./UiElementHandler";
 
 export class NetworkConnectionManager {
-    public ws;
-    public username;
-    public usernameField;
-    public connection;
-    public otherUsername;
-    public peerConnection;
+    public ws: WebSocket;
+    public username: string;
+    public connection: RTCPeerConnection;
+    public otherUsername: string;
+    public peerConnection: RTCDataChannel;
     public configuration = {
         iceServers: [{ url: "stun:stun2.1.google.com:19302" }],
     };
 
     constructor() {
         this.ws = new WebSocket("ws://localhost:8080");
+        this.username = "";
+        this.connection = new RTCPeerConnection();
+        this.otherUsername = "";
+        this.peerConnection = new RTCDataChannel();
+
         this.addUiListeners();
         this.addWsEventListeners();
     }
@@ -60,21 +63,21 @@ export class NetworkConnectionManager {
         });
     }
 
-    public handleCandidate = (candidate) => {
+    public handleCandidate = (candidate: RTCIceCandidateInit | undefined) => {
         this.connection.addIceCandidate(new RTCIceCandidate(candidate));
     }
 
-    public handleAnswer = (answer) => {
+    public handleAnswer = (answer: RTCSessionDescriptionInit) => {
         this.connection.setRemoteDescription(new RTCSessionDescription(answer));
     }
 
-    public handleOffer = (offer, username): void => {
+    public handleOffer = (offer: RTCSessionDescriptionInit, username: string): void => {
         this.otherUsername = username;
         this.connection.setRemoteDescription(new RTCSessionDescription(offer));
         this.connection.createAnswer(
-            (answer) => {
+            (answer: RTCSessionDescriptionInit) => {
                 this.connection.setLocalDescription(answer);
-                let answerMessage = new MessageAnswer(this.otherUsername, answer);
+                const answerMessage = new MessageAnswer(this.otherUsername, answer);
                 this.sendMessage(answerMessage);
             },
             (error) => {
@@ -84,7 +87,7 @@ export class NetworkConnectionManager {
         );
     }
 
-    public handleLogin = (loginSuccess): void => {
+    public handleLogin = (loginSuccess: boolean): void => {
         if (loginSuccess) {
             console.log("Login succesfully done");
             this.createRTCConnection();
@@ -95,17 +98,14 @@ export class NetworkConnectionManager {
     }
 
     public loginLogic = (): void => {
-        // this.usernameField =  document.getElementById("username") as HTMLInputElement;
-        // this.username = this.usernameField.value;
-
         this.username = UiElementHandler.login_nameInput.value;
         console.log(this.username);
         if (this.username.length < 0) {
             console.log("Please enter username");
             return;
         }
-        let loginMessage = new MessageLoginRequest(this.username);
-    
+        const loginMessage = new MessageLoginRequest(this.username);
+
         this.sendMessage(loginMessage);
     }
 
@@ -129,12 +129,12 @@ export class NetworkConnectionManager {
 
         this.peerConnection.onmessage = function(event) {
             console.log("Received message from other peer:", event.data);
-            document.getElementById("chatbox").innerHTML += "<br>" + event.data;
+            UiElementHandler.chatbox.innerHTML += "<br>" + event.data;
         };
 
         this.connection.onicecandidate = (event) => {
             if (event.candidate) {
-                let candidateMessage = new MessageCandidate(this.otherUsername, event.candidate);
+                const candidateMessage = new MessageCandidate(this.otherUsername, event.candidate);
                 this.sendMessage(candidateMessage);
             }
         };
@@ -144,7 +144,7 @@ export class NetworkConnectionManager {
 
         // const callUsernameElement =  document.querySelector("input#username-to-call") as HTMLInputElement;
         // const callToUsername = callUsernameElement.value;
-        let callToUsername = UiElementHandler.usernameToConnectTo.value;
+        const callToUsername = UiElementHandler.usernameToConnectTo.value;
         if (callToUsername.length === 0) {
             alert("Enter a username 😉");
             return;
@@ -152,13 +152,13 @@ export class NetworkConnectionManager {
 
         this.otherUsername = callToUsername;
         this.createRtcOffer(this.otherUsername);
-        
+
     }
 
-    public createRtcOffer = (userNameForOffer): void =>{
+    public createRtcOffer = (userNameForOffer: string): void => {
         this.connection.createOffer(
-            (offer) => {
-                let offerMessage = new MessageOffer(userNameForOffer, offer);
+            (offer: RTCSessionDescriptionInit) => {
+                const offerMessage = new MessageOffer(userNameForOffer, offer);
                 this.connection.setLocalDescription(offer);
                 this.sendMessage(offerMessage);
             },
@@ -169,7 +169,7 @@ export class NetworkConnectionManager {
         );
     }
 
-    public sendMessage = (message) => {
+    public sendMessage = (message: Object) => {
         this.ws.send(JSON.stringify(message));
     }
 

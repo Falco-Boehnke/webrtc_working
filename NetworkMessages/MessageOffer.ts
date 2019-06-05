@@ -1,20 +1,13 @@
-import { IMessage_Base, MessageType } from "./Message_Base";
+import { MESSAGE_TYPE, MessageBase } from "./MessageBase";
 
-export class MessageOffer implements IMessage_Base {
-    
-    public messageType: import("./Message_Base").MessageType = MessageType.RTC_OFFER;
+export class MessageOffer implements MessageBase {
+
+    public messageType: import("./MessageBase").MESSAGE_TYPE = MESSAGE_TYPE.RTC_OFFER;
     public userNameToConnectTo: string;
-    public offer: string;
-    constructor(userNameToConnectTo: string, offer: string)
-    {
+    public offer: RTCSessionDescriptionInit;
+    constructor(userNameToConnectTo: string, offer: RTCSessionDescriptionInit) {
         this.userNameToConnectTo = userNameToConnectTo;
         this.offer = offer;
     }
-
-
-
-
-
-
 
 }

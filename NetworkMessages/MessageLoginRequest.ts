@@ -1,19 +1,12 @@
-import { IMessage_Base, MessageType } from "./Message_Base";
+import { MESSAGE_TYPE, MessageBase } from "./MessageBase";
 
-export class MessageLoginRequest implements IMessage_Base {
-    
-    public messageType: import("./Message_Base").MessageType = MessageType.LOGIN;
+export class MessageLoginRequest implements MessageBase {
+
+    public messageType: import("./MessageBase").MESSAGE_TYPE = MESSAGE_TYPE.LOGIN;
     public loginUserName: string = "";
-    
-    constructor(loginUserName: string)
-    {
+
+    constructor(loginUserName: string) {
         this.loginUserName = loginUserName;
     }
-
-
-
-
-
-
 
 }

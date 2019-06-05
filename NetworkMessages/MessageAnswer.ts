@@ -1,20 +1,13 @@
-import { IMessage_Base, MessageType } from "./Message_Base";
+import { MESSAGE_TYPE, MessageBase } from "./MessageBase";
 
-export class MessageAnswer implements IMessage_Base {
-    
-    public messageType: import("./Message_Base").MessageType = MessageType.RTC_ANSWER;
+export class MessageAnswer implements MessageBase {
+
+    public messageType: import("./MessageBase").MESSAGE_TYPE = MESSAGE_TYPE.RTC_ANSWER;
     public userNameToConnectTo: string;
-    public answer: string;
-    constructor(userNameToConnectTo: string, answer: string)
-    {
+    public answer: any;
+    constructor(userNameToConnectTo: string, _answer: RTCSessionDescriptionInit | RTCOfferOptions) {
         this.userNameToConnectTo = userNameToConnectTo;
-        this.answer = answer;
+
     }
-
-
-
-
-
-
 
 }
