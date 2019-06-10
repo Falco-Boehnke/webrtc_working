@@ -1,0 +1,71 @@
+{
+  "bundle": {
+    "commonSourceDirectory": "D:/Thesis/webrtc_working/",
+    "sourceFiles": [
+      "D:/Thesis/webrtc_working/NetworkMessages/MessageBase.ts",
+      "D:/Thesis/webrtc_working/NetworkMessages/MessageAnswer.ts",
+      "D:/Thesis/webrtc_working/NetworkMessages/MessageCandidate.ts",
+      "D:/Thesis/webrtc_working/NetworkMessages/MessageLoginRequest.ts",
+      "D:/Thesis/webrtc_working/NetworkMessages/MessageOffer.ts",
+      "D:/Thesis/webrtc_working/UiElementHandler.ts",
+      "D:/Thesis/webrtc_working/NetworkConnectionManager.ts",
+      "D:/Thesis/webrtc_working/index.ts",
+      "D:/Thesis/webrtc_working/renderer.ts",
+      "D:/Thesis/webrtc_working/test2-win32-x64/resources/app/NetworkMessages/Message_Base.ts",
+      "D:/Thesis/webrtc_working/test2-win32-x64/resources/app/NetworkMessages/MessageLoginRequest.ts",
+      "D:/Thesis/webrtc_working/Server/ServerMain.ts",
+      "D:/Thesis/webrtc_working/test2-win32-x64/resources/app/UiElementHandler.ts",
+      "D:/Thesis/webrtc_working/test2-win32-x64/resources/app/NetworkMessages/MessageOffer.ts",
+      "D:/Thesis/webrtc_working/test2-win32-x64/resources/app/NetworkMessages/MessageAnswer.ts",
+      "D:/Thesis/webrtc_working/test2-win32-x64/resources/app/NetworkMessages/MessageCandidate.ts",
+      "D:/Thesis/webrtc_working/test2-win32-x64/resources/app/NetworkConnectionManager.ts",
+      "D:/Thesis/webrtc_working/test2-win32-x64/resources/app/index.ts",
+      "D:/Thesis/webrtc_working/test2-win32-x64/resources/app/renderer.ts",
+      "D:/Thesis/webrtc_working/test2-win32-x64/resources/app/js/server/server_main.ts"
+    ],
+    "js": {
+      "sections": [
+        {
+          "pos": 0,
+          "end": 13,
+          "kind": "prologue",
+          "data": "use strict"
+        },
+        {
+          "pos": 15,
+          "end": 47211,
+          "kind": "text"
+        }
+      ],
+      "sources": {
+        "prologues": [
+          {
+            "file": 7,
+            "text": "",
+            "directives": [
+              {
+                "pos": -1,
+                "end": -1,
+                "expression": {
+                  "pos": -1,
+                  "end": -1,
+                  "text": "use strict"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "dts": {
+      "sections": [
+        {
+          "pos": 0,
+          "end": 7845,
+          "kind": "text"
+        }
+      ]
+    }
+  },
+  "version": "3.4.2"
+}
