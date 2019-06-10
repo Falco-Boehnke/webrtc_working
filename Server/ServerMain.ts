@@ -1,9 +1,10 @@
-import * as WebSocket from "ws";
+import WebSocket from "ws";
 import { MessageAnswer } from "../NetworkMessages/MessageAnswer";
 import { MESSAGE_TYPE as MESSAGE_TYPE, MessageBase } from "../NetworkMessages/MessageBase";
 import { MessageCandidate } from "../NetworkMessages/MessageCandidate";
 import { MessageOffer } from "../NetworkMessages/MessageOffer";
-import { MessageLoginRequest } from "../test2-win32-x64/resources/app/NetworkMessages/MessageLoginRequest";
+import { MessageLoginRequest } from "../NetworkMessages/MessageLoginRequest";
+
 
 const websocketServer: WebSocket.Server = new WebSocket.Server({ port: 8080 });
 const users = {};
@@ -25,7 +26,7 @@ websocketServer.on("connection", (_websocketClient: WebSocket) => {
 // TODO Check if event.type can be used for identification instead
 function serverHandleMessageType(_event: { data: string; type: string; target: WebSocket }): void {
 
-    const messageData: MessageBase  = parseMessageToJson(_event.data);
+    const messageData: any  = parseMessageToJson(_event.data);
 
     switch (messageData.messageType) {
         // TODO Enums ALLCAPS_ENUM

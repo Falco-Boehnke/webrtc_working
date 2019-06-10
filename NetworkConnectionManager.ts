@@ -14,7 +14,7 @@ export class NetworkConnectionManager {
     // More info from here https://developer.mozilla.org/en-US/docs/Web/API/RTCConfiguration
     //     var configuration = { iceServers: [{
     //         urls: "stun:stun.services.mozilla.com",
-    //         username: "louis@mozilla.com", 
+    //         username: "louis@mozilla.com",
     //         credential: "webrtcdemo"
     //     }, {
     //         urls: ["stun:stun.example.com", "stun:stun-1.example.com"]
@@ -40,7 +40,7 @@ export class NetworkConnectionManager {
     }
 
     public addUiListeners = (): void => {
-        UiElementHandler.login_button.addEventListener("click", this.loginLogic);
+        UiElementHandler.loginButton.addEventListener("click", this.loginLogic);
         UiElementHandler.connectToUserButton.addEventListener("click", this.connectToUser);
         UiElementHandler.sendMsgButton.addEventListener("click", this.sendMessageToUser);
     }
@@ -124,7 +124,7 @@ export class NetworkConnectionManager {
     }
 
     public loginLogic = (): void => {
-        this.username = UiElementHandler.login_nameInput.value;
+        this.username = UiElementHandler.loginNameInput.innerText;
         console.log(this.username);
         if (this.username.length < 0) {
             console.log("Please enter username");

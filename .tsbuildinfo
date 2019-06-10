@@ -11,17 +11,7 @@
       "D:/Thesis/webrtc_working/NetworkConnectionManager.ts",
       "D:/Thesis/webrtc_working/index.ts",
       "D:/Thesis/webrtc_working/renderer.ts",
-      "D:/Thesis/webrtc_working/test2-win32-x64/resources/app/NetworkMessages/Message_Base.ts",
-      "D:/Thesis/webrtc_working/test2-win32-x64/resources/app/NetworkMessages/MessageLoginRequest.ts",
-      "D:/Thesis/webrtc_working/Server/ServerMain.ts",
-      "D:/Thesis/webrtc_working/test2-win32-x64/resources/app/UiElementHandler.ts",
-      "D:/Thesis/webrtc_working/test2-win32-x64/resources/app/NetworkMessages/MessageOffer.ts",
-      "D:/Thesis/webrtc_working/test2-win32-x64/resources/app/NetworkMessages/MessageAnswer.ts",
-      "D:/Thesis/webrtc_working/test2-win32-x64/resources/app/NetworkMessages/MessageCandidate.ts",
-      "D:/Thesis/webrtc_working/test2-win32-x64/resources/app/NetworkConnectionManager.ts",
-      "D:/Thesis/webrtc_working/test2-win32-x64/resources/app/index.ts",
-      "D:/Thesis/webrtc_working/test2-win32-x64/resources/app/renderer.ts",
-      "D:/Thesis/webrtc_working/test2-win32-x64/resources/app/js/server/server_main.ts"
+      "D:/Thesis/webrtc_working/Server/ServerMain.ts"
     ],
     "js": {
       "sections": [
@@ -33,7 +23,7 @@
         },
         {
           "pos": 15,
-          "end": 47211,
+          "end": 24628,
           "kind": "text"
         }
       ],
@@ -61,7 +51,7 @@
       "sections": [
         {
           "pos": 0,
-          "end": 7845,
+          "end": 3835,
           "kind": "text"
         }
       ]
