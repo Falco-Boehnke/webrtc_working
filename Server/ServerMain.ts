@@ -116,3 +116,17 @@ function parseMessageToJson(_messageToParse: string): MessageBase {
 function sendTo(_connection: WebSocket, _message: Object) {
     _connection.send(JSON.stringify(_message));
 }
+
+// Helper function for searching through a collection, finding objects by key and value, returning
+// Object that has that value
+function searchForPropertyValueInCollection(propertyValue: any, key: string, collectionToSearch: any[]) {
+    for (const propertyObject in collectionToSearch) {
+        if (usersCollection.hasOwnProperty(propertyObject)) {
+            const objectToSearchThrough = collectionToSearch[propertyObject];
+            if (objectToSearchThrough[key] === propertyValue) {
+                return objectToSearchThrough;
+            }
+        }
+    }
+    return null;
+}
