@@ -1,4 +1,3 @@
-//TODO Namespaces anlegen
 namespace NetworkMessages {
     export enum MESSAGE_TYPE {
         UNDEFINED = "undefined",
