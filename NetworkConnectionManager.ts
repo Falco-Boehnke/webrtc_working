@@ -1,9 +1,6 @@
-import { stringify } from "querystring";
-import { MessageAnswer } from "./NetworkMessages/MessageAnswer";
-import { MessageCandidate } from "./NetworkMessages/MessageCandidate";
-import { MessageLoginRequest } from "./NetworkMessages/MessageLoginRequest";
-import { MessageOffer } from "./NetworkMessages/MessageOffer";
+import * as _Networking from "./NetworkMessages/NetworkMessageCollection";
 import { UiElementHandler } from "./DataCollectors/UiElementHandler";
+
 
 export class NetworkConnectionManager {
     public ws: WebSocket;
@@ -93,7 +90,7 @@ export class NetworkConnectionManager {
             .then((answer) => {
                 return this.connection.setLocalDescription(answer);
             }).then(() => {
-                const answerMessage = new MessageAnswer(this.otherUsername, this.connection.localDescription);
+                const answerMessage = new _Networking.Messages.AnswerToOffer(this.otherUsername, this.connection.localDescription);
                 this.sendMessage(answerMessage);
             })
             .catch(() => {
@@ -130,7 +127,7 @@ export class NetworkConnectionManager {
             console.log("Please enter username");
             return;
         }
-        const loginMessage = new MessageLoginRequest(this.username);
+        const loginMessage = new _Networking.Messages.LoginRequest(this.username);
 
         this.sendMessage(loginMessage);
     }
@@ -159,7 +156,7 @@ export class NetworkConnectionManager {
 
         this.connection.onicecandidate = (event) => {
             if (event.candidate) {
-                const candidateMessage = new MessageCandidate(this.otherUsername, event.candidate);
+                const candidateMessage = new _Networking.Messages.IceCandidate(this.otherUsername, event.candidate);
                 this.sendMessage(candidateMessage);
             }
         };
@@ -185,7 +182,7 @@ export class NetworkConnectionManager {
         this.connection.createOffer().then((offer) => {
             return this.connection.setLocalDescription(offer);
         }).then(() => {
-            const offerMessage = new MessageOffer(userNameForOffer, this.connection.localDescription);
+            const offerMessage = new _Networking.Messages.Offer(userNameForOffer, this.connection.localDescription);
         })
             .catch(() => {
                 console.error("Offer creation error");

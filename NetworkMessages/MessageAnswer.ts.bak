@@ -1,4 +1,4 @@
-namespace NetworkMessages {
+export namespace NetworkMessages {
 
     export class MessageAnswer implements MessageBase {
 

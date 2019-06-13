@@ -6,10 +6,17 @@
     "jsRules": {},
     "rules": {
         "no-console": {
-            "severity": "none",
+            "severity": "off",
             "options": ["debug", "info", "log", "time", "timeEnd", "trace"]
         },
-        "no-namespace": false
+        "no-namespace": false,
+        "max-classes-per-file":{
+            "severity": "off"
+        },
+        "max-line-length": {
+            "options": {"limit": 150}
+        }
+
     },
     "rulesDirectory": []
 }
