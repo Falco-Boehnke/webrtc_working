@@ -2,12 +2,13 @@ import WebSocket from "ws";
 import { MessageAnswer } from "../NetworkMessages/MessageAnswer";
 import { MESSAGE_TYPE as MESSAGE_TYPE, MessageBase } from "../NetworkMessages/MessageBase";
 import { MessageCandidate } from "../NetworkMessages/MessageCandidate";
-import { MessageOffer } from "../NetworkMessages/MessageOffer";
 import { MessageLoginRequest } from "../NetworkMessages/MessageLoginRequest";
-
+import { MessageOffer } from "../NetworkMessages/MessageOffer";
+import { Client } from "../DataCollectors/Client";
 
 const websocketServer: WebSocket.Server = new WebSocket.Server({ port: 8080 });
 const users = {};
+const usersCollection = new Array();
 
 let _websocketToClient: WebSocket;
 // TODO PArameter mit Unterstrich

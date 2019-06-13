@@ -4,6 +4,12 @@
         "tslint:recommended"
     ],
     "jsRules": {},
-    "rules": {},
+    "rules": {
+        "no-console": {
+            "severity": "none",
+            "options": ["debug", "info", "log", "time", "timeEnd", "trace"]
+        },
+        "no-namespace": false
+    },
     "rulesDirectory": []
 }

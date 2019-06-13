@@ -3,7 +3,7 @@ import { MessageAnswer } from "./NetworkMessages/MessageAnswer";
 import { MessageCandidate } from "./NetworkMessages/MessageCandidate";
 import { MessageLoginRequest } from "./NetworkMessages/MessageLoginRequest";
 import { MessageOffer } from "./NetworkMessages/MessageOffer";
-import { UiElementHandler } from "./UiElementHandler";
+import { UiElementHandler } from "./DataCollectors/UiElementHandler";
 
 export class NetworkConnectionManager {
     public ws: WebSocket;
