@@ -1,6 +1,5 @@
-namespace Datacollectors {
+namespace DataCollectors {
     export class ServerRoom {
-
 
     }
 }

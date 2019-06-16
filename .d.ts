@@ -1,51 +1,51 @@
 declare module "NetworkMessages/MessageBase" {
-    export enum MESSAGE_TYPE {
-        UNDEFINED = "undefined",
-        LOGIN = "login",
-        RTC_OFFER = "offer",
-        RTC_ANSWER = "answer",
-        RTC_CANDIDATE = "candidate"
-    }
     export interface MessageBase {
-        messageType: MESSAGE_TYPE;
+        readonly messageType: MESSAGE_TYPE;
     }
 }
 declare module "NetworkMessages/MessageAnswer" {
     import { MessageBase } from "NetworkMessages/MessageBase";
     export class MessageAnswer implements MessageBase {
-        messageType: import("NetworkMessages/MessageBase").MESSAGE_TYPE;
+        messageType: MESSAGE_TYPE;
         userNameToConnectTo: string;
         answer: RTCSessionDescription | null;
-        constructor(userNameToConnectTo: string, _answer: RTCSessionDescription | null);
+        constructor(_userNameToConnectTo: string, _answer: RTCSessionDescription | null);
     }
 }
 declare module "NetworkMessages/MessageCandidate" {
     import { MessageBase } from "NetworkMessages/MessageBase";
     export class MessageCandidate implements MessageBase {
-        messageType: import("NetworkMessages/MessageBase").MESSAGE_TYPE;
+        messageType: MESSAGE_TYPE;
         userNameToConnectTo: string;
         candidate: RTCIceCandidate;
-        constructor(userNameToConnectTo: string, candidate: RTCIceCandidate);
+        constructor(_userNameToConnectTo: string, _candidate: RTCIceCandidate);
     }
 }
 declare module "NetworkMessages/MessageLoginRequest" {
     import { MessageBase } from "NetworkMessages/MessageBase";
     export class MessageLoginRequest implements MessageBase {
-        messageType: import("NetworkMessages/MessageBase").MESSAGE_TYPE;
+        messageType: MESSAGE_TYPE;
         loginUserName: string;
-        constructor(loginUserName: string);
+        constructor(_loginUserName: string);
     }
 }
 declare module "NetworkMessages/MessageOffer" {
     import { MessageBase } from "NetworkMessages/MessageBase";
     export class MessageOffer implements MessageBase {
-        messageType: import("NetworkMessages/MessageBase").MESSAGE_TYPE;
+        messageType: MESSAGE_TYPE;
         userNameToConnectTo: string;
         offer: RTCSessionDescription | RTCSessionDescriptionInit | null;
-        constructor(userNameToConnectTo: string, offer: RTCSessionDescription | RTCSessionDescriptionInit | null);
+        constructor(_userNameToConnectTo: string, _offer: RTCSessionDescription | RTCSessionDescriptionInit | null);
     }
 }
-declare module "UiElementHandler" {
+declare module "NetworkMessages/index" {
+    export { MessageAnswer } from "NetworkMessages/MessageAnswer";
+    export { MessageCandidate } from "NetworkMessages/MessageCandidate";
+    export { MessageLoginRequest } from "NetworkMessages/MessageLoginRequest";
+    export { MessageOffer } from "NetworkMessages/MessageOffer";
+    export { MessageBase } from "NetworkMessages/MessageBase";
+}
+declare module "DataCollectors/UiElementHandler" {
     export abstract class UiElementHandler {
         static signalingSubmit: HTMLElement;
         static signalingUrl: HTMLInputElement;
@@ -75,14 +75,14 @@ declare module "NetworkConnectionManager" {
         constructor();
         addUiListeners: () => void;
         addWsEventListeners: () => void;
-        handleCandidate: (candidate: RTCIceCandidateInit | undefined) => void;
-        handleAnswer: (answer: RTCSessionDescriptionInit) => void;
-        handleOffer: (offer: RTCSessionDescriptionInit, username: string) => void;
-        handleLogin: (loginSuccess: boolean) => void;
+        handleCandidate: (_candidate: RTCIceCandidateInit | undefined) => void;
+        handleAnswer: (_answer: RTCSessionDescriptionInit) => void;
+        handleOffer: (_offer: RTCSessionDescriptionInit, _username: string) => void;
+        handleLogin: (_loginSuccess: boolean) => void;
         loginLogic: () => void;
         createRTCConnection: () => void;
         connectToUser: () => void;
-        createRtcOffer: (userNameForOffer: string) => void;
+        createRtcOffer: (_userNameForOffer: string) => void;
         sendMessage: (message: Object) => void;
         sendMessageToUser: () => void;
     }
@@ -92,4 +92,27 @@ declare const app: any, BrowserWindow: any;
 declare let win: any;
 declare function createWindow(): void;
 declare module "renderer" { }
+declare namespace DataCollectors {
+    class Client {
+        clientConnection: WebSocket | null;
+        id: string;
+        userName: string;
+        connectedRoom: ServerRoom | null;
+        constructor();
+    }
+}
+declare namespace DataCollectors {
+    class ServerRoom {
+    }
+}
+declare enum MESSAGE_TYPE {
+    UNDEFINED = "undefined",
+    LOGIN = "login",
+    RTC_OFFER = "offer",
+    RTC_ANSWER = "answer",
+    RTC_CANDIDATE = "candidate"
+}
+declare enum TEST_ENUM {
+    SERIOUSLY = "wtf"
+}
 declare module "Server/ServerMain" { }

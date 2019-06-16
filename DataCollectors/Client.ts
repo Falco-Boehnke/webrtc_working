@@ -1,5 +1,4 @@
-// tslint:disable-next-line: no-namespace
-namespace Datacollectors {
+namespace DataCollectors {
     export class Client {
 
         public clientConnection: WebSocket | null;
@@ -9,9 +8,10 @@ namespace Datacollectors {
 
         constructor();
         constructor(websocketConnection?: WebSocket,
-            uniqueClientId?: string,
-            loginName?: string,
-            connectedToRoom?: ServerRoom) {
+                    uniqueClientId?: string,
+                    loginName?: string,
+                    connectedToRoom?: ServerRoom) {
+
             this.clientConnection = websocketConnection || null;
             this.id = uniqueClientId || "";
             this.userName = loginName || "";

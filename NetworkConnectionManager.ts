@@ -1,4 +1,4 @@
-import * as _Networking from "./NetworkMessages/NetworkMessageCollection";
+import * as NetCommunication from "./NetworkMessages/index";
 import { UiElementHandler } from "./DataCollectors/UiElementHandler";
 
 
@@ -73,24 +73,24 @@ export class NetworkConnectionManager {
         });
     }
 
-    public handleCandidate = (candidate: RTCIceCandidateInit | undefined) => {
-        this.connection.addIceCandidate(new RTCIceCandidate(candidate));
+    public handleCandidate = (_candidate: RTCIceCandidateInit | undefined) => {
+        this.connection.addIceCandidate(new RTCIceCandidate(_candidate));
     }
 
-    public handleAnswer = (answer: RTCSessionDescriptionInit) => {
-        this.connection.setRemoteDescription(new RTCSessionDescription(answer));
+    public handleAnswer = (_answer: RTCSessionDescriptionInit) => {
+        this.connection.setRemoteDescription(new RTCSessionDescription(_answer));
     }
 
-    public handleOffer = (offer: RTCSessionDescriptionInit, username: string): void => {
-        this.otherUsername = username;
-        this.connection.setRemoteDescription(new RTCSessionDescription(offer));
+    public handleOffer = (_offer: RTCSessionDescriptionInit, _username: string): void => {
+        this.otherUsername = _username;
+        this.connection.setRemoteDescription(new RTCSessionDescription(_offer));
 
         // Signaling example from here https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/createAnswer
         this.connection.createAnswer()
             .then((answer) => {
                 return this.connection.setLocalDescription(answer);
             }).then(() => {
-                const answerMessage = new _Networking.Messages.AnswerToOffer(this.otherUsername, this.connection.localDescription);
+                const answerMessage = new NetCommunication.MessageAnswer(this.otherUsername, this.connection.localDescription);
                 this.sendMessage(answerMessage);
             })
             .catch(() => {
@@ -110,8 +110,8 @@ export class NetworkConnectionManager {
         // };
     }
 
-    public handleLogin = (loginSuccess: boolean): void => {
-        if (loginSuccess) {
+    public handleLogin = (_loginSuccess: boolean): void => {
+        if (_loginSuccess) {
             console.log("Login succesfully done");
             this.createRTCConnection();
             console.log("COnnection at Login: ", this.connection);
@@ -127,7 +127,7 @@ export class NetworkConnectionManager {
             console.log("Please enter username");
             return;
         }
-        const loginMessage = new _Networking.Messages.LoginRequest(this.username);
+        const loginMessage = new NetCommunication.MessageLoginRequest(this.username);
 
         this.sendMessage(loginMessage);
     }
@@ -156,7 +156,7 @@ export class NetworkConnectionManager {
 
         this.connection.onicecandidate = (event) => {
             if (event.candidate) {
-                const candidateMessage = new _Networking.Messages.IceCandidate(this.otherUsername, event.candidate);
+                const candidateMessage = new NetCommunication.MessageCandidate(this.otherUsername, event.candidate);
                 this.sendMessage(candidateMessage);
             }
         };
@@ -177,12 +177,13 @@ export class NetworkConnectionManager {
 
     }
 
-    public createRtcOffer = (userNameForOffer: string): void => {
+    public createRtcOffer = (_userNameForOffer: string): void => {
 
         this.connection.createOffer().then((offer) => {
             return this.connection.setLocalDescription(offer);
         }).then(() => {
-            const offerMessage = new _Networking.Messages.Offer(userNameForOffer, this.connection.localDescription);
+            const offerMessage = new NetCommunication.MessageOffer(_userNameForOffer, this.connection.localDescription);
+            this.sendMessage(offerMessage);
         })
             .catch(() => {
                 console.error("Offer creation error");

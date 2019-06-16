@@ -1,10 +1,11 @@
 import WebSocket from "ws";
-import { MessageAnswer } from "../NetworkMessages/MessageAnswer";
-import { MESSAGE_TYPE as MESSAGE_TYPE, MessageBase } from "../NetworkMessages/MessageBase";
-import { MessageCandidate } from "../NetworkMessages/MessageCandidate";
-import { MessageLoginRequest } from "../NetworkMessages/MessageLoginRequest";
-import { MessageOffer } from "../NetworkMessages/MessageOffer";
-import { Client } from "../DataCollectors/Client";
+import * as NetworkCommunication from "./../NetworkMessages/index";
+
+// import { MessageAnswer } from "../NetworkMessages/MessageAnswer";
+// import { MESSAGE_TYPE as MESSAGE_TYPE, MessageBase } from "../NetworkMessages/MessageBase";
+// import { MessageCandidate } from "../NetworkMessages/MessageCandidate";
+// import { MessageLoginRequest } from "../NetworkMessages/MessageLoginRequest";
+// import { MessageOffer } from "../NetworkMessages/MessageOffer";
 
 const websocketServer: WebSocket.Server = new WebSocket.Server({ port: 8080 });
 const users = {};
@@ -15,6 +16,7 @@ let _websocketToClient: WebSocket;
 // TODO Coding guidelines umsetzen
 websocketServer.on("connection", (_websocketClient: WebSocket) => {
     _websocketToClient = _websocketClient;
+    
 
     console.log("User connected FRESH");
     _websocketToClient.on("message", serverHandleMessageType);
@@ -28,7 +30,6 @@ websocketServer.on("connection", (_websocketClient: WebSocket) => {
 function serverHandleMessageType(_event: { data: string; type: string; target: WebSocket }): void {
 
     const messageData: any  = parseMessageToJson(_event.data);
-
     switch (messageData.messageType) {
         // TODO Enums ALLCAPS_ENUM
         case MESSAGE_TYPE.LOGIN:
@@ -55,7 +56,7 @@ function serverHandleMessageType(_event: { data: string; type: string; target: W
 }
 
 //#region MessageHandler
-function serverHandleLogin(_messageData: MessageLoginRequest): void {
+function serverHandleLogin(_messageData: NetworkCommunication.MessageLoginRequest): void {
     console.log("User logged", _messageData.loginUserName);
     if (users[_messageData.loginUserName]) {
         sendTo(_websocketToClient, { type: "login", success: false });
@@ -66,7 +67,7 @@ function serverHandleLogin(_messageData: MessageLoginRequest): void {
     }
 }
 
-function serverHandleRTCOffer(_messageData: MessageOffer): void {
+function serverHandleRTCOffer(_messageData: NetworkCommunication.MessageOffer): void {
     console.log("Sending offer to: ", _messageData.userNameToConnectTo);
     if (users[_messageData.userNameToConnectTo] != null) {
         _websocketToClient.otherUsername = _messageData.userNameToConnectTo;
@@ -80,7 +81,7 @@ function serverHandleRTCOffer(_messageData: MessageOffer): void {
     }
 }
 
-function serverHandleRTCAnswer(_messageData: MessageAnswer): void {
+function serverHandleRTCAnswer(_messageData: NetworkCommunication.MessageAnswer): void {
     console.log("Sending answer to: ", _messageData.userNameToConnectTo);
     if (users[_messageData.userNameToConnectTo] != null) {
         _websocketToClient.otherUsername = _messageData.userNameToConnectTo;
@@ -91,7 +92,7 @@ function serverHandleRTCAnswer(_messageData: MessageAnswer): void {
     }
 }
 
-function serverHandleICECandidate(_messageData: MessageCandidate): void {
+function serverHandleICECandidate(_messageData: NetworkCommunication.MessageCandidate): void {
     console.log("Sending candidate to:", _messageData.userNameToConnectTo);
 
     if (users[_messageData.userNameToConnectTo] != null) {
@@ -103,8 +104,8 @@ function serverHandleICECandidate(_messageData: MessageCandidate): void {
 }
 //#endregion
 
-function parseMessageToJson(_messageToParse: string): MessageBase {
-    let parsedMessage: MessageBase = {messageType: MESSAGE_TYPE.UNDEFINED};
+function parseMessageToJson(_messageToParse: string): NetworkCommunication.MessageBase {
+    let parsedMessage: NetworkCommunication.MessageBase = {messageType: MESSAGE_TYPE.UNDEFINED};
 
     try {
             parsedMessage = JSON.parse(_messageToParse);
@@ -120,11 +121,11 @@ function sendTo(_connection: WebSocket, _message: Object) {
 
 // Helper function for searching through a collection, finding objects by key and value, returning
 // Object that has that value
-function searchForPropertyValueInCollection(propertyValue: any, key: string, collectionToSearch: any[]) {
-    for (const propertyObject in collectionToSearch) {
+function searchForPropertyValueInCollection(_propertyValue: any, _key: string, _collectionToSearch: any[]) {
+    for (const propertyObject in _collectionToSearch) {
         if (usersCollection.hasOwnProperty(propertyObject)) {
-            const objectToSearchThrough = collectionToSearch[propertyObject];
-            if (objectToSearchThrough[key] === propertyValue) {
+            const objectToSearchThrough = _collectionToSearch[propertyObject];
+            if (objectToSearchThrough[_key] === _propertyValue) {
                 return objectToSearchThrough;
             }
         }

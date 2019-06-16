@@ -1,17 +1,21 @@
 {
   "bundle": {
-    "commonSourceDirectory": "D:/Thesis/webrtc_working/",
+    "commonSourceDirectory": "G:/Bachelor/webrtc_working/",
     "sourceFiles": [
-      "D:/Thesis/webrtc_working/NetworkMessages/MessageBase.ts",
-      "D:/Thesis/webrtc_working/NetworkMessages/MessageAnswer.ts",
-      "D:/Thesis/webrtc_working/NetworkMessages/MessageCandidate.ts",
-      "D:/Thesis/webrtc_working/NetworkMessages/MessageLoginRequest.ts",
-      "D:/Thesis/webrtc_working/NetworkMessages/MessageOffer.ts",
-      "D:/Thesis/webrtc_working/UiElementHandler.ts",
-      "D:/Thesis/webrtc_working/NetworkConnectionManager.ts",
-      "D:/Thesis/webrtc_working/index.ts",
-      "D:/Thesis/webrtc_working/renderer.ts",
-      "D:/Thesis/webrtc_working/Server/ServerMain.ts"
+      "G:/Bachelor/webrtc_working/NetworkMessages/MessageBase.ts",
+      "G:/Bachelor/webrtc_working/NetworkMessages/MessageAnswer.ts",
+      "G:/Bachelor/webrtc_working/NetworkMessages/MessageCandidate.ts",
+      "G:/Bachelor/webrtc_working/NetworkMessages/MessageLoginRequest.ts",
+      "G:/Bachelor/webrtc_working/NetworkMessages/MessageOffer.ts",
+      "G:/Bachelor/webrtc_working/NetworkMessages/index.ts",
+      "G:/Bachelor/webrtc_working/DataCollectors/UiElementHandler.ts",
+      "G:/Bachelor/webrtc_working/NetworkConnectionManager.ts",
+      "G:/Bachelor/webrtc_working/index.ts",
+      "G:/Bachelor/webrtc_working/renderer.ts",
+      "G:/Bachelor/webrtc_working/DataCollectors/Client.ts",
+      "G:/Bachelor/webrtc_working/DataCollectors/ServerRoom.ts",
+      "G:/Bachelor/webrtc_working/DataCollectors/Enumerators/EnumeratorCollection.ts",
+      "G:/Bachelor/webrtc_working/Server/ServerMain.ts"
     ],
     "js": {
       "sections": [
@@ -23,14 +27,14 @@
         },
         {
           "pos": 15,
-          "end": 24628,
+          "end": 26199,
           "kind": "text"
         }
       ],
       "sources": {
         "prologues": [
           {
-            "file": 7,
+            "file": 8,
             "text": "",
             "directives": [
               {
@@ -51,11 +55,11 @@
       "sections": [
         {
           "pos": 0,
-          "end": 3835,
+          "end": 4437,
           "kind": "text"
         }
       ]
     }
   },
-  "version": "3.5.1"
+  "version": "3.4.5"
 }
