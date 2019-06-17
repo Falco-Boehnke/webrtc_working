@@ -1,4 +1,5 @@
 import { MessageBase } from "./MessageBase";
+import {MESSAGE_TYPE} from "./../DataCollectors/Enumerators/EnumeratorCollection";
 
 export class MessageCandidate implements MessageBase {
 

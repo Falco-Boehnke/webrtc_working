@@ -1,21 +1,20 @@
-namespace DataCollectors {
-    export class Client {
+import { ServerRoom } from "./ServerRoom";
+export class Client {
 
-        public clientConnection: WebSocket | null;
-        public id: string;
-        public userName: string;
-        public connectedRoom: ServerRoom | null;
+    public clientConnection: WebSocket | null;
+    public id: string;
+    public userName: string;
+    public connectedRoom: ServerRoom | null;
 
-        constructor();
-        constructor(websocketConnection?: WebSocket,
-                    uniqueClientId?: string,
-                    loginName?: string,
-                    connectedToRoom?: ServerRoom) {
+    constructor(websocketConnection?: WebSocket,
+                uniqueClientId?: string,
+                loginName?: string,
+                connectedToRoom?: ServerRoom) {
 
-            this.clientConnection = websocketConnection || null;
-            this.id = uniqueClientId || "";
-            this.userName = loginName || "";
-            this.connectedRoom = connectedToRoom || null;
-        }
+        this.clientConnection = websocketConnection || null;
+        this.id = uniqueClientId || "";
+        this.userName = loginName || "";
+        this.connectedRoom = connectedToRoom || null;
     }
 }
+

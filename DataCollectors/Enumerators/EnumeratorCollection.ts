@@ -1,4 +1,4 @@
-enum MESSAGE_TYPE {
+export enum MESSAGE_TYPE {
     UNDEFINED = "undefined",
     LOGIN = "login",
     RTC_OFFER = "offer",

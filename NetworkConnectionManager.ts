@@ -1,3 +1,4 @@
+import {MESSAGE_TYPE} from "./DataCollectors/Enumerators/EnumeratorCollection";
 import * as NetCommunication from "./NetworkMessages/index";
 import { UiElementHandler } from "./DataCollectors/UiElementHandler";
 
@@ -7,7 +8,7 @@ export class NetworkConnectionManager {
     public username: string;
     public connection: RTCPeerConnection;
     public otherUsername: string;
-    public peerConnection: RTCDataChannel;
+    public peerConnection: RTCDataChannel | undefined;
     // More info from here https://developer.mozilla.org/en-US/docs/Web/API/RTCConfiguration
     //     var configuration = { iceServers: [{
     //         urls: "stun:stun.services.mozilla.com",
@@ -30,13 +31,15 @@ export class NetworkConnectionManager {
         this.username = "";
         this.connection = new RTCPeerConnection();
         this.otherUsername = "";
-        this.peerConnection = new RTCDataChannel();
-
+        this.peerConnection = undefined;
+        UiElementHandler.getAllUiElements();
         this.addUiListeners();
         this.addWsEventListeners();
     }
 
     public addUiListeners = (): void => {
+        UiElementHandler.getAllUiElements();
+        console.log(UiElementHandler.loginButton);
         UiElementHandler.loginButton.addEventListener("click", this.loginLogic);
         UiElementHandler.connectToUserButton.addEventListener("click", this.connectToUser);
         UiElementHandler.sendMsgButton.addEventListener("click", this.sendMessageToUser);
@@ -59,7 +62,6 @@ export class NetworkConnectionManager {
                 case "login":
                     this.handleLogin(data.success);
                     break;
-
                 case "offer":
                     this.handleOffer(data.offer, data.username);
                     break;
@@ -121,14 +123,19 @@ export class NetworkConnectionManager {
     }
 
     public loginLogic = (): void => {
-        this.username = UiElementHandler.loginNameInput.innerText;
+        if(UiElementHandler.loginNameInput != null)
+        {
+        this.username = UiElementHandler.loginNameInput.value;
+        }
+        else
+        { console.error("UI element missing: Loginname Input field");}
         console.log(this.username);
-        if (this.username.length < 0) {
+        if (this.username.length <= 0) {
             console.log("Please enter username");
             return;
         }
         const loginMessage = new NetCommunication.MessageLoginRequest(this.username);
-
+        console.log(loginMessage);
         this.sendMessage(loginMessage);
     }
 

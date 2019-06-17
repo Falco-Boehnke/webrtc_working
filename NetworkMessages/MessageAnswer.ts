@@ -1,5 +1,5 @@
 import { MessageBase } from "./MessageBase";
-
+import {MESSAGE_TYPE} from "./../DataCollectors/Enumerators/EnumeratorCollection";
 export class MessageAnswer implements MessageBase {
 
         public messageType: MESSAGE_TYPE = MESSAGE_TYPE.RTC_ANSWER;
