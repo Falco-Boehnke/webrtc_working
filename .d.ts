@@ -1,10 +1,21 @@
+declare module "DataCollectors/Enumerators/EnumeratorCollection" {
+    export enum MESSAGE_TYPE {
+        UNDEFINED = "undefined",
+        LOGIN = "login",
+        RTC_OFFER = "offer",
+        RTC_ANSWER = "answer",
+        RTC_CANDIDATE = "candidate"
+    }
+}
 declare module "NetworkMessages/MessageBase" {
+    import { MESSAGE_TYPE } from "DataCollectors/Enumerators/EnumeratorCollection";
     export interface MessageBase {
         readonly messageType: MESSAGE_TYPE;
     }
 }
 declare module "NetworkMessages/MessageAnswer" {
     import { MessageBase } from "NetworkMessages/MessageBase";
+    import { MESSAGE_TYPE } from "DataCollectors/Enumerators/EnumeratorCollection";
     export class MessageAnswer implements MessageBase {
         messageType: MESSAGE_TYPE;
         userNameToConnectTo: string;
@@ -14,6 +25,7 @@ declare module "NetworkMessages/MessageAnswer" {
 }
 declare module "NetworkMessages/MessageCandidate" {
     import { MessageBase } from "NetworkMessages/MessageBase";
+    import { MESSAGE_TYPE } from "DataCollectors/Enumerators/EnumeratorCollection";
     export class MessageCandidate implements MessageBase {
         messageType: MESSAGE_TYPE;
         userNameToConnectTo: string;
@@ -23,6 +35,7 @@ declare module "NetworkMessages/MessageCandidate" {
 }
 declare module "NetworkMessages/MessageLoginRequest" {
     import { MessageBase } from "NetworkMessages/MessageBase";
+    import { MESSAGE_TYPE } from "DataCollectors/Enumerators/EnumeratorCollection";
     export class MessageLoginRequest implements MessageBase {
         messageType: MESSAGE_TYPE;
         loginUserName: string;
@@ -31,6 +44,7 @@ declare module "NetworkMessages/MessageLoginRequest" {
 }
 declare module "NetworkMessages/MessageOffer" {
     import { MessageBase } from "NetworkMessages/MessageBase";
+    import { MESSAGE_TYPE } from "DataCollectors/Enumerators/EnumeratorCollection";
     export class MessageOffer implements MessageBase {
         messageType: MESSAGE_TYPE;
         userNameToConnectTo: string;
@@ -92,27 +106,18 @@ declare const app: any, BrowserWindow: any;
 declare let win: any;
 declare function createWindow(): void;
 declare module "renderer" { }
-declare namespace DataCollectors {
-    class Client {
+declare module "DataCollectors/ServerRoom" {
+    export class ServerRoom {
+    }
+}
+declare module "DataCollectors/Client" {
+    import { ServerRoom } from "DataCollectors/ServerRoom";
+    export class Client {
         clientConnection: WebSocket | null;
         id: string;
         userName: string;
         connectedRoom: ServerRoom | null;
-        constructor();
+        constructor(websocketConnection?: WebSocket, uniqueClientId?: string, loginName?: string, connectedToRoom?: ServerRoom);
     }
-}
-declare namespace DataCollectors {
-    class ServerRoom {
-    }
-}
-declare enum MESSAGE_TYPE {
-    UNDEFINED = "undefined",
-    LOGIN = "login",
-    RTC_OFFER = "offer",
-    RTC_ANSWER = "answer",
-    RTC_CANDIDATE = "candidate"
-}
-declare enum TEST_ENUM {
-    SERIOUSLY = "wtf"
 }
 declare module "Server/ServerMain" { }
