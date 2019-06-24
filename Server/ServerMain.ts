@@ -7,6 +7,8 @@ import { MESSAGE_TYPE } from "./../DataCollectors/Enumerators/EnumeratorCollecti
 // import { MessageCandidate } from "../NetworkMessages/MessageCandidate";
 // import { MessageLoginRequest } from "../NetworkMessages/MessageLoginRequest";
 // import { MessageOffer } from "../NetworkMessages/MessageOffer";
+const defaultServer = new ServerMain();
+
 class ServerMain {
     public websocketServer: WebSocket.Server;
     public users = {};
@@ -56,19 +58,19 @@ class ServerMain {
             switch (parsedMessage.messageType) {
                 // TODO Enums ALLCAPS_ENUM
                 case MESSAGE_TYPE.LOGIN:
-                    this.serverHandleLogin(messageData.target, messageData);
+                    this.AddUserIfLoginRequestIsValid(messageData.target, messageData);
                     break;
 
                 case MESSAGE_TYPE.RTC_OFFER:
-                    this.serverHandleRTCOffer(messageData);
+                    this.SendRTCOfferToSpecifiedUser(messageData);
                     break;
 
                 case MESSAGE_TYPE.RTC_ANSWER:
-                    this.serverHandleRTCAnswer(messageData);
+                    this.SendRTCAnswerToOfferingUser(messageData);
                     break;
 
                 case MESSAGE_TYPE.RTC_CANDIDATE:
-                    this.serverHandleICECandidate(messageData);
+                    this.SendAllValidIceCandidatesToPeer(messageData);
                     break;
 
                 default:
@@ -79,8 +81,7 @@ class ServerMain {
         }
     }
 
-
-    public serverHandleLogin = (_websocketConnection: WebSocket, _messageData: NetworkCommunication.MessageLoginRequest) => {
+    public AddUserIfLoginRequestIsValid = (_websocketConnection: WebSocket, _messageData: NetworkCommunication.MessageLoginRequest) => {
         console.log("User logged", _messageData.loginUserName);
         let usernameTaken: boolean = true;
         usernameTaken = this.searchForPropertyValueInCollection(_messageData.loginUserName, "userName", this.usersCollection) != null;
@@ -91,7 +92,6 @@ class ServerMain {
                     (_websocketConnection,
                         "clientConnection",
                         this.usersCollection);
-
             if (associatedWebsocketConnectionClient != null) {
                 associatedWebsocketConnectionClient.userName = _messageData.loginUserName;
                 console.log("Changed name of client object");
@@ -111,19 +111,18 @@ class ServerMain {
         }
     }
 
-    public serverHandleRTCOffer(_messageData: NetworkCommunication.MessageOffer): void {
+    public SendRTCOfferToSpecifiedUser(_messageData: NetworkCommunication.MessageOffer): void {
         console.log("Sending offer to: ", _messageData.userNameToConnectTo);
         const requestedClient = this.searchForPropertyValueInCollection(_messageData.userNameToConnectTo, "userName", this.usersCollection);
 
         if (requestedClient != null) {
-            console.log("User for offer found", requestedClient);
             requestedClient.clientConnection.otherUsername = _messageData.userNameToConnectTo;
             const offerMessage = new NetworkCommunication.MessageOffer(requestedClient.userName, _messageData.offer);
             this.sendTo(requestedClient.clientConnection, offerMessage);
         } else { console.log("Usernoame to connect to doesn't exist"); }
     }
 
-    public serverHandleRTCAnswer(_messageData: NetworkCommunication.MessageAnswer): void {
+    public SendRTCAnswerToOfferingUser(_messageData: NetworkCommunication.MessageAnswer): void {
         console.log("Sending answer to: ", _messageData.userNameToConnectTo);
 
         const clientToSendAnswerTo = this.searchForPropertyValueInCollection
@@ -138,7 +137,7 @@ class ServerMain {
         }
     }
 
-    public serverHandleICECandidate(_messageData: NetworkCommunication.MessageCandidate): void {
+    public SendAllValidIceCandidatesToPeer(_messageData: NetworkCommunication.MessageCandidate): void {
         console.log("Sending candidate to:", _messageData.userNameToConnectTo);
         const clientToShareCandidatesWith = this.searchForPropertyValueInCollection
             (_messageData.userNameToConnectTo,
@@ -191,4 +190,4 @@ class ServerMain {
         _connection.send(JSON.stringify(_message));
     }
 }
-const defaultServer = new ServerMain();
+
