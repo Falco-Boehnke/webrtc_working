@@ -79,8 +79,8 @@ class ServerMain {
         }
     }
 
-    //#region MessageHandler
-    public serverHandleLogin(_websocketConnection: WebSocket, _messageData: NetworkCommunication.MessageLoginRequest): void {
+
+    public serverHandleLogin = (_websocketConnection: WebSocket, _messageData: NetworkCommunication.MessageLoginRequest) => {
         console.log("User logged", _messageData.loginUserName);
         let usernameTaken: boolean = true;
         usernameTaken = this.searchForPropertyValueInCollection(_messageData.loginUserName, "userName", this.usersCollection) != null;
@@ -151,7 +151,6 @@ class ServerMain {
         }
     }
 
-    //#endregion
 
     //#region Helperfunctions
 
@@ -192,4 +191,4 @@ class ServerMain {
         _connection.send(JSON.stringify(_message));
     }
 }
-let defaultServer = new ServerMain();
+const defaultServer = new ServerMain();
