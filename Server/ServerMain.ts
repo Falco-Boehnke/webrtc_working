@@ -1,7 +1,5 @@
 import * as WebSocket from "ws";
 import { Client } from "./../DataCollectors/Client";
-import * as NetworkCommunication from "./../NetworkMessages/index";
-import { MESSAGE_TYPE } from "./../DataCollectors/Enumerators/EnumeratorCollection";
 // import { MessageAnswer } from "../NetworkMessages/MessageAnswer";
 // import { MESSAGE_TYPE as MESSAGE_TYPE, MessageBase } from "../NetworkMessages/MessageBase";
 // import { MessageCandidate } from "../NetworkMessages/MessageCandidate";
@@ -36,11 +34,17 @@ abstract class ServerMain {
         });
     }
 
+<<<<<<< HEAD
     // TODO Check if event.type can be used for identification instead, it cannot
     public static serverHandleMessageType = (_message: string): void => {
         let parsedMessage: NetworkCommunication.MessageBase | null = null;
 
 
+=======
+    // TODO Check if event.type can be used for identification instead
+    public serverHandleMessageType(_message: string): void {
+        let parsedMessage: NetworkMessages.MessageBase | null = null;
+>>>>>>> master
         console.log(_message);
         try {
             parsedMessage = JSON.parse(_message);
@@ -77,7 +81,12 @@ abstract class ServerMain {
         }
     }
 
+<<<<<<< HEAD
     public static AddUserIfLoginRequestIsValid = (_websocketConnection: WebSocket, _messageData: NetworkCommunication.MessageLoginRequest) => {
+=======
+    //#region MessageHandler
+    public serverHandleLogin(_websocketConnection: WebSocket, _messageData: NetworkMessages.LoginRequest): void {
+>>>>>>> master
         console.log("User logged", _messageData.loginUserName);
         const usernameTaken = ServerMain.searchForPropertyValueInCollection(_messageData.loginUserName, "userName", ServerMain.usersCollection);
 
@@ -108,18 +117,31 @@ abstract class ServerMain {
         }
     }
 
+<<<<<<< HEAD
     public static SendRTCOfferToSpecifiedUser = (_messageData: NetworkCommunication.MessageOffer): void => {
+=======
+    public serverHandleRTCOffer(_messageData: NetworkMessages.RtcOffer): void {
+>>>>>>> master
         console.log("Sending offer to: ", _messageData.userNameToConnectTo);
         const requestedClient = ServerMain.searchForPropertyValueInCollection(_messageData.userNameToConnectTo, "userName", ServerMain.usersCollection);
 
         if (requestedClient != null) {
             requestedClient.clientConnection.otherUsername = _messageData.userNameToConnectTo;
+<<<<<<< HEAD
             const offerMessage = new NetworkCommunication.MessageOffer(requestedClient.userName, _messageData.offer);
             ServerMain.sendTo(requestedClient.clientConnection, offerMessage);
         } else { console.log("Usernoame to connect to doesn't exist"); }
     }
 
     public static SendRTCAnswerToOfferingUser = (_messageData: NetworkCommunication.MessageAnswer): void => {
+=======
+            const offerMessage = new NetworkMessages.RtcOffer(requestedClient.userName, _messageData.offer);
+            this.sendTo(requestedClient.clientConnection, offerMessage);
+        } else { console.log("Usernoame to connect to doesn't exist"); }
+    }
+
+    public serverHandleRTCAnswer(_messageData: NetworkMessages.RtcAnswer): void {
+>>>>>>> master
         console.log("Sending answer to: ", _messageData.userNameToConnectTo);
 
         const clientToSendAnswerTo = ServerMain.searchForPropertyValueInCollection
@@ -129,12 +151,21 @@ abstract class ServerMain {
 
         if (clientToSendAnswerTo != null) {
             clientToSendAnswerTo.clientConnection.otherUsername = clientToSendAnswerTo.userName;
+<<<<<<< HEAD
             const answerToSend = new NetworkCommunication.MessageAnswer(clientToSendAnswerTo.userName, _messageData.answer);
             ServerMain.sendTo(clientToSendAnswerTo.clientConnection, answerToSend);
         }
     }
 
     public static SendAllValidIceCandidatesToPeer(_messageData: NetworkCommunication.MessageCandidate): void {
+=======
+            const answerToSend = new NetworkMessages.RtcAnswer(clientToSendAnswerTo.userName, _messageData.answer);
+            this.sendTo(clientToSendAnswerTo.clientConnection, answerToSend);
+        }
+    }
+
+    public serverHandleICECandidate(_messageData: NetworkMessages.IceCandidate): void {
+>>>>>>> master
         console.log("Sending candidate to:", _messageData.userNameToConnectTo);
         const clientToShareCandidatesWith = ServerMain.searchForPropertyValueInCollection
             (_messageData.userNameToConnectTo,
@@ -142,8 +173,13 @@ abstract class ServerMain {
                 ServerMain.usersCollection);
 
         if (clientToShareCandidatesWith != null) {
+<<<<<<< HEAD
             const candidateToSend = new NetworkCommunication.MessageCandidate(clientToShareCandidatesWith.userName, _messageData.candidate);
             ServerMain.sendTo(clientToShareCandidatesWith.clientConnection, candidateToSend);
+=======
+            const candidateToSend = new NetworkMessages.IceCandidate(clientToShareCandidatesWith.userName, _messageData.candidate);
+            this.sendTo(clientToShareCandidatesWith.clientConnection, candidateToSend);
+>>>>>>> master
         }
     }
 
@@ -176,8 +212,13 @@ abstract class ServerMain {
     //#endregion
 
 
+<<<<<<< HEAD
     public static parseMessageToJson = (_messageToParse: string): NetworkCommunication.MessageBase => {
         let parsedMessage: NetworkCommunication.MessageBase = { messageType: MESSAGE_TYPE.UNDEFINED };
+=======
+    public parseMessageToJson(_messageToParse: string): NetworkMessages.MessageBase {
+        let parsedMessage: NetworkMessages.MessageBase = { messageType: MESSAGE_TYPE.UNDEFINED };
+>>>>>>> master
 
         try {
             parsedMessage = JSON.parse(_messageToParse);
