@@ -21,7 +21,6 @@ abstract class ServerMain {
 
     public static serverEventHandler = (): void => {
         ServerMain.websocketServer.on("connection", (_websocketClient: any) => {
-            // _websocketClient = _websocketClient;
             console.log("User connected FRESH");
 
             const uniqueIdOnConnection = ServerMain.createID();
