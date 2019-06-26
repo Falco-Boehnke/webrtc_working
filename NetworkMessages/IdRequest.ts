@@ -1,6 +1,6 @@
 import { MessageBase } from "./MessageBase";
 import {MESSAGE_TYPE} from "./../DataCollectors/Enumerators/EnumeratorCollection";
-export class MessageAnswer implements MessageBase {
+export class IdRequest implements MessageBase {
 
     
         public messageType: MESSAGE_TYPE = MESSAGE_TYPE.RTC_ANSWER;

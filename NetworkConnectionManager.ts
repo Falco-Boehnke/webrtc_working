@@ -113,6 +113,7 @@ export class NetworkConnectionManager {
     }
 
     public handleLogin = (_loginSuccess: boolean): void => {
+        console.log(_loginSuccess);
         if (_loginSuccess) {
             console.log("Login succesfully done");
             this.createRTCConnection();

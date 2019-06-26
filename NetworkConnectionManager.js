@@ -85,6 +85,7 @@ var NetworkConnectionManager = /** @class */ (function () {
             // };
         };
         this.handleLogin = function (_loginSuccess) {
+            console.log(_loginSuccess);
             if (_loginSuccess) {
                 console.log("Login succesfully done");
                 _this.createRTCConnection();
