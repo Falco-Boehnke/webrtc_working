@@ -1,7 +1,7 @@
-import { MessageBase } from "./MessageBase";
-import {MESSAGE_TYPE} from "./../DataCollectors/Enumerators/EnumeratorCollection";
+/// <reference path = "./MessageBase.ts" />
+namespace NetworkMessages {
 
-export class MessageLoginRequest implements MessageBase {
+    export class LoginRequest implements MessageBase {
 
         public messageType: MESSAGE_TYPE = MESSAGE_TYPE.LOGIN;
         public loginUserName: string = "";
@@ -11,3 +11,4 @@ export class MessageLoginRequest implements MessageBase {
         }
 
     }
+}

@@ -1,33 +1,35 @@
 import * as WebSocket from "ws";
 import { Client } from "./../DataCollectors/Client";
-import * as NetworkCommunication from "./../NetworkMessages/index";
-import { MESSAGE_TYPE } from "./../DataCollectors/Enumerators/EnumeratorCollection";
 // import { MessageAnswer } from "../NetworkMessages/MessageAnswer";
 // import { MESSAGE_TYPE as MESSAGE_TYPE, MessageBase } from "../NetworkMessages/MessageBase";
 // import { MessageCandidate } from "../NetworkMessages/MessageCandidate";
 // import { MessageLoginRequest } from "../NetworkMessages/MessageLoginRequest";
 // import { MessageOffer } from "../NetworkMessages/MessageOffer";
+class ServerMain {
+    public websocketServer: WebSocket.Server;
+    public users = {};
+    public usersCollection = new Array();
 
-abstract class ServerMain {
-    public static websocketServer: WebSocket.Server;
-    public static users = {};
-    public static usersCollection = new Array();
-
-
+    constructor() {
+        this.websocketServer = new WebSocket.Server({ port: 8080 });
+        this.serverEventHandler();
+    }
     // TODO PArameter mit Unterstrich
     // TODO Coding guidelines umsetzen
 
     // handle closing
 
-    public static serverEventHandler = (): void => {
-        ServerMain.websocketServer.on("connection", (_websocketClient: any) => {
+    public serverEventHandler = (): void => {
+        this.websocketServer.on("connection", (_websocketClient: any) => {
+            // _websocketClient = _websocketClient;
             console.log("User connected FRESH");
 
-            const uniqueIdOnConnection = ServerMain.createID();
+            const uniqueIdOnConnection = this.createID();
             const freshlyConnectedClient = new Client(_websocketClient, uniqueIdOnConnection);
-            ServerMain.usersCollection.push(freshlyConnectedClient);
+            this.usersCollection.push(freshlyConnectedClient);
 
-            _websocketClient.on("message", ServerMain.serverHandleMessageType);
+            console.log("User connected FRESH");
+            _websocketClient.on("message", this.serverHandleMessageType);
 
             _websocketClient.addEventListener("close", () => {
                 console.error("Error at connection");
@@ -36,11 +38,9 @@ abstract class ServerMain {
         });
     }
 
-    // TODO Check if event.type can be used for identification instead, it cannot
-    public static serverHandleMessageType = (_message: string): void => {
-        let parsedMessage: NetworkCommunication.MessageBase | null = null;
-
-
+    // TODO Check if event.type can be used for identification instead
+    public serverHandleMessageType(_message: string): void {
+        let parsedMessage: NetworkMessages.MessageBase | null = null;
         console.log(_message);
         try {
             parsedMessage = JSON.parse(_message);
@@ -50,23 +50,23 @@ abstract class ServerMain {
         }
         const messageData: any = parsedMessage;
 
-        if (messageData) {
-            switch (messageData.messageType) {
-                // TODO Fehler liegt in messageData.target, muss client rausfinden ohne das
+        if (parsedMessage != null) {
+            switch (parsedMessage.messageType) {
+                // TODO Enums ALLCAPS_ENUM
                 case MESSAGE_TYPE.LOGIN:
-                    ServerMain.AddUserIfLoginRequestIsValid(messageData.target, messageData);
+                    this.serverHandleLogin(messageData.target, messageData);
                     break;
 
                 case MESSAGE_TYPE.RTC_OFFER:
-                    ServerMain.SendRTCOfferToSpecifiedUser(messageData);
+                    this.serverHandleRTCOffer(messageData);
                     break;
 
                 case MESSAGE_TYPE.RTC_ANSWER:
-                    ServerMain.SendRTCAnswerToOfferingUser(messageData);
+                    this.serverHandleRTCAnswer(messageData);
                     break;
 
                 case MESSAGE_TYPE.RTC_CANDIDATE:
-                    ServerMain.SendAllValidIceCandidatesToPeer(messageData);
+                    this.serverHandleICECandidate(messageData);
                     break;
 
                 default:
@@ -77,90 +77,89 @@ abstract class ServerMain {
         }
     }
 
-    public static AddUserIfLoginRequestIsValid = (_websocketConnection: WebSocket, _messageData: NetworkCommunication.MessageLoginRequest) => {
+    //#region MessageHandler
+    public serverHandleLogin(_websocketConnection: WebSocket, _messageData: NetworkMessages.LoginRequest): void {
         console.log("User logged", _messageData.loginUserName);
-        const usernameTaken = ServerMain.searchForPropertyValueInCollection(_messageData.loginUserName, "userName", ServerMain.usersCollection);
+        let usernameTaken: boolean = true;
+        usernameTaken = this.searchForPropertyValueInCollection(_messageData.loginUserName, "userName", this.usersCollection) != null;
 
         if (!usernameTaken) {
-            ServerMain.sendTo(_websocketConnection, { type: "login", success: false });
-            console.log("UsernameTaken");
-            // const associatedWebsocketConnectionClient =
-            // ServerMain.searchForPropertyValueInCollection
-            //         (_websocketConnection,
-            //             "clientConnection",
-            //             ServerMain.usersCollection);
-            //             console.log(associatedWebsocketConnectionClient);
+            const associatedWebsocketConnectionClient =
+                this.searchForPropertyValueInCollection
+                    (_websocketConnection,
+                        "clientConnection",
+                        this.usersCollection);
 
-            // if (associatedWebsocketConnectionClient) {
+            if (associatedWebsocketConnectionClient != null) {
+                associatedWebsocketConnectionClient.userName = _messageData.loginUserName;
+                console.log("Changed name of client object");
 
-            // }
+                this.sendTo(_websocketConnection,
+                    {
+                        type: "login",
+                        success: true,
+                        id: associatedWebsocketConnectionClient.id,
+                    },
+                );
+            }
         } else {
-            usernameTaken.userName = _messageData.loginUserName;
-            console.log("Changed name of client object");
-
-            ServerMain.sendTo(_websocketConnection,
-                {
-                    type: "login",
-                    success: true,
-                    id: usernameTaken.id,
-                },
-            );
+            this.sendTo(_websocketConnection, { type: "login", success: false });
+            usernameTaken = true;
+            console.log("UsernameTaken");
         }
     }
 
-    public static SendRTCOfferToSpecifiedUser = (_messageData: NetworkCommunication.MessageOffer): void => {
+    public serverHandleRTCOffer(_messageData: NetworkMessages.RtcOffer): void {
         console.log("Sending offer to: ", _messageData.userNameToConnectTo);
-        const requestedClient = ServerMain.searchForPropertyValueInCollection(_messageData.userNameToConnectTo, "userName", ServerMain.usersCollection);
+        const requestedClient = this.searchForPropertyValueInCollection(_messageData.userNameToConnectTo, "userName", this.usersCollection);
 
         if (requestedClient != null) {
+            console.log("User for offer found", requestedClient);
             requestedClient.clientConnection.otherUsername = _messageData.userNameToConnectTo;
-            const offerMessage = new NetworkCommunication.MessageOffer(requestedClient.userName, _messageData.offer);
-            ServerMain.sendTo(requestedClient.clientConnection, offerMessage);
+            const offerMessage = new NetworkMessages.RtcOffer(requestedClient.userName, _messageData.offer);
+            this.sendTo(requestedClient.clientConnection, offerMessage);
         } else { console.log("Usernoame to connect to doesn't exist"); }
     }
 
-    public static SendRTCAnswerToOfferingUser = (_messageData: NetworkCommunication.MessageAnswer): void => {
+    public serverHandleRTCAnswer(_messageData: NetworkMessages.RtcAnswer): void {
         console.log("Sending answer to: ", _messageData.userNameToConnectTo);
 
-        const clientToSendAnswerTo = ServerMain.searchForPropertyValueInCollection
+        const clientToSendAnswerTo = this.searchForPropertyValueInCollection
             (_messageData.userNameToConnectTo,
                 "userName",
-                ServerMain.usersCollection);
+                this.usersCollection);
 
         if (clientToSendAnswerTo != null) {
             clientToSendAnswerTo.clientConnection.otherUsername = clientToSendAnswerTo.userName;
-            const answerToSend = new NetworkCommunication.MessageAnswer(clientToSendAnswerTo.userName, _messageData.answer);
-            ServerMain.sendTo(clientToSendAnswerTo.clientConnection, answerToSend);
+            const answerToSend = new NetworkMessages.RtcAnswer(clientToSendAnswerTo.userName, _messageData.answer);
+            this.sendTo(clientToSendAnswerTo.clientConnection, answerToSend);
         }
     }
 
-    public static SendAllValidIceCandidatesToPeer(_messageData: NetworkCommunication.MessageCandidate): void {
+    public serverHandleICECandidate(_messageData: NetworkMessages.IceCandidate): void {
         console.log("Sending candidate to:", _messageData.userNameToConnectTo);
-        const clientToShareCandidatesWith = ServerMain.searchForPropertyValueInCollection
+        const clientToShareCandidatesWith = this.searchForPropertyValueInCollection
             (_messageData.userNameToConnectTo,
                 "userName",
-                ServerMain.usersCollection);
+                this.usersCollection);
 
         if (clientToShareCandidatesWith != null) {
-            const candidateToSend = new NetworkCommunication.MessageCandidate(clientToShareCandidatesWith.userName, _messageData.candidate);
-            ServerMain.sendTo(clientToShareCandidatesWith.clientConnection, candidateToSend);
+            const candidateToSend = new NetworkMessages.IceCandidate(clientToShareCandidatesWith.userName, _messageData.candidate);
+            this.sendTo(clientToShareCandidatesWith.clientConnection, candidateToSend);
         }
     }
 
+    //#endregion
 
     //#region Helperfunctions
 
     // Helper function for searching through a collection, finding objects by key and value, returning
     // Object that has that value
-    public static searchForPropertyValueInCollection = (propertyValue: any, key: string, collectionToSearch: any[]) => {
+    public searchForPropertyValueInCollection(propertyValue: any, key: string, collectionToSearch: any[]) {
         for (const propertyObject in collectionToSearch) {
-            console.log("SearchLoop", propertyObject);
-            if (ServerMain.usersCollection.hasOwnProperty(propertyObject)) {
-                console.log("Has own property");
+            if (this.usersCollection.hasOwnProperty(propertyObject)) {
                 const objectToSearchThrough = collectionToSearch[propertyObject];
-                console.log("Object thatis searched for property: ", objectToSearchThrough);
                 if (objectToSearchThrough[key] === propertyValue) {
-                    console.log("The object has been found", objectToSearchThrough[key]);
                     return objectToSearchThrough;
                 }
             }
@@ -168,7 +167,7 @@ abstract class ServerMain {
         return null;
     }
 
-    public static createID = (): string => {
+    public createID = (): string => {
         // Math.random should be random enough because of it's seed
         // convert to base 36 and pick the first few digits after comma
         return "_" + Math.random().toString(36).substr(2, 7);
@@ -176,8 +175,8 @@ abstract class ServerMain {
     //#endregion
 
 
-    public static parseMessageToJson = (_messageToParse: string): NetworkCommunication.MessageBase => {
-        let parsedMessage: NetworkCommunication.MessageBase = { messageType: MESSAGE_TYPE.UNDEFINED };
+    public parseMessageToJson(_messageToParse: string): NetworkMessages.MessageBase {
+        let parsedMessage: NetworkMessages.MessageBase = { messageType: MESSAGE_TYPE.UNDEFINED };
 
         try {
             parsedMessage = JSON.parse(_messageToParse);
@@ -187,14 +186,8 @@ abstract class ServerMain {
         return parsedMessage;
     }
 
-    public static sendTo= (_connection: WebSocket, _message: Object) => {
+    public sendTo(_connection: WebSocket, _message: Object) {
         _connection.send(JSON.stringify(_message));
     }
-
-    public static initializeServer = () => {
-        ServerMain.websocketServer = new WebSocket.Server({ port: 8080 });
-        ServerMain.serverEventHandler();
-    }
 }
-
-const defaultServer = ServerMain.initializeServer();
+let defaultServer = new ServerMain();
