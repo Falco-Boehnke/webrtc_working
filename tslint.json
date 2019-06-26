@@ -4,6 +4,19 @@
         "tslint:recommended"
     ],
     "jsRules": {},
-    "rules": {},
+    "rules": {
+        "no-console": {
+            "severity": "off",
+            "options": ["debug", "info", "log", "time", "timeEnd", "trace"]
+        },
+        "no-namespace": false,
+        "max-classes-per-file":{
+            "severity": "off"
+        },
+        "max-line-length": {
+            "options": {"limit": 150}
+        }
+
+    },
     "rulesDirectory": []
 }
