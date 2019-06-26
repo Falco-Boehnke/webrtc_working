@@ -1,5 +1,3 @@
-import {MESSAGE_TYPE} from "./DataCollectors/Enumerators/EnumeratorCollection";
-import * as NetCommunication from "./NetworkMessages/index";
 import { UiElementHandler } from "./DataCollectors/UiElementHandler";
 
 
@@ -92,7 +90,7 @@ export class NetworkConnectionManager {
             .then((answer) => {
                 return this.connection.setLocalDescription(answer);
             }).then(() => {
-                const answerMessage = new NetCommunication.MessageAnswer(this.otherUsername, this.connection.localDescription);
+                const answerMessage = new NetworkMessages.RtcAnswer(this.otherUsername, this.connection.localDescription);
                 this.sendMessage(answerMessage);
             })
             .catch(() => {
@@ -113,7 +111,6 @@ export class NetworkConnectionManager {
     }
 
     public handleLogin = (_loginSuccess: boolean): void => {
-        console.log(_loginSuccess);
         if (_loginSuccess) {
             console.log("Login succesfully done");
             this.createRTCConnection();
@@ -135,7 +132,7 @@ export class NetworkConnectionManager {
             console.log("Please enter username");
             return;
         }
-        const loginMessage = new NetCommunication.MessageLoginRequest(this.username);
+        const loginMessage = new NetworkMessages.LoginRequest(this.username);
         console.log(loginMessage);
         this.sendMessage(loginMessage);
     }
@@ -164,7 +161,7 @@ export class NetworkConnectionManager {
 
         this.connection.onicecandidate = (event) => {
             if (event.candidate) {
-                const candidateMessage = new NetCommunication.MessageCandidate(this.otherUsername, event.candidate);
+                const candidateMessage = new NetworkMessages.IceCandidate(this.otherUsername, event.candidate);
                 this.sendMessage(candidateMessage);
             }
         };
@@ -190,7 +187,7 @@ export class NetworkConnectionManager {
         this.connection.createOffer().then((offer) => {
             return this.connection.setLocalDescription(offer);
         }).then(() => {
-            const offerMessage = new NetCommunication.MessageOffer(_userNameForOffer, this.connection.localDescription);
+            const offerMessage = new NetworkMessages.RtcOffer(_userNameForOffer, this.connection.localDescription);
             this.sendMessage(offerMessage);
         })
             .catch(() => {
@@ -218,7 +215,9 @@ export class NetworkConnectionManager {
         // const message = messageField.value;
         const message = UiElementHandler.msgInput.value;
         UiElementHandler.chatbox.innerHTML += "\n" + this.username + ": " + message;
+        if(this.peerConnection != undefined){
         this.peerConnection.send(message);
+        }
     }
 
 }
