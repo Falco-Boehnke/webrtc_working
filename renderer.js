@@ -1,6 +1,7 @@
 "use strict";
-exports.__esModule = true;
-var NetworkConnectionManager_1 = require("./NetworkConnectionManager");
-var UiElementHandler_1 = require("./DataCollectors/UiElementHandler");
+Object.defineProperty(exports, "__esModule", { value: true });
+const NetworkConnectionManager_1 = require("./NetworkConnectionManager");
+const UiElementHandler_1 = require("./DataCollectors/UiElementHandler");
 UiElementHandler_1.UiElementHandler.getAllUiElements();
-var test = new NetworkConnectionManager_1.NetworkConnectionManager();
+console.log(document.getElementById("loginButton"));
+const test = new NetworkConnectionManager_1.NetworkConnectionManager();

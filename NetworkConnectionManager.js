@@ -1,10 +1,14 @@
 "use strict";
-exports.__esModule = true;
-var NetCommunication = require("./NetworkMessages/index");
-var UiElementHandler_1 = require("./DataCollectors/UiElementHandler");
-var NetworkConnectionManager = /** @class */ (function () {
-    function NetworkConnectionManager() {
-        var _this = this;
+Object.defineProperty(exports, "__esModule", { value: true });
+const UiElementHandler_1 = require("./DataCollectors/UiElementHandler");
+///<reference path="../DataCollectors/Enumerators/EnumeratorCollection.ts"/>
+///<reference path="./../NetworkMessages/IceCandidate.ts"/>
+///<reference path="./../NetworkMessages/LoginRequest.ts"/>
+///<reference path="./../NetworkMessages/MessageBase.ts"/>
+///<reference path="./../NetworkMessages/RtcAnswer.ts"/>
+///<reference path="./../NetworkMessages/RtcOffer.ts"/>
+class NetworkConnectionManager {
+    constructor() {
         // More info from here https://developer.mozilla.org/en-US/docs/Web/API/RTCConfiguration
         //     var configuration = { iceServers: [{
         //         urls: "stun:stun.services.mozilla.com",
@@ -18,58 +22,59 @@ var NetworkConnectionManager = /** @class */ (function () {
             iceServers: [
                 { urls: "stun:stun2.1.google.com:19302" },
                 { urls: "stun:stun.example.com" },
-            ]
+            ],
         };
-        this.addUiListeners = function () {
+        this.addUiListeners = () => {
             UiElementHandler_1.UiElementHandler.getAllUiElements();
             console.log(UiElementHandler_1.UiElementHandler.loginButton);
-            UiElementHandler_1.UiElementHandler.loginButton.addEventListener("click", _this.loginLogic);
-            UiElementHandler_1.UiElementHandler.connectToUserButton.addEventListener("click", _this.connectToUser);
-            UiElementHandler_1.UiElementHandler.sendMsgButton.addEventListener("click", _this.sendMessageToUser);
+            UiElementHandler_1.UiElementHandler.loginButton.addEventListener("click", this.loginLogic);
+            UiElementHandler_1.UiElementHandler.connectToUserButton.addEventListener("click", this.connectToUser);
+            UiElementHandler_1.UiElementHandler.sendMsgButton.addEventListener("click", this.sendMessageToUser);
         };
-        this.addWsEventListeners = function () {
-            _this.ws.addEventListener("open", function () {
+        this.addWsEventListeners = () => {
+            this.ws.addEventListener("open", () => {
                 console.log("Connected to the signaling server");
             });
-            _this.ws.addEventListener("error", function (err) {
+            this.ws.addEventListener("error", (err) => {
                 console.error(err);
             });
-            _this.ws.addEventListener("message", function (msg) {
+            this.ws.addEventListener("message", (msg) => {
                 console.log("Got message", msg.data);
-                var data = JSON.parse(msg.data);
+                const data = JSON.parse(msg.data);
                 switch (data.type) {
                     case "login":
-                        _this.handleLogin(data.success);
+                        this.handleLogin(data.success);
                         break;
                     case "offer":
-                        _this.handleOffer(data.offer, data.username);
+                        this.handleOffer(data.offer, data.username);
                         break;
                     case "answer":
-                        _this.handleAnswer(data.answer);
+                        this.handleAnswer(data.answer);
                         break;
                     case "candidate":
-                        _this.handleCandidate(data.candidate);
+                        this.handleCandidate(data.candidate);
                         break;
                 }
             });
         };
-        this.handleCandidate = function (_candidate) {
-            _this.connection.addIceCandidate(new RTCIceCandidate(_candidate));
+        this.handleCandidate = (_candidate) => {
+            this.connection.addIceCandidate(new RTCIceCandidate(_candidate));
         };
-        this.handleAnswer = function (_answer) {
-            _this.connection.setRemoteDescription(new RTCSessionDescription(_answer));
+        this.handleAnswer = (_answer) => {
+            this.connection.setRemoteDescription(new RTCSessionDescription(_answer));
         };
-        this.handleOffer = function (_offer, _username) {
-            _this.otherUsername = _username;
-            _this.connection.setRemoteDescription(new RTCSessionDescription(_offer));
+        this.handleOffer = (_offer, _username) => {
+            this.otherUsername = _username;
+            this.connection.setRemoteDescription(new RTCSessionDescription(_offer));
             // Signaling example from here https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/createAnswer
-            _this.connection.createAnswer()
-                .then(function (answer) {
-                return _this.connection.setLocalDescription(answer);
-            }).then(function () {
-                var answerMessage = new NetCommunication.MessageAnswer(_this.otherUsername, _this.connection.localDescription);
-                _this.sendMessage(answerMessage);
-            })["catch"](function () {
+            this.connection.createAnswer()
+                .then((answer) => {
+                return this.connection.setLocalDescription(answer);
+            }).then(() => {
+                const answerMessage = new NetworkMessages.RtcAnswer(this.otherUsername, this.connection.localDescription);
+                this.sendMessage(answerMessage);
+            })
+                .catch(() => {
                 console.error("Answer creation failed.");
             });
             // this.connection.createAnswer(undefined);
@@ -84,74 +89,75 @@ var NetworkConnectionManager = /** @class */ (function () {
             //     console.error(error);
             // };
         };
-        this.handleLogin = function (_loginSuccess) {
+        this.handleLogin = (_loginSuccess) => {
             if (_loginSuccess) {
                 console.log("Login succesfully done");
-                _this.createRTCConnection();
-                console.log("COnnection at Login: ", _this.connection);
+                this.createRTCConnection();
+                console.log("COnnection at Login: ", this.connection);
             }
             else {
                 console.log("Login failed, username taken");
             }
         };
-        this.loginLogic = function () {
+        this.loginLogic = () => {
             if (UiElementHandler_1.UiElementHandler.loginNameInput != null) {
-                _this.username = UiElementHandler_1.UiElementHandler.loginNameInput.value;
+                this.username = UiElementHandler_1.UiElementHandler.loginNameInput.value;
             }
             else {
                 console.error("UI element missing: Loginname Input field");
             }
-            console.log(_this.username);
-            if (_this.username.length <= 0) {
+            console.log(this.username);
+            if (this.username.length <= 0) {
                 console.log("Please enter username");
                 return;
             }
-            var loginMessage = new NetCommunication.MessageLoginRequest(_this.username);
+            const loginMessage = new NetworkMessages.LoginRequest(this.username);
             console.log(loginMessage);
-            _this.sendMessage(loginMessage);
+            this.sendMessage(loginMessage);
         };
-        this.createRTCConnection = function () {
-            _this.connection = new RTCPeerConnection(_this.configuration);
-            _this.peerConnection = _this.connection.createDataChannel("testChannel");
-            _this.connection.ondatachannel = function (datachannelEvent) {
+        this.createRTCConnection = () => {
+            this.connection = new RTCPeerConnection(this.configuration);
+            this.peerConnection = this.connection.createDataChannel("testChannel");
+            this.connection.ondatachannel = (datachannelEvent) => {
                 console.log("Data channel is created!");
-                datachannelEvent.channel.addEventListener("open", function () {
+                datachannelEvent.channel.addEventListener("open", () => {
                     console.log("Data channel is open and ready to be used.");
                 });
-                datachannelEvent.channel.addEventListener("message", function (messageEvent) {
+                datachannelEvent.channel.addEventListener("message", (messageEvent) => {
                     console.log("Received message: " + messageEvent.data);
-                    UiElementHandler_1.UiElementHandler.chatbox.innerHTML += "\n" + _this.otherUsername + ": " + messageEvent.data;
+                    UiElementHandler_1.UiElementHandler.chatbox.innerHTML += "\n" + this.otherUsername + ": " + messageEvent.data;
                 });
             };
-            _this.peerConnection.onmessage = function (event) {
+            this.peerConnection.onmessage = (event) => {
                 console.log("Received message from other peer:", event.data);
                 UiElementHandler_1.UiElementHandler.chatbox.innerHTML += "<br>" + event.data;
             };
-            _this.connection.onicecandidate = function (event) {
+            this.connection.onicecandidate = (event) => {
                 if (event.candidate) {
-                    var candidateMessage = new NetCommunication.MessageCandidate(_this.otherUsername, event.candidate);
-                    _this.sendMessage(candidateMessage);
+                    const candidateMessage = new NetworkMessages.IceCandidate(this.otherUsername, event.candidate);
+                    this.sendMessage(candidateMessage);
                 }
             };
         };
-        this.connectToUser = function () {
+        this.connectToUser = () => {
             // const callUsernameElement =  document.querySelector("input#username-to-call") as HTMLInputElement;
             // const callToUsername = callUsernameElement.value;
-            var callToUsername = UiElementHandler_1.UiElementHandler.usernameToConnectTo.value;
+            const callToUsername = UiElementHandler_1.UiElementHandler.usernameToConnectTo.value;
             if (callToUsername.length === 0) {
                 alert("Enter a username 😉");
                 return;
             }
-            _this.otherUsername = callToUsername;
-            _this.createRtcOffer(_this.otherUsername);
+            this.otherUsername = callToUsername;
+            this.createRtcOffer(this.otherUsername);
         };
-        this.createRtcOffer = function (_userNameForOffer) {
-            _this.connection.createOffer().then(function (offer) {
-                return _this.connection.setLocalDescription(offer);
-            }).then(function () {
-                var offerMessage = new NetCommunication.MessageOffer(_userNameForOffer, _this.connection.localDescription);
-                _this.sendMessage(offerMessage);
-            })["catch"](function () {
+        this.createRtcOffer = (_userNameForOffer) => {
+            this.connection.createOffer().then((offer) => {
+                return this.connection.setLocalDescription(offer);
+            }).then(() => {
+                const offerMessage = new NetworkMessages.RtcOffer(_userNameForOffer, this.connection.localDescription);
+                this.sendMessage(offerMessage);
+            })
+                .catch(() => {
                 console.error("Offer creation error");
             });
             // this.connection.createOffer(
@@ -166,15 +172,20 @@ var NetworkConnectionManager = /** @class */ (function () {
             //     },
             // );
         };
-        this.sendMessage = function (message) {
-            _this.ws.send(JSON.stringify(message));
+        this.sendMessage = (message) => {
+            this.ws.send(JSON.stringify(message));
         };
-        this.sendMessageToUser = function () {
+        this.sendMessageToUser = () => {
             // const messageField =  document.getElementById("msgInput") as HTMLInputElement;
             // const message = messageField.value;
-            var message = UiElementHandler_1.UiElementHandler.msgInput.value;
-            UiElementHandler_1.UiElementHandler.chatbox.innerHTML += "\n" + _this.username + ": " + message;
-            _this.peerConnection.send(message);
+            const message = UiElementHandler_1.UiElementHandler.msgInput.value;
+            UiElementHandler_1.UiElementHandler.chatbox.innerHTML += "\n" + this.username + ": " + message;
+            if (this.peerConnection) {
+                this.peerConnection.send(message);
+            }
+            else {
+                console.error("Peer Connection undefined, connection likely lost");
+            }
         };
         this.ws = new WebSocket("ws://localhost:8080");
         this.username = "";
@@ -185,6 +196,5 @@ var NetworkConnectionManager = /** @class */ (function () {
         this.addUiListeners();
         this.addWsEventListeners();
     }
-    return NetworkConnectionManager;
-}());
+}
 exports.NetworkConnectionManager = NetworkConnectionManager;

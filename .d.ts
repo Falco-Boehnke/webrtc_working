@@ -1,69 +1,18 @@
-declare module "DataCollectors/Enumerators/EnumeratorCollection" {
-    export enum MESSAGE_TYPE {
-        UNDEFINED = "undefined",
-        LOGIN = "login",
-        RTC_OFFER = "offer",
-        RTC_ANSWER = "answer",
-        RTC_CANDIDATE = "candidate"
-    }
+declare enum MESSAGE_TYPE {
+    UNDEFINED = "undefined",
+    LOGIN = "login",
+    RTC_OFFER = "offer",
+    RTC_ANSWER = "answer",
+    RTC_CANDIDATE = "candidate"
 }
-declare module "NetworkMessages/MessageBase" {
-    import { MESSAGE_TYPE } from "DataCollectors/Enumerators/EnumeratorCollection";
-    export interface MessageBase {
-        readonly messageType: MESSAGE_TYPE;
-    }
-}
-declare module "NetworkMessages/MessageAnswer" {
-    import { MessageBase } from "NetworkMessages/MessageBase";
-    import { MESSAGE_TYPE } from "DataCollectors/Enumerators/EnumeratorCollection";
-    export class MessageAnswer implements MessageBase {
-        messageType: MESSAGE_TYPE;
-        userNameToConnectTo: string;
-        answer: RTCSessionDescription | null;
-        constructor(_userNameToConnectTo: string, _answer: RTCSessionDescription | null);
-    }
-}
-declare module "NetworkMessages/MessageCandidate" {
-    import { MessageBase } from "NetworkMessages/MessageBase";
-    import { MESSAGE_TYPE } from "DataCollectors/Enumerators/EnumeratorCollection";
-    export class MessageCandidate implements MessageBase {
-        messageType: MESSAGE_TYPE;
-        userNameToConnectTo: string;
-        candidate: RTCIceCandidate;
-        constructor(_userNameToConnectTo: string, _candidate: RTCIceCandidate);
-    }
-}
-declare module "NetworkMessages/MessageLoginRequest" {
-    import { MessageBase } from "NetworkMessages/MessageBase";
-    import { MESSAGE_TYPE } from "DataCollectors/Enumerators/EnumeratorCollection";
-    export class MessageLoginRequest implements MessageBase {
-        messageType: MESSAGE_TYPE;
-        loginUserName: string;
-        constructor(_loginUserName: string);
-    }
-}
-declare module "NetworkMessages/MessageOffer" {
-    import { MessageBase } from "NetworkMessages/MessageBase";
-    import { MESSAGE_TYPE } from "DataCollectors/Enumerators/EnumeratorCollection";
-    export class MessageOffer implements MessageBase {
-        messageType: MESSAGE_TYPE;
-        userNameToConnectTo: string;
-        offer: RTCSessionDescription | RTCSessionDescriptionInit | null;
-        constructor(_userNameToConnectTo: string, _offer: RTCSessionDescription | RTCSessionDescriptionInit | null);
-    }
-}
-declare module "NetworkMessages/index" {
-    export { MessageAnswer } from "NetworkMessages/MessageAnswer";
-    export { MessageCandidate } from "NetworkMessages/MessageCandidate";
-    export { MessageLoginRequest } from "NetworkMessages/MessageLoginRequest";
-    export { MessageOffer } from "NetworkMessages/MessageOffer";
-    export { MessageBase } from "NetworkMessages/MessageBase";
+declare enum TEST_ENUM {
+    SERIOUSLY = "wtf"
 }
 declare module "DataCollectors/UiElementHandler" {
     export abstract class UiElementHandler {
         static signalingSubmit: HTMLElement;
         static signalingUrl: HTMLInputElement;
-        static loginNameInput: HTMLElement;
+        static loginNameInput: HTMLInputElement | null;
         static loginButton: HTMLElement;
         static msgInput: HTMLInputElement;
         static chatbox: HTMLInputElement;
@@ -80,7 +29,7 @@ declare module "NetworkConnectionManager" {
         username: string;
         connection: RTCPeerConnection;
         otherUsername: string;
-        peerConnection: RTCDataChannel;
+        peerConnection: RTCDataChannel | undefined;
         configuration: {
             iceServers: {
                 urls: string;
@@ -118,6 +67,42 @@ declare module "DataCollectors/Client" {
         userName: string;
         connectedRoom: ServerRoom | null;
         constructor(websocketConnection?: WebSocket, uniqueClientId?: string, loginName?: string, connectedToRoom?: ServerRoom);
+    }
+}
+declare namespace NetworkMessages {
+    interface MessageBase {
+        readonly messageType: MESSAGE_TYPE;
+    }
+}
+declare namespace NetworkMessages {
+    class IceCandidate implements MessageBase {
+        messageType: MESSAGE_TYPE;
+        userNameToConnectTo: string;
+        candidate: RTCIceCandidate;
+        constructor(_userNameToConnectTo: string, _candidate: RTCIceCandidate);
+    }
+}
+declare namespace NetworkMessages {
+    class LoginRequest implements MessageBase {
+        messageType: MESSAGE_TYPE;
+        loginUserName: string;
+        constructor(_loginUserName: string);
+    }
+}
+declare namespace NetworkMessages {
+    class RtcAnswer implements MessageBase {
+        messageType: MESSAGE_TYPE;
+        userNameToConnectTo: string;
+        answer: RTCSessionDescription | null;
+        constructor(_userNameToConnectTo: string, _answer: RTCSessionDescription | null);
+    }
+}
+declare namespace NetworkMessages {
+    class RtcOffer implements MessageBase {
+        messageType: MESSAGE_TYPE;
+        userNameToConnectTo: string;
+        offer: RTCSessionDescription | RTCSessionDescriptionInit | null;
+        constructor(_userNameToConnectTo: string, _offer: RTCSessionDescription | RTCSessionDescriptionInit | null);
     }
 }
 declare module "Server/ServerMain" { }

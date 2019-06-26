@@ -1,7 +1,7 @@
-import { MessageBase } from "./MessageBase";
-import {MESSAGE_TYPE} from "./../DataCollectors/Enumerators/EnumeratorCollection";
+/// <reference path = "./MessageBase.ts" />
+namespace NetworkMessages {
 
-export class MessageCandidate implements MessageBase {
+    export class IceCandidate implements MessageBase {
 
         public messageType: MESSAGE_TYPE = MESSAGE_TYPE.RTC_CANDIDATE;
         public userNameToConnectTo: string;
@@ -12,3 +12,4 @@ export class MessageCandidate implements MessageBase {
         }
 
     }
+}

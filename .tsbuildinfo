@@ -1,21 +1,20 @@
 {
   "bundle": {
-    "commonSourceDirectory": "G:/Bachelor/webrtc_working/",
+    "commonSourceDirectory": "D:/Thesis/ltct#/webrtc_working/",
     "sourceFiles": [
-      "G:/Bachelor/webrtc_working/DataCollectors/Enumerators/EnumeratorCollection.ts",
-      "G:/Bachelor/webrtc_working/NetworkMessages/MessageBase.ts",
-      "G:/Bachelor/webrtc_working/NetworkMessages/MessageAnswer.ts",
-      "G:/Bachelor/webrtc_working/NetworkMessages/MessageCandidate.ts",
-      "G:/Bachelor/webrtc_working/NetworkMessages/MessageLoginRequest.ts",
-      "G:/Bachelor/webrtc_working/NetworkMessages/MessageOffer.ts",
-      "G:/Bachelor/webrtc_working/NetworkMessages/index.ts",
-      "G:/Bachelor/webrtc_working/DataCollectors/UiElementHandler.ts",
-      "G:/Bachelor/webrtc_working/NetworkConnectionManager.ts",
-      "G:/Bachelor/webrtc_working/index.ts",
-      "G:/Bachelor/webrtc_working/renderer.ts",
-      "G:/Bachelor/webrtc_working/DataCollectors/ServerRoom.ts",
-      "G:/Bachelor/webrtc_working/DataCollectors/Client.ts",
-      "G:/Bachelor/webrtc_working/Server/ServerMain.ts"
+      "D:/Thesis/ltct#/webrtc_working/DataCollectors/Enumerators/EnumeratorCollection.ts",
+      "D:/Thesis/ltct#/webrtc_working/DataCollectors/UiElementHandler.ts",
+      "D:/Thesis/ltct#/webrtc_working/NetworkConnectionManager.ts",
+      "D:/Thesis/ltct#/webrtc_working/index.ts",
+      "D:/Thesis/ltct#/webrtc_working/renderer.ts",
+      "D:/Thesis/ltct#/webrtc_working/DataCollectors/ServerRoom.ts",
+      "D:/Thesis/ltct#/webrtc_working/DataCollectors/Client.ts",
+      "D:/Thesis/ltct#/webrtc_working/NetworkMessages/MessageBase.ts",
+      "D:/Thesis/ltct#/webrtc_working/NetworkMessages/IceCandidate.ts",
+      "D:/Thesis/ltct#/webrtc_working/NetworkMessages/LoginRequest.ts",
+      "D:/Thesis/ltct#/webrtc_working/NetworkMessages/RtcAnswer.ts",
+      "D:/Thesis/ltct#/webrtc_working/NetworkMessages/RtcOffer.ts",
+      "D:/Thesis/ltct#/webrtc_working/Server/ServerMain.ts"
     ],
     "js": {
       "sections": [
@@ -27,14 +26,14 @@
         },
         {
           "pos": 15,
-          "end": 32251,
+          "end": 29873,
           "kind": "text"
         }
       ],
       "sources": {
         "prologues": [
           {
-            "file": 9,
+            "file": 0,
             "text": "",
             "directives": [
               {
@@ -55,11 +54,11 @@
       "sections": [
         {
           "pos": 0,
-          "end": 5105,
+          "end": 3880,
           "kind": "text"
         }
       ]
     }
   },
-  "version": "3.4.5"
+  "version": "3.5.1"
 }

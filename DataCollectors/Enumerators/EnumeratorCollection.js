@@ -1,5 +1,4 @@
 "use strict";
-exports.__esModule = true;
 var MESSAGE_TYPE;
 (function (MESSAGE_TYPE) {
     MESSAGE_TYPE["UNDEFINED"] = "undefined";
@@ -7,7 +6,7 @@ var MESSAGE_TYPE;
     MESSAGE_TYPE["RTC_OFFER"] = "offer";
     MESSAGE_TYPE["RTC_ANSWER"] = "answer";
     MESSAGE_TYPE["RTC_CANDIDATE"] = "candidate";
-})(MESSAGE_TYPE = exports.MESSAGE_TYPE || (exports.MESSAGE_TYPE = {}));
+})(MESSAGE_TYPE || (MESSAGE_TYPE = {}));
 var TEST_ENUM;
 (function (TEST_ENUM) {
     TEST_ENUM["SERIOUSLY"] = "wtf";

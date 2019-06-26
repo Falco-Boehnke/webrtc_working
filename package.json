@@ -2,7 +2,6 @@
   "name": "fundamentals",
   "version": "1.0.0",
   "description": "fundamentals for testing webrtc in electron",
-  "main": "index.js",
   "scripts": {
     "start": "electron ."
   },

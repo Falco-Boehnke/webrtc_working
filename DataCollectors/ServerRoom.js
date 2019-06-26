@@ -1,8 +1,5 @@
 "use strict";
-exports.__esModule = true;
-var ServerRoom = /** @class */ (function () {
-    function ServerRoom() {
-    }
-    return ServerRoom;
-}());
+Object.defineProperty(exports, "__esModule", { value: true });
+class ServerRoom {
+}
 exports.ServerRoom = ServerRoom;

@@ -38,7 +38,6 @@ class  ServerMain {
             const freshlyConnectedClient = new Client(_websocketClient, uniqueIdOnConnection);
             ServerMain.usersCollection.push(freshlyConnectedClient);
 
-            console.log("User connected FRESH");
             _websocketClient.on("message", ServerMain.serverHandleMessageType);
 
             _websocketClient.addEventListener("close", () => {
