@@ -1,4 +1,4 @@
-
+import * as WebSocket from "ws";
 ///<reference path="../DataCollectors/Enumerators/EnumeratorCollection.ts"/>
 ///<reference path="./../NetworkMessages/IceCandidate.ts"/>
 ///<reference path="./../NetworkMessages/LoginRequest.ts"/>
@@ -6,7 +6,7 @@
 ///<reference path="./../NetworkMessages/RtcAnswer.ts"/>
 ///<reference path="./../NetworkMessages/RtcOffer.ts"/>
 
-import * as WebSocket from "ws";
+
 import { Client } from "./../DataCollectors/Client";
 
 // import { MessageAnswer } from "../NetworkMessages/MessageAnswer";
@@ -64,19 +64,19 @@ class  ServerMain {
                 // TODO Enums ALLCAPS_ENUM
                 // TODO messageData.target doesn't work, gotta replace that to find client connection, probably use ID
                 case MESSAGE_TYPE.LOGIN:
-                    ServerMain.serverHandleLogin(messageData.target, messageData);
+                    ServerMain.addUserOnValidLoginRequest(messageData.target, messageData);
                     break;
 
                 case MESSAGE_TYPE.RTC_OFFER:
-                    ServerMain.serverHandleRTCOffer(messageData);
+                    ServerMain.sendRtcOfferToRequestedClient(messageData);
                     break;
 
                 case MESSAGE_TYPE.RTC_ANSWER:
-                    ServerMain.serverHandleRTCAnswer(messageData);
+                    ServerMain.answerRtcOfferOfClient(messageData);
                     break;
 
                 case MESSAGE_TYPE.RTC_CANDIDATE:
-                    ServerMain.serverHandleICECandidate(messageData);
+                    ServerMain.sendIceCandidatesToRelevantPeers(messageData);
                     break;
 
                 default:
@@ -88,7 +88,7 @@ class  ServerMain {
     }
 
     //#region MessageHandler
-    public static serverHandleLogin(_websocketConnection: WebSocket, _messageData: NetworkMessages.LoginRequest): void {
+    public static addUserOnValidLoginRequest(_websocketConnection: WebSocket, _messageData: NetworkMessages.LoginRequest): void {
         console.log("User logged", _messageData.loginUserName);
         let usernameTaken: boolean = true;
         usernameTaken = ServerMain.searchForPropertyValueInCollection(_messageData.loginUserName, "userName", ServerMain.usersCollection) != null;
@@ -119,7 +119,7 @@ class  ServerMain {
         }
     }
 
-    public static serverHandleRTCOffer(_messageData: NetworkMessages.RtcOffer): void {
+    public static sendRtcOfferToRequestedClient(_messageData: NetworkMessages.RtcOffer): void {
         console.log("Sending offer to: ", _messageData.userNameToConnectTo);
         const requestedClient = ServerMain.searchForPropertyValueInCollection(_messageData.userNameToConnectTo, "userName", ServerMain.usersCollection);
 
@@ -131,7 +131,7 @@ class  ServerMain {
         } else { console.log("Usernoame to connect to doesn't exist"); }
     }
 
-    public static serverHandleRTCAnswer(_messageData: NetworkMessages.RtcAnswer): void {
+    public static answerRtcOfferOfClient(_messageData: NetworkMessages.RtcAnswer): void {
         console.log("Sending answer to: ", _messageData.userNameToConnectTo);
 
         const clientToSendAnswerTo = ServerMain.searchForPropertyValueInCollection
@@ -146,7 +146,7 @@ class  ServerMain {
         }
     }
 
-    public static serverHandleICECandidate(_messageData: NetworkMessages.IceCandidate): void {
+    public static sendIceCandidatesToRelevantPeers(_messageData: NetworkMessages.IceCandidate): void {
         console.log("Sending candidate to:", _messageData.userNameToConnectTo);
         const clientToShareCandidatesWith = ServerMain.searchForPropertyValueInCollection
             (_messageData.userNameToConnectTo,
