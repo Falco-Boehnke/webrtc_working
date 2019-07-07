@@ -9,8 +9,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const TYPES = __importStar(require("./../DataCollectors/Enumerators/EnumeratorCollection"));
 class RtcOffer {
-    constructor(_userNameToConnectTo, _offer) {
+    constructor(_originatorId, _userNameToConnectTo, _offer) {
         this.messageType = TYPES.MESSAGE_TYPE.RTC_OFFER;
+        this.originatorId = _originatorId;
         this.userNameToConnectTo = _userNameToConnectTo;
         this.offer = _offer;
     }

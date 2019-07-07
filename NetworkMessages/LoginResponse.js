@@ -10,9 +10,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const TYPES = __importStar(require("./../DataCollectors/Enumerators/EnumeratorCollection"));
 class LoginResponse {
     constructor(_loginSuccess, _assignedId) {
-        this.messageType = TYPES.MESSAGE_TYPE.LOGIN;
+        this.messageType = TYPES.MESSAGE_TYPE.LOGIN_RESPONSE;
         this.loginSuccess = _loginSuccess;
-        this.assignedId = _assignedId;
+        this.originatorId = _assignedId;
     }
 }
 exports.LoginResponse = LoginResponse;
