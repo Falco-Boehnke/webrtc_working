@@ -1,10 +1,4 @@
 "use strict";
-///<reference path="../DataCollectors/Enumerators/EnumeratorCollection.ts"/>
-///<reference path="./../NetworkMessages/IceCandidate.ts"/>
-///<reference path="./../NetworkMessages/LoginRequest.ts"/>
-///<reference path="./../NetworkMessages/MessageBase.ts"/>
-///<reference path="./../NetworkMessages/RtcAnswer.ts"/>
-///<reference path="./../NetworkMessages/RtcOffer.ts"/>
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -14,6 +8,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const WebSocket = __importStar(require("ws"));
+const NetworkMessages = __importStar(require("./../NetworkMessages"));
+const TYPES = __importStar(require("./../DataCollectors/Enumerators/EnumeratorCollection"));
 const Client_1 = require("./../DataCollectors/Client");
 // import { MessageAnswer } from "../NetworkMessages/MessageAnswer";
 // import { MESSAGE_TYPE as MESSAGE_TYPE, MessageBase } from "../NetworkMessages/MessageBase";
@@ -40,17 +36,17 @@ class ServerMain {
             switch (parsedMessage.messageType) {
                 // TODO Enums ALLCAPS_ENUM
                 // TODO messageData.target doesn't work, gotta replace that to find client connection, probably use ID
-                case MESSAGE_TYPE.LOGIN:
-                    ServerMain.serverHandleLogin(messageData.target, messageData);
+                case TYPES.MESSAGE_TYPE.LOGIN:
+                    ServerMain.addUserOnValidLoginRequest(messageData.target, messageData);
                     break;
-                case MESSAGE_TYPE.RTC_OFFER:
-                    ServerMain.serverHandleRTCOffer(messageData);
+                case TYPES.MESSAGE_TYPE.RTC_OFFER:
+                    ServerMain.sendRtcOfferToRequestedClient(messageData);
                     break;
-                case MESSAGE_TYPE.RTC_ANSWER:
-                    ServerMain.serverHandleRTCAnswer(messageData);
+                case TYPES.MESSAGE_TYPE.RTC_ANSWER:
+                    ServerMain.answerRtcOfferOfClient(messageData);
                     break;
-                case MESSAGE_TYPE.RTC_CANDIDATE:
-                    ServerMain.serverHandleICECandidate(messageData);
+                case TYPES.MESSAGE_TYPE.RTC_CANDIDATE:
+                    ServerMain.sendIceCandidatesToRelevantPeers(messageData);
                     break;
                 default:
                     console.log("Message type not recognized");
@@ -59,7 +55,7 @@ class ServerMain {
         }
     }
     //#region MessageHandler
-    static serverHandleLogin(_websocketConnection, _messageData) {
+    static addUserOnValidLoginRequest(_websocketConnection, _messageData) {
         console.log("User logged", _messageData.loginUserName);
         let usernameTaken = true;
         usernameTaken = ServerMain.searchForPropertyValueInCollection(_messageData.loginUserName, "userName", ServerMain.usersCollection) != null;
@@ -81,7 +77,7 @@ class ServerMain {
             console.log("UsernameTaken");
         }
     }
-    static serverHandleRTCOffer(_messageData) {
+    static sendRtcOfferToRequestedClient(_messageData) {
         console.log("Sending offer to: ", _messageData.userNameToConnectTo);
         const requestedClient = ServerMain.searchForPropertyValueInCollection(_messageData.userNameToConnectTo, "userName", ServerMain.usersCollection);
         if (requestedClient != null) {
@@ -94,7 +90,7 @@ class ServerMain {
             console.log("Usernoame to connect to doesn't exist");
         }
     }
-    static serverHandleRTCAnswer(_messageData) {
+    static answerRtcOfferOfClient(_messageData) {
         console.log("Sending answer to: ", _messageData.userNameToConnectTo);
         const clientToSendAnswerTo = ServerMain.searchForPropertyValueInCollection(_messageData.userNameToConnectTo, "userName", ServerMain.usersCollection);
         if (clientToSendAnswerTo != null) {
@@ -103,7 +99,7 @@ class ServerMain {
             ServerMain.sendTo(clientToSendAnswerTo.clientConnection, answerToSend);
         }
     }
-    static serverHandleICECandidate(_messageData) {
+    static sendIceCandidatesToRelevantPeers(_messageData) {
         console.log("Sending candidate to:", _messageData.userNameToConnectTo);
         const clientToShareCandidatesWith = ServerMain.searchForPropertyValueInCollection(_messageData.userNameToConnectTo, "userName", ServerMain.usersCollection);
         if (clientToShareCandidatesWith != null) {
@@ -128,7 +124,7 @@ class ServerMain {
     }
     //#endregion
     static parseMessageToJson(_messageToParse) {
-        let parsedMessage = { messageType: MESSAGE_TYPE.UNDEFINED };
+        let parsedMessage = { messageType: TYPES.MESSAGE_TYPE.UNDEFINED };
         try {
             parsedMessage = JSON.parse(_messageToParse);
         }
