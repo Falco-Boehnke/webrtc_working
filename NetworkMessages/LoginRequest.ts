@@ -1,15 +1,12 @@
-/// <reference path = "./MessageBase.ts" />
-namespace NetworkMessages {
+import { MessageBase } from ".";
+import * as TYPES from "./../DataCollectors/Enumerators/EnumeratorCollection";
+export class LoginRequest implements MessageBase {
 
-    debugger;
-    export class LoginRequest implements MessageBase {
+    public messageType: TYPES.MESSAGE_TYPE = TYPES.MESSAGE_TYPE.LOGIN;
+    public loginUserName: string = "";
 
-        public messageType: MESSAGE_TYPE = MESSAGE_TYPE.LOGIN;
-        public loginUserName: string = "";
-
-        constructor(_loginUserName: string) {
-            this.loginUserName = _loginUserName;
-        }
-
+    constructor(_loginUserName: string) {
+        this.loginUserName = _loginUserName;
     }
+
 }

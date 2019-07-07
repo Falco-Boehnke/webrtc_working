@@ -1,12 +1,7 @@
-///<reference path="DataCollectors/Enumerators/EnumeratorCollection.ts"/>
-///<reference path="NetworkMessages/IceCandidate.ts"/>
-///<reference path="NetworkMessages/LoginRequest.ts"/>
-///<reference path="NetworkMessages/MessageBase.ts"/>
-///<reference path="NetworkMessages/RtcAnswer.ts"/>
-///<reference path="NetworkMessages/RtcOffer.ts"/>
 import { UiElementHandler } from "./DataCollectors/UiElementHandler";
-// tslint:disable-next-line: no-any
-declare var NetworkMessages: any;
+import * as NetworkMessages from "./NetworkMessages";
+///<reference path="DataCollectors/Enumerators/EnumeratorCollection.ts"/>
+
 export class NetworkConnectionManager {
     public ws: WebSocket;
     public username: string;
@@ -50,7 +45,7 @@ export class NetworkConnectionManager {
     }
     public addWsEventListeners = (): void => {
         this.ws.addEventListener("open", () => {
-            console.log("Connected to the signaling server");
+            console.log("Conneced to the signaling server");
         });
 
         this.ws.addEventListener("error", (err) => {

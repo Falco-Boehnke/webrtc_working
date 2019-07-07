@@ -1,11 +1,6 @@
 import * as WebSocket from "ws";
-///<reference path="../DataCollectors/Enumerators/EnumeratorCollection.ts"/>
-///<reference path="./../NetworkMessages/IceCandidate.ts"/>
-///<reference path="./../NetworkMessages/LoginRequest.ts"/>
-///<reference path="./../NetworkMessages/MessageBase.ts"/>
-///<reference path="./../NetworkMessages/RtcAnswer.ts"/>
-///<reference path="./../NetworkMessages/RtcOffer.ts"/>
-
+import * as NetworkMessages from "./../NetworkMessages";
+import * as TYPES from "./../DataCollectors/Enumerators/EnumeratorCollection";
 
 import { Client } from "./../DataCollectors/Client";
 
@@ -63,19 +58,19 @@ class  ServerMain {
             switch (parsedMessage.messageType) {
                 // TODO Enums ALLCAPS_ENUM
                 // TODO messageData.target doesn't work, gotta replace that to find client connection, probably use ID
-                case MESSAGE_TYPE.LOGIN:
+                case TYPES.MESSAGE_TYPE.LOGIN:
                     ServerMain.addUserOnValidLoginRequest(messageData.target, messageData);
                     break;
 
-                case MESSAGE_TYPE.RTC_OFFER:
+                case TYPES.MESSAGE_TYPE.RTC_OFFER:
                     ServerMain.sendRtcOfferToRequestedClient(messageData);
                     break;
 
-                case MESSAGE_TYPE.RTC_ANSWER:
+                case TYPES.MESSAGE_TYPE.RTC_ANSWER:
                     ServerMain.answerRtcOfferOfClient(messageData);
                     break;
 
-                case MESSAGE_TYPE.RTC_CANDIDATE:
+                case TYPES.MESSAGE_TYPE.RTC_CANDIDATE:
                     ServerMain.sendIceCandidatesToRelevantPeers(messageData);
                     break;
 
@@ -186,7 +181,7 @@ class  ServerMain {
 
 
     public static parseMessageToJson(_messageToParse: string): NetworkMessages.MessageBase {
-        let parsedMessage: NetworkMessages.MessageBase = { messageType: MESSAGE_TYPE.UNDEFINED };
+        let parsedMessage: NetworkMessages.MessageBase = { messageType: TYPES.MESSAGE_TYPE.UNDEFINED };
 
         try {
             parsedMessage = JSON.parse(_messageToParse);
