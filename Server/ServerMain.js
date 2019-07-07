@@ -23,7 +23,6 @@ class ServerMain {
     }
     // TODO Check if event.type can be used for identification instead
     static serverHandleMessageType(_message, _websocketClient) {
-        console.log(_message, _websocketClient);
         let parsedMessage = null;
         console.log(_message);
         try {
@@ -38,7 +37,7 @@ class ServerMain {
                 // TODO Enums ALLCAPS_ENUM
                 // TODO messageData.target doesn't work, gotta replace that to find client connection, probably use ID
                 case TYPES.MESSAGE_TYPE.LOGIN:
-                    ServerMain.addUserOnValidLoginRequest(messageData.target, messageData);
+                    ServerMain.addUserOnValidLoginRequest(_websocketClient, messageData);
                     break;
                 case TYPES.MESSAGE_TYPE.RTC_OFFER:
                     ServerMain.sendRtcOfferToRequestedClient(messageData);
@@ -66,11 +65,7 @@ class ServerMain {
             if (associatedWebsocketConnectionClient != null) {
                 associatedWebsocketConnectionClient.userName = _messageData.loginUserName;
                 console.log("Changed name of client object");
-                ServerMain.sendTo(_websocketConnection, {
-                    type: "login",
-                    success: true,
-                    id: associatedWebsocketConnectionClient.id,
-                });
+                ServerMain.sendTo(_websocketConnection, new NetworkMessages.LoginResponse(true, associatedWebsocketConnectionClient.id));
             }
         }
         else {

@@ -7,3 +7,4 @@ __export(require("./LoginRequest"));
 __export(require("./IceCandidate"));
 __export(require("./RtcAnswer"));
 __export(require("./RtcOffer"));
+__export(require("./LoginResponse"));

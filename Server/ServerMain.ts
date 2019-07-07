@@ -3,6 +3,7 @@ import * as NetworkMessages from "./../NetworkMessages";
 import * as TYPES from "./../DataCollectors/Enumerators/EnumeratorCollection";
 
 import { Client } from "./../DataCollectors/Client";
+import { LoginResponse } from "../NetworkMessages/LoginResponse";
 
 // import { MessageAnswer } from "../NetworkMessages/MessageAnswer";
 // import { MESSAGE_TYPE as MESSAGE_TYPE, MessageBase } from "../NetworkMessages/MessageBase";
@@ -46,7 +47,6 @@ class ServerMain {
 
     // TODO Check if event.type can be used for identification instead
     public static serverHandleMessageType(_message: string, _websocketClient: WebSocket): void {
-        console.log(_message, _websocketClient);
         let parsedMessage: NetworkMessages.MessageBase | null = null;
         console.log(_message);
         try {
@@ -62,7 +62,7 @@ class ServerMain {
                 // TODO Enums ALLCAPS_ENUM
                 // TODO messageData.target doesn't work, gotta replace that to find client connection, probably use ID
                 case TYPES.MESSAGE_TYPE.LOGIN:
-                    ServerMain.addUserOnValidLoginRequest(messageData.target, messageData);
+                    ServerMain.addUserOnValidLoginRequest(_websocketClient, messageData);
                     break;
 
                 case TYPES.MESSAGE_TYPE.RTC_OFFER:
@@ -103,13 +103,7 @@ class ServerMain {
                 associatedWebsocketConnectionClient.userName = _messageData.loginUserName;
                 console.log("Changed name of client object");
 
-                ServerMain.sendTo(_websocketConnection,
-                    {
-                        type: "login",
-                        success: true,
-                        id: associatedWebsocketConnectionClient.id,
-                    },
-                );
+                ServerMain.sendTo(_websocketConnection, new NetworkMessages.LoginResponse(true, associatedWebsocketConnectionClient.id));
             }
         } else {
             ServerMain.sendTo(_websocketConnection, { type: "login", success: false });
