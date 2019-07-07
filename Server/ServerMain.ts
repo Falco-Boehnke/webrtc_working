@@ -9,13 +9,13 @@ import { Client } from "./../DataCollectors/Client";
 // import { MessageCandidate } from "../NetworkMessages/MessageCandidate";
 // import { MessageLoginRequest } from "../NetworkMessages/MessageLoginRequest";
 // import { MessageOffer } from "../NetworkMessages/MessageOffer";
-class  ServerMain {
+class ServerMain {
     public static websocketServer: WebSocket.Server;
     public static users = {};
     public static usersCollection = new Array();
 
 
-    public static startUpServer(){
+    public static startUpServer() {
         ServerMain.websocketServer = new WebSocket.Server({ port: 8080 });
         ServerMain.serverEventHandler();
     }
@@ -33,7 +33,9 @@ class  ServerMain {
             const freshlyConnectedClient = new Client(_websocketClient, uniqueIdOnConnection);
             ServerMain.usersCollection.push(freshlyConnectedClient);
 
-            _websocketClient.on("message", ServerMain.serverHandleMessageType);
+            _websocketClient.on("message", (_message: string) => {
+                ServerMain.serverHandleMessageType(_message, _websocketClient);
+            });
 
             _websocketClient.addEventListener("close", () => {
                 console.error("Error at connection");
@@ -43,7 +45,8 @@ class  ServerMain {
     }
 
     // TODO Check if event.type can be used for identification instead
-    public static serverHandleMessageType(_message: string): void {
+    public static serverHandleMessageType(_message: string, _websocketClient: WebSocket): void {
+        console.log(_message, _websocketClient);
         let parsedMessage: NetworkMessages.MessageBase | null = null;
         console.log(_message);
         try {
@@ -89,6 +92,7 @@ class  ServerMain {
         usernameTaken = ServerMain.searchForPropertyValueInCollection(_messageData.loginUserName, "userName", ServerMain.usersCollection) != null;
 
         if (!usernameTaken) {
+            console.log("Username not taken");
             const associatedWebsocketConnectionClient =
                 ServerMain.searchForPropertyValueInCollection
                     (_websocketConnection,

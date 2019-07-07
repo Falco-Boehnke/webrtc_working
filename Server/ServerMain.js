@@ -22,7 +22,8 @@ class ServerMain {
         ServerMain.serverEventHandler();
     }
     // TODO Check if event.type can be used for identification instead
-    static serverHandleMessageType(_message) {
+    static serverHandleMessageType(_message, _websocketClient) {
+        console.log(_message, _websocketClient);
         let parsedMessage = null;
         console.log(_message);
         try {
@@ -60,6 +61,7 @@ class ServerMain {
         let usernameTaken = true;
         usernameTaken = ServerMain.searchForPropertyValueInCollection(_messageData.loginUserName, "userName", ServerMain.usersCollection) != null;
         if (!usernameTaken) {
+            console.log("Username not taken");
             const associatedWebsocketConnectionClient = ServerMain.searchForPropertyValueInCollection(_websocketConnection, "clientConnection", ServerMain.usersCollection);
             if (associatedWebsocketConnectionClient != null) {
                 associatedWebsocketConnectionClient.userName = _messageData.loginUserName;
@@ -149,7 +151,9 @@ ServerMain.serverEventHandler = () => {
         const uniqueIdOnConnection = ServerMain.createID();
         const freshlyConnectedClient = new Client_1.Client(_websocketClient, uniqueIdOnConnection);
         ServerMain.usersCollection.push(freshlyConnectedClient);
-        _websocketClient.on("message", ServerMain.serverHandleMessageType);
+        _websocketClient.on("message", (_message) => {
+            ServerMain.serverHandleMessageType(_message, _websocketClient);
+        });
         _websocketClient.addEventListener("close", () => {
             console.error("Error at connection");
         });
