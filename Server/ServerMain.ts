@@ -5,7 +5,7 @@ import * as TYPES from "./../DataCollectors/Enumerators/EnumeratorCollection";
 import { Client } from "./../DataCollectors/Client";
 class ServerMain {
     public static websocketServer: WebSocket.Server;
-    public static usersCollection = new Array();
+    public static usersCollection: Client[] = new Array();
 
 
     public static startUpServer = () => {
@@ -148,9 +148,11 @@ class ServerMain {
 
     // Helper function for searching through a collection, finding objects by key and value, returning
     // Object that has that value
+// tslint:disable-next-line: no-any
     public static searchForPropertyValueInCollection = (propertyValue: any, key: string, collectionToSearch: any[]) => {
         for (const propertyObject in collectionToSearch) {
             if (ServerMain.usersCollection.hasOwnProperty(propertyObject)) {
+// tslint:disable-next-line: typedef
                 const objectToSearchThrough = collectionToSearch[propertyObject];
                 if (objectToSearchThrough[key] === propertyValue) {
                     return objectToSearchThrough;
