@@ -21,11 +21,12 @@ class NetworkConnectionManager {
     //     }]
     // };
     constructor() {
+        // tslint:disable-next-line: typedef
         this.configuration = {
             iceServers: [
                 { urls: "stun:stun2.1.google.com:19302" },
-                { urls: "stun:stun.example.com" },
-            ],
+                { urls: "stun:stun.example.com" }
+            ]
         };
         this.addUiListeners = () => {
             UiElementHandler_1.UiElementHandler.getAllUiElements();
@@ -46,6 +47,7 @@ class NetworkConnectionManager {
             });
         };
         this.parseMessageAndCallCorrespondingMessageHandler = (_receivedMessage) => {
+            // tslint:disable-next-line: typedef
             let objectifiedMessage = this.parseReceivedMessageAndReturnObject(_receivedMessage);
             switch (objectifiedMessage.messageType) {
                 case TYPES.MESSAGE_TYPE.LOGIN_RESPONSE:
@@ -69,6 +71,8 @@ class NetworkConnectionManager {
         this.setDescriptionAsAnswer = (_localhostId, _answer) => {
             this.connection.setRemoteDescription(new RTCSessionDescription(_answer));
         };
+        // TODO https://stackoverflow.com/questions/37787372/domexception-failed-to-set-remote-offer-sdp-called-in-wrong-state-state-sento/37787869
+        // DOMException: Failed to set remote offer sdp: Called in wrong state: STATE_SENTOFFER
         this.setDescriptionOnOfferAndSendAnswer = (_localhostId, _offer, _usernameToRespondTo) => {
             this.userNameLocalIsConnectedTo = _usernameToRespondTo;
             console.log("Answer creation username: ", _usernameToRespondTo);
@@ -196,8 +200,10 @@ class NetworkConnectionManager {
                 console.error("Peer Connection undefined, connection likely lost");
             }
         };
+        // tslint:disable-next-line: no-any
         this.parseReceivedMessageAndReturnObject = (_receivedMessage) => {
             console.log("Got message", _receivedMessage);
+            // tslint:disable-next-line: no-any
             let objectifiedMessage;
             try {
                 objectifiedMessage = JSON.parse(_receivedMessage.data);

@@ -5,11 +5,10 @@ import * as TYPES from "./../DataCollectors/Enumerators/EnumeratorCollection";
 import { Client } from "./../DataCollectors/Client";
 class ServerMain {
     public static websocketServer: WebSocket.Server;
-    public static users = {};
     public static usersCollection = new Array();
 
 
-    public static startUpServer() {
+    public static startUpServer = () => {
         ServerMain.websocketServer = new WebSocket.Server({ port: 8080 });
         ServerMain.serverEventHandler();
     }
@@ -23,8 +22,8 @@ class ServerMain {
             // _websocketClient = _websocketClient;
             console.log("User connected FRESH");
 
-            const uniqueIdOnConnection = ServerMain.createID();
-            const freshlyConnectedClient = new Client(_websocketClient, uniqueIdOnConnection);
+            const uniqueIdOnConnection: string = ServerMain.createID();
+            const freshlyConnectedClient: Client = new Client(_websocketClient, uniqueIdOnConnection);
             ServerMain.usersCollection.push(freshlyConnectedClient);
 
             _websocketClient.on("message", (_message: string) => {
@@ -47,6 +46,7 @@ class ServerMain {
         } catch (error) {
             console.error("Invalid JSON", error);
         }
+// tslint:disable-next-line: no-any
         const messageData: any = parsedMessage;
 
         if (parsedMessage != null) {
@@ -85,11 +85,11 @@ class ServerMain {
 
         if (!usernameTaken) {
             console.log("Username available, logging in");
-            const associatedWebsocketConnectionClient =
+            const associatedWebsocketConnectionClient: Client =
                 ServerMain.searchForPropertyValueInCollection
                     (_websocketConnection,
-                        "clientConnection",
-                        ServerMain.usersCollection);
+                     "clientConnection",
+                     ServerMain.usersCollection);
 
             if (associatedWebsocketConnectionClient != null) {
                 associatedWebsocketConnectionClient.userName = _messageData.loginUserName;
@@ -109,22 +109,22 @@ class ServerMain {
         if (requestedClient != null) {
             console.log("User for offer found", requestedClient);
             requestedClient.clientConnection.otherUsername = _messageData.userNameToConnectTo;
-            const offerMessage = new NetworkMessages.RtcOffer(_messageData.originatorId, requestedClient.userName, _messageData.offer);
+            const offerMessage: NetworkMessages.RtcOffer = new NetworkMessages.RtcOffer(_messageData.originatorId, requestedClient.userName, _messageData.offer);
             ServerMain.sendTo(requestedClient.clientConnection, offerMessage);
         } else { console.error("Username to connect to doesn't exist"); }
     }
 
     public static answerRtcOfferOfClient(_websocketClient: WebSocket, _messageData: NetworkMessages.RtcAnswer): void {
         console.log("Sending answer to: ", _messageData.userNameToConnectTo);
-debugger
+        debugger;
         const clientToSendAnswerTo = ServerMain.searchForPropertyValueInCollection
             (_messageData.userNameToConnectTo,
-                "userName",
-                ServerMain.usersCollection);
+             "userName",
+             ServerMain.usersCollection);
 
         if (clientToSendAnswerTo != null) {
             clientToSendAnswerTo.clientConnection.otherUsername = clientToSendAnswerTo.userName;
-            const answerToSend = new NetworkMessages.RtcAnswer(_messageData.originatorId, clientToSendAnswerTo.userName, _messageData.answer);
+            const answerToSend: NetworkMessages.RtcAnswer = new NetworkMessages.RtcAnswer(_messageData.originatorId, clientToSendAnswerTo.userName, _messageData.answer);
             ServerMain.sendTo(clientToSendAnswerTo.clientConnection, answerToSend);
         }
     }
@@ -133,11 +133,11 @@ debugger
         console.log("Sending candidate to:", _messageData.userNameToConnectTo);
         const clientToShareCandidatesWith = ServerMain.searchForPropertyValueInCollection
             (_messageData.userNameToConnectTo,
-                "userName",
-                ServerMain.usersCollection);
+             "userName",
+             ServerMain.usersCollection);
 
         if (clientToShareCandidatesWith != null) {
-            const candidateToSend = new NetworkMessages.IceCandidate(_messageData.originatorId, clientToShareCandidatesWith.userName, _messageData.candidate);
+            const candidateToSend: NetworkMessages.IceCandidate = new NetworkMessages.IceCandidate(_messageData.originatorId, clientToShareCandidatesWith.userName, _messageData.candidate);
             ServerMain.sendTo(clientToShareCandidatesWith.clientConnection, candidateToSend);
         }
     }
@@ -148,7 +148,7 @@ debugger
 
     // Helper function for searching through a collection, finding objects by key and value, returning
     // Object that has that value
-    public static searchForPropertyValueInCollection(propertyValue: any, key: string, collectionToSearch: any[]) {
+    public static searchForPropertyValueInCollection = (propertyValue: any, key: string, collectionToSearch: any[]) => {
         for (const propertyObject in collectionToSearch) {
             if (ServerMain.usersCollection.hasOwnProperty(propertyObject)) {
                 const objectToSearchThrough = collectionToSearch[propertyObject];
@@ -160,8 +160,7 @@ debugger
         return null;
     }
 
-    public static searchForClientWithId(_idToFind: string): Client
-    {
+    public static searchForClientWithId(_idToFind: string): Client {
         return this.searchForPropertyValueInCollection(_idToFind, "id", this.usersCollection);
     }
 
@@ -184,8 +183,8 @@ debugger
         return parsedMessage;
     }
 
-    public static sendTo(_connection: WebSocket, _message: Object) {
+    public static sendTo = (_connection: WebSocket, _message: Object) => {
         _connection.send(JSON.stringify(_message));
     }
 }
-const defaultServer = ServerMain.startUpServer();
+ServerMain.startUpServer();

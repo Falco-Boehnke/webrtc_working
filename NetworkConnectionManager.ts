@@ -12,11 +12,12 @@ export class NetworkConnectionManager {
     public userNameLocalIsConnectedTo: string;
     public peerConnectionToChosenPeer: RTCDataChannel | undefined;
 
+// tslint:disable-next-line: typedef
     public configuration = {
         iceServers: [
             { urls: "stun:stun2.1.google.com:19302" },
-            { urls: "stun:stun.example.com" },
-        ],
+            { urls: "stun:stun.example.com" }
+        ]
     };
     // More info from here https://developer.mozilla.org/en-US/docs/Web/API/RTCConfiguration
     //     var configuration = { iceServers: [{
@@ -64,6 +65,7 @@ export class NetworkConnectionManager {
 
     public parseMessageAndCallCorrespondingMessageHandler = (_receivedMessage: MessageEvent) => {
         
+// tslint:disable-next-line: typedef
         let objectifiedMessage = this.parseReceivedMessageAndReturnObject(_receivedMessage);
 
         switch (objectifiedMessage.messageType) {
@@ -91,9 +93,11 @@ export class NetworkConnectionManager {
         this.connection.setRemoteDescription(new RTCSessionDescription(_answer));
     }
 
+    // TODO https://stackoverflow.com/questions/37787372/domexception-failed-to-set-remote-offer-sdp-called-in-wrong-state-state-sento/37787869
+    // DOMException: Failed to set remote offer sdp: Called in wrong state: STATE_SENTOFFER
     public setDescriptionOnOfferAndSendAnswer = (_localhostId: string, _offer: RTCSessionDescriptionInit, _usernameToRespondTo: string): void => {
         this.userNameLocalIsConnectedTo = _usernameToRespondTo;
-        console.log("Answer creation username: ", _usernameToRespondTo)
+        console.log("Answer creation username: ", _usernameToRespondTo);
         this.connection.setRemoteDescription(new RTCSessionDescription(_offer));
 
         // Signaling example from here https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/createAnswer
@@ -102,7 +106,7 @@ export class NetworkConnectionManager {
                 console.log("Setting local description now.");
                 return this.connection.setLocalDescription(answer);
             }).then(() => {
-                const answerMessage = new NetworkMessages.RtcAnswer(this.localClientId, this.userNameLocalIsConnectedTo, this.connection.localDescription);
+                const answerMessage: NetworkMessages.RtcAnswer = new NetworkMessages.RtcAnswer(this.localClientId, this.userNameLocalIsConnectedTo, this.connection.localDescription);
                 this.sendMessage(answerMessage);
                 console.log("Created answer message and sent: ", answerMessage);
             })
@@ -172,7 +176,7 @@ export class NetworkConnectionManager {
 
         this.connection.onicecandidate = (event) => {
             if (event.candidate) {
-                const candidateMessage = new NetworkMessages.IceCandidate(this.localClientId, this.userNameLocalIsConnectedTo, event.candidate);
+                const candidateMessage: NetworkMessages.IceCandidate = new NetworkMessages.IceCandidate(this.localClientId, this.userNameLocalIsConnectedTo, event.candidate);
                 this.sendMessage(candidateMessage);
             }
         };
@@ -182,7 +186,7 @@ export class NetworkConnectionManager {
 
         // const callUsernameElement =  document.querySelector("input#username-to-call") as HTMLInputElement;
         // const callToUsername = callUsernameElement.value;
-        const callToUsername = UiElementHandler.usernameToConnectTo.value;
+        const callToUsername: string = UiElementHandler.usernameToConnectTo.value;
         if (callToUsername.length === 0) {
             alert("Enter a username 😉");
             return;
@@ -198,7 +202,7 @@ export class NetworkConnectionManager {
         this.connection.createOffer().then((offer) => {
             return this.connection.setLocalDescription(offer);
         }).then(() => {
-            const offerMessage = new NetworkMessages.RtcOffer(this.localClientId, _userNameForOffer, this.connection.localDescription);
+            const offerMessage: NetworkMessages.RtcOffer = new NetworkMessages.RtcOffer(this.localClientId, _userNameForOffer, this.connection.localDescription);
             this.sendMessage(offerMessage);
         })
             .catch(() => {
@@ -224,7 +228,7 @@ export class NetworkConnectionManager {
     public sendMessageToUser = () => {
         // const messageField =  document.getElementById("msgInput") as HTMLInputElement;
         // const message = messageField.value;
-        const message = UiElementHandler.msgInput.value;
+        const message: string = UiElementHandler.msgInput.value;
         UiElementHandler.chatbox.innerHTML += "\n" + this.localUserName + ": " + message;
         if (this.peerConnectionToChosenPeer) {
             this.peerConnectionToChosenPeer.send(message);
@@ -234,10 +238,11 @@ export class NetworkConnectionManager {
         }
     }
 
-    public parseReceivedMessageAndReturnObject = (_receivedMessage: MessageEvent): any =>
-    {
+// tslint:disable-next-line: no-any
+    public parseReceivedMessageAndReturnObject = (_receivedMessage: MessageEvent): any => {
         console.log("Got message", _receivedMessage);
 
+// tslint:disable-next-line: no-any
         let objectifiedMessage: any;
         try {
             objectifiedMessage = JSON.parse(_receivedMessage.data);
