@@ -57,11 +57,9 @@ export class NetworkConnectionManager {
         });
 
         this.ws.addEventListener("message", (_receivedMessage: MessageEvent) => {
-            console.log("Got message", _receivedMessage.data);
+            console.log("Got message", _receivedMessage);
 
-            // const _message: NetworkMessages.MessageBase = JSON.parse(_message.data);
             let objectifiedMessage: any;
-            console.log(_receivedMessage);
             try {
                 objectifiedMessage = JSON.parse(_receivedMessage.data);
 
@@ -85,7 +83,7 @@ export class NetworkConnectionManager {
                 // case TYPES.MESSAGE_TYPE.RTC_ANSWER:
                 //     this.setDescriptionAsAnswer(_message.clientId, _message.answer);
                 //     break;
-                // case TYPES.MESSAGE_TYPE.RTC_CANDIDATE:
+                // case TYPES.MESSAGE_TYPE.ICE_CANDIDATE:
                 //     this.handleCandidate(_message.clientId, _message.candidate);
                 //     break;
             }

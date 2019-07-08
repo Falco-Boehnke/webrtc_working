@@ -73,7 +73,7 @@ class ServerMain {
                     ServerMain.answerRtcOfferOfClient(_websocketClient, messageData);
                     break;
 
-                case TYPES.MESSAGE_TYPE.RTC_CANDIDATE:
+                case TYPES.MESSAGE_TYPE.ICE_CANDIDATE:
                     ServerMain.sendIceCandidatesToRelevantPeers(_websocketClient, messageData);
                     break;
 

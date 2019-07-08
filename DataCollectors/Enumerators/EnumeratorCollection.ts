@@ -4,7 +4,7 @@ export enum MESSAGE_TYPE {
     LOGIN_RESPONSE = "login_response",
     RTC_OFFER = "offer",
     RTC_ANSWER = "answer",
-    RTC_CANDIDATE = "candidate",
+    ICE_CANDIDATE = "candidate",
 }
 enum TEST_ENUM {
     SERIOUSLY = "wtf",
