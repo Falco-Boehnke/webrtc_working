@@ -11,11 +11,6 @@ const WebSocket = __importStar(require("ws"));
 const NetworkMessages = __importStar(require("./../NetworkMessages"));
 const TYPES = __importStar(require("./../DataCollectors/Enumerators/EnumeratorCollection"));
 const Client_1 = require("./../DataCollectors/Client");
-// import { MessageAnswer } from "../NetworkMessages/MessageAnswer";
-// import { MESSAGE_TYPE as MESSAGE_TYPE, MessageBase } from "../NetworkMessages/MessageBase";
-// import { MessageCandidate } from "../NetworkMessages/MessageCandidate";
-// import { MessageLoginRequest } from "../NetworkMessages/MessageLoginRequest";
-// import { MessageOffer } from "../NetworkMessages/MessageOffer";
 class ServerMain {
     static startUpServer() {
         ServerMain.websocketServer = new WebSocket.Server({ port: 8080 });
@@ -24,7 +19,6 @@ class ServerMain {
     // TODO Check if event.type can be used for identification instead
     static serverHandleMessageType(_message, _websocketClient) {
         let parsedMessage = null;
-        console.log(_message);
         try {
             parsedMessage = JSON.parse(_message);
         }
@@ -45,7 +39,7 @@ class ServerMain {
                 case TYPES.MESSAGE_TYPE.RTC_ANSWER:
                     ServerMain.answerRtcOfferOfClient(_websocketClient, messageData);
                     break;
-                case TYPES.MESSAGE_TYPE.RTC_CANDIDATE:
+                case TYPES.MESSAGE_TYPE.ICE_CANDIDATE:
                     ServerMain.sendIceCandidatesToRelevantPeers(_websocketClient, messageData);
                     break;
                 default:
@@ -56,15 +50,14 @@ class ServerMain {
     }
     //#region MessageHandler
     static addUserOnValidLoginRequest(_websocketConnection, _messageData) {
-        console.log("User logged", _messageData.loginUserName);
+        console.log("User logged: ", _messageData.loginUserName);
         let usernameTaken = true;
         usernameTaken = ServerMain.searchForPropertyValueInCollection(_messageData.loginUserName, "userName", ServerMain.usersCollection) != null;
         if (!usernameTaken) {
-            console.log("Username not taken");
+            console.log("Username available, logging in");
             const associatedWebsocketConnectionClient = ServerMain.searchForPropertyValueInCollection(_websocketConnection, "clientConnection", ServerMain.usersCollection);
             if (associatedWebsocketConnectionClient != null) {
                 associatedWebsocketConnectionClient.userName = _messageData.loginUserName;
-                console.log("Changed name of client object");
                 ServerMain.sendTo(_websocketConnection, new NetworkMessages.LoginResponse(true, associatedWebsocketConnectionClient.id));
             }
         }
@@ -84,11 +77,12 @@ class ServerMain {
             ServerMain.sendTo(requestedClient.clientConnection, offerMessage);
         }
         else {
-            console.log("Usernoame to connect to doesn't exist");
+            console.error("Username to connect to doesn't exist");
         }
     }
     static answerRtcOfferOfClient(_websocketClient, _messageData) {
         console.log("Sending answer to: ", _messageData.userNameToConnectTo);
+        debugger;
         const clientToSendAnswerTo = ServerMain.searchForPropertyValueInCollection(_messageData.userNameToConnectTo, "userName", ServerMain.usersCollection);
         if (clientToSendAnswerTo != null) {
             clientToSendAnswerTo.clientConnection.otherUsername = clientToSendAnswerTo.userName;

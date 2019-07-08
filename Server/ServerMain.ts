@@ -3,13 +3,6 @@ import * as NetworkMessages from "./../NetworkMessages";
 import * as TYPES from "./../DataCollectors/Enumerators/EnumeratorCollection";
 
 import { Client } from "./../DataCollectors/Client";
-import { LoginResponse } from "../NetworkMessages/LoginResponse";
-
-// import { MessageAnswer } from "../NetworkMessages/MessageAnswer";
-// import { MESSAGE_TYPE as MESSAGE_TYPE, MessageBase } from "../NetworkMessages/MessageBase";
-// import { MessageCandidate } from "../NetworkMessages/MessageCandidate";
-// import { MessageLoginRequest } from "../NetworkMessages/MessageLoginRequest";
-// import { MessageOffer } from "../NetworkMessages/MessageOffer";
 class ServerMain {
     public static websocketServer: WebSocket.Server;
     public static users = {};
@@ -48,7 +41,6 @@ class ServerMain {
     // TODO Check if event.type can be used for identification instead
     public static serverHandleMessageType(_message: string, _websocketClient: WebSocket): void {
         let parsedMessage: NetworkMessages.MessageBase | null = null;
-        console.log(_message);
         try {
             parsedMessage = JSON.parse(_message);
 
@@ -87,12 +79,12 @@ class ServerMain {
 
     //#region MessageHandler
     public static addUserOnValidLoginRequest(_websocketConnection: WebSocket, _messageData: NetworkMessages.LoginRequest): void {
-        console.log("User logged", _messageData.loginUserName);
+        console.log("User logged: ", _messageData.loginUserName);
         let usernameTaken: boolean = true;
         usernameTaken = ServerMain.searchForPropertyValueInCollection(_messageData.loginUserName, "userName", ServerMain.usersCollection) != null;
 
         if (!usernameTaken) {
-            console.log("Username not taken");
+            console.log("Username available, logging in");
             const associatedWebsocketConnectionClient =
                 ServerMain.searchForPropertyValueInCollection
                     (_websocketConnection,
@@ -101,8 +93,6 @@ class ServerMain {
 
             if (associatedWebsocketConnectionClient != null) {
                 associatedWebsocketConnectionClient.userName = _messageData.loginUserName;
-                console.log("Changed name of client object");
-
                 ServerMain.sendTo(_websocketConnection, new NetworkMessages.LoginResponse(true, associatedWebsocketConnectionClient.id));
             }
         } else {
@@ -121,12 +111,12 @@ class ServerMain {
             requestedClient.clientConnection.otherUsername = _messageData.userNameToConnectTo;
             const offerMessage = new NetworkMessages.RtcOffer(_messageData.originatorId, requestedClient.userName, _messageData.offer);
             ServerMain.sendTo(requestedClient.clientConnection, offerMessage);
-        } else { console.log("Usernoame to connect to doesn't exist"); }
+        } else { console.error("Username to connect to doesn't exist"); }
     }
 
     public static answerRtcOfferOfClient(_websocketClient: WebSocket, _messageData: NetworkMessages.RtcAnswer): void {
         console.log("Sending answer to: ", _messageData.userNameToConnectTo);
-
+debugger
         const clientToSendAnswerTo = ServerMain.searchForPropertyValueInCollection
             (_messageData.userNameToConnectTo,
                 "userName",

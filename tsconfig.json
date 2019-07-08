@@ -57,7 +57,8 @@
   },
   "exclude": [
     "node_modules",
-    "tslint"
+    "tslint",
+    "testbuild-win32-x64"
   ],
 
 }

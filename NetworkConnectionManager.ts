@@ -66,8 +66,7 @@ export class NetworkConnectionManager {
             } catch (error) {
                 console.error("Invalid JSON", error);
             }
-            if(objectifiedMessage == null)
-            {
+            if (objectifiedMessage == null) {
                 console.error("Empty Message received");
                 return;
             }
@@ -78,14 +77,14 @@ export class NetworkConnectionManager {
                     this.loginValidAddUser(objectifiedMessage.originatorId, objectifiedMessage.loginSuccess);
                     break;
                 case TYPES.MESSAGE_TYPE.RTC_OFFER:
-                     this.setDescriptionOnOfferAndSendAnswer(objectifiedMessage.clientId, objectifiedMessage.offer, objectifiedMessage.username);
-                     break;
-                // case TYPES.MESSAGE_TYPE.RTC_ANSWER:
-                //     this.setDescriptionAsAnswer(_message.clientId, _message.answer);
-                //     break;
-                // case TYPES.MESSAGE_TYPE.ICE_CANDIDATE:
-                //     this.handleCandidate(_message.clientId, _message.candidate);
-                //     break;
+                    this.setDescriptionOnOfferAndSendAnswer(objectifiedMessage.clientId, objectifiedMessage.offer, objectifiedMessage.username);
+                    break;
+                case TYPES.MESSAGE_TYPE.RTC_ANSWER:
+                    this.setDescriptionAsAnswer(objectifiedMessage.clientId, objectifiedMessage.answer);
+                    break;
+                case TYPES.MESSAGE_TYPE.ICE_CANDIDATE:
+                    this.handleCandidate(objectifiedMessage.clientId, objectifiedMessage.candidate);
+                    break;
             }
         });
     }
@@ -100,6 +99,7 @@ export class NetworkConnectionManager {
 
     public setDescriptionOnOfferAndSendAnswer = (_localhostId: string, _offer: RTCSessionDescriptionInit, _username: string): void => {
         this.otherUsername = _username;
+        console.log("Answer creation username: ", _username)
         this.connection.setRemoteDescription(new RTCSessionDescription(_offer));
 
         // Signaling example from here https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/createAnswer
