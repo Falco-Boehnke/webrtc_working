@@ -72,7 +72,7 @@ export class NetworkConnectionManager {
                 this.loginValidAddUser(objectifiedMessage.originatorId, objectifiedMessage.loginSuccess);
                 break;
             case TYPES.MESSAGE_TYPE.RTC_OFFER:
-                this.setDescriptionOnOfferAndSendAnswer(objectifiedMessage.clientId, objectifiedMessage.offer, objectifiedMessage.username);
+                this.setDescriptionOnOfferAndSendAnswer(objectifiedMessage.clientId, objectifiedMessage.offer, objectifiedMessage.userNameToConnectTo);
                 break;
             case TYPES.MESSAGE_TYPE.RTC_ANSWER:
                 this.setDescriptionAsAnswer(objectifiedMessage.clientId, objectifiedMessage.answer);
@@ -91,9 +91,9 @@ export class NetworkConnectionManager {
         this.connection.setRemoteDescription(new RTCSessionDescription(_answer));
     }
 
-    public setDescriptionOnOfferAndSendAnswer = (_localhostId: string, _offer: RTCSessionDescriptionInit, _username: string): void => {
-        this.userNameLocalIsConnectedTo = _username;
-        console.log("Answer creation username: ", _username)
+    public setDescriptionOnOfferAndSendAnswer = (_localhostId: string, _offer: RTCSessionDescriptionInit, _usernameToRespondTo: string): void => {
+        this.userNameLocalIsConnectedTo = _usernameToRespondTo;
+        console.log("Answer creation username: ", _usernameToRespondTo)
         this.connection.setRemoteDescription(new RTCSessionDescription(_offer));
 
         // Signaling example from here https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/createAnswer
