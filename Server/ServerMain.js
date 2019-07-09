@@ -137,9 +137,11 @@ ServerMain.serverEventHandler = () => {
 //#region Helperfunctions
 // Helper function for searching through a collection, finding objects by key and value, returning
 // Object that has that value
+// tslint:disable-next-line: no-any
 ServerMain.searchForPropertyValueInCollection = (propertyValue, key, collectionToSearch) => {
     for (const propertyObject in collectionToSearch) {
         if (ServerMain.usersCollection.hasOwnProperty(propertyObject)) {
+            // tslint:disable-next-line: typedef
             const objectToSearchThrough = collectionToSearch[propertyObject];
             if (objectToSearchThrough[key] === propertyValue) {
                 return objectToSearchThrough;

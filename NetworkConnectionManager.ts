@@ -9,6 +9,7 @@ export class NetworkConnectionManager {
     public localClientId: string;
     public localUserName: string;
     public connection: RTCPeerConnection;
+    public remoteConnection: RTCPeerConnection | null;
     public userNameLocalIsConnectedTo: string;
     public peerConnectionToChosenPeer: RTCDataChannel | undefined;
 
@@ -19,6 +20,7 @@ export class NetworkConnectionManager {
             { urls: "stun:stun.example.com" }
         ]
     };
+    private isNegotiating: boolean = false;
     // More info from here https://developer.mozilla.org/en-US/docs/Web/API/RTCConfiguration
     //     var configuration = { iceServers: [{
     //         urls: "stun:stun.services.mozilla.com",
@@ -35,6 +37,7 @@ export class NetworkConnectionManager {
         this.localUserName = "";
         this.localClientId = "undefined";
         this.connection = new RTCPeerConnection();
+        this.remoteConnection = null;
         this.userNameLocalIsConnectedTo = "";
         this.peerConnectionToChosenPeer = undefined;
         UiElementHandler.getAllUiElements();
@@ -86,18 +89,22 @@ export class NetworkConnectionManager {
     }
 
     public handleCandidate = (_localhostId: string, _candidate: RTCIceCandidateInit | undefined) => {
+        console.log("Adding ice candidates");
         this.connection.addIceCandidate(new RTCIceCandidate(_candidate));
     }
 
     public setDescriptionAsAnswer = (_localhostId: string, _answer: RTCSessionDescriptionInit) => {
+        console.log("Setting description as answer");
+        this.connection = new RTCPeerConnection(this.configuration);
         this.connection.setRemoteDescription(new RTCSessionDescription(_answer));
+        console.log("Description set as answer");
     }
 
     // TODO https://stackoverflow.com/questions/37787372/domexception-failed-to-set-remote-offer-sdp-called-in-wrong-state-state-sento/37787869
     // DOMException: Failed to set remote offer sdp: Called in wrong state: STATE_SENTOFFER
     public setDescriptionOnOfferAndSendAnswer = (_localhostId: string, _offer: RTCSessionDescriptionInit, _usernameToRespondTo: string): void => {
+        console.log("Setting description on offer and sending answer");
         this.userNameLocalIsConnectedTo = _usernameToRespondTo;
-        console.log("Answer creation username: ", _usernameToRespondTo);
         this.connection.setRemoteDescription(new RTCSessionDescription(_offer));
 
         // Signaling example from here https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/createAnswer
@@ -154,7 +161,6 @@ export class NetworkConnectionManager {
 
     public createRTCConnection = () => {
         this.connection = new RTCPeerConnection(this.configuration);
-
         this.peerConnectionToChosenPeer = this.connection.createDataChannel("testChannel");
 
         this.connection.ondatachannel = (datachannelEvent) => {
