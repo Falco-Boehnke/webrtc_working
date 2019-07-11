@@ -93,7 +93,7 @@ class ServerMain {
 
             if (associatedWebsocketConnectionClient != null) {
                 associatedWebsocketConnectionClient.userName = _messageData.loginUserName;
-                ServerMain.sendTo(_websocketConnection, new NetworkMessages.LoginResponse(true, associatedWebsocketConnectionClient.id));
+                ServerMain.sendTo(_websocketConnection, new NetworkMessages.LoginResponse(true, associatedWebsocketConnectionClient.id, associatedWebsocketConnectionClient.userName));
             }
         } else {
             ServerMain.sendTo(_websocketConnection, { type: "login", success: false });
@@ -116,7 +116,6 @@ class ServerMain {
 
     public static answerRtcOfferOfClient(_websocketClient: WebSocket, _messageData: NetworkMessages.RtcAnswer): void {
         console.log("Sending answer to: ", _messageData.userNameToConnectTo);
-        debugger;
         const clientToSendAnswerTo = ServerMain.searchForPropertyValueInCollection
             (_messageData.userNameToConnectTo,
              "userName",

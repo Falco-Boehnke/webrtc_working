@@ -55,7 +55,7 @@ class ServerMain {
             const associatedWebsocketConnectionClient = ServerMain.searchForPropertyValueInCollection(_websocketConnection, "clientConnection", ServerMain.usersCollection);
             if (associatedWebsocketConnectionClient != null) {
                 associatedWebsocketConnectionClient.userName = _messageData.loginUserName;
-                ServerMain.sendTo(_websocketConnection, new NetworkMessages.LoginResponse(true, associatedWebsocketConnectionClient.id));
+                ServerMain.sendTo(_websocketConnection, new NetworkMessages.LoginResponse(true, associatedWebsocketConnectionClient.id, associatedWebsocketConnectionClient.userName));
             }
         }
         else {
@@ -79,7 +79,6 @@ class ServerMain {
     }
     static answerRtcOfferOfClient(_websocketClient, _messageData) {
         console.log("Sending answer to: ", _messageData.userNameToConnectTo);
-        debugger;
         const clientToSendAnswerTo = ServerMain.searchForPropertyValueInCollection(_messageData.userNameToConnectTo, "userName", ServerMain.usersCollection);
         if (clientToSendAnswerTo != null) {
             clientToSendAnswerTo.clientConnection.otherUsername = clientToSendAnswerTo.userName;
