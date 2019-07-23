@@ -3,6 +3,7 @@ import * as NetworkMessages from "./../NetworkMessages";
 import * as TYPES from "./../DataCollectors/Enumerators/EnumeratorCollection";
 
 import { Client } from "./../DataCollectors/Client";
+import { LoginResponse } from "./../NetworkMessages";
 class ServerMain {
     public static websocketServer: WebSocket.Server;
     public static usersCollection: Client[] = new Array();
@@ -23,6 +24,7 @@ class ServerMain {
             console.log("User connected FRESH");
 
             const uniqueIdOnConnection: string = ServerMain.createID();
+            ServerMain.sendTo(_websocketClient, new NetworkMessages.IdAssigned(uniqueIdOnConnection));
             const freshlyConnectedClient: Client = new Client(_websocketClient, uniqueIdOnConnection);
             ServerMain.usersCollection.push(freshlyConnectedClient);
 
@@ -51,8 +53,10 @@ class ServerMain {
 
         if (parsedMessage != null) {
             switch (parsedMessage.messageType) {
-                // TODO Enums ALLCAPS_ENUM
-                // TODO messageData.target doesn't work, gotta replace that to find client connection, probably use ID
+                case TYPES.MESSAGE_TYPE.ID_ASSIGNED:
+                    console.error("Id assignment received as Server");
+                    break;
+                    
                 case TYPES.MESSAGE_TYPE.LOGIN_REQUEST:
                     ServerMain.addUserOnValidLoginRequest(_websocketClient, messageData);
                     break;
@@ -96,7 +100,7 @@ class ServerMain {
                 ServerMain.sendTo(_websocketConnection, new NetworkMessages.LoginResponse(true, associatedWebsocketConnectionClient.id, associatedWebsocketConnectionClient.userName));
             }
         } else {
-            ServerMain.sendTo(_websocketConnection, { type: "login", success: false });
+            ServerMain.sendTo(_websocketConnection, new LoginResponse(false, "", ""));
             usernameTaken = true;
             console.log("UsernameTaken");
         }

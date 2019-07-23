@@ -31,7 +31,7 @@ class NetworkConnectionManager {
         };
         this.isNegotiating = false;
         this.addUiListeners = () => {
-            UiElementHandler_1.UiElementHandler.getAllUiElements();
+            // UiElementHandler.getAllUiElements();
             console.log(UiElementHandler_1.UiElementHandler.loginButton);
             UiElementHandler_1.UiElementHandler.loginButton.addEventListener("click", this.checkChosenUsernameAndCreateLoginRequest);
             UiElementHandler_1.UiElementHandler.connectToUserButton.addEventListener("click", this.checkUsernameToConnectToAndInitiateConnection);
@@ -61,8 +61,11 @@ class NetworkConnectionManager {
             let objectifiedMessage = this.parseReceivedMessageAndReturnObject(_receivedMessage);
             console.log("Received message:", objectifiedMessage);
             switch (objectifiedMessage.messageType) {
+                case TYPES.MESSAGE_TYPE.ID_ASSIGNED:
+                    console.log("ID received, assigning to self");
+                    this.localId = objectifiedMessage.assignedId;
+                    break;
                 case TYPES.MESSAGE_TYPE.LOGIN_RESPONSE:
-                    console.log("LOGIN SUCCESS", objectifiedMessage.loginSuccess);
                     this.loginValidAddUser(objectifiedMessage.originatorId, objectifiedMessage.loginSuccess, objectifiedMessage.originatorUsername);
                     break;
                 case TYPES.MESSAGE_TYPE.RTC_OFFER:
@@ -100,7 +103,11 @@ class NetworkConnectionManager {
                 alert("Enter a username 😉");
                 return;
             }
+            // TODO Fehler ist das sich der answerer selbst die message schickt weil der
+            // Username zu dem es connected ist nicht richtig gepeichert wird
+            // Muss umwandeln zu IDs
             this.userNameLocalIsConnectedTo = callToUsername;
+            console.log("Username to connect to: " + this.userNameLocalIsConnectedTo);
             this.initiateConnectionByCreatingDataChannelAndCreatingOffer(this.userNameLocalIsConnectedTo);
         };
         this.initiateConnectionByCreatingDataChannelAndCreatingOffer = (_userNameForOffer) => {
@@ -126,7 +133,7 @@ class NetworkConnectionManager {
             });
         };
         this.createOfferMessageAndSendToRemote = (_userNameForOffer) => {
-            const offerMessage = new NetworkMessages.RtcOffer(this.localClientId, _userNameForOffer, this.connection.localDescription);
+            const offerMessage = new NetworkMessages.RtcOffer(this.localId, _userNameForOffer, this.connection.localDescription);
             this.sendMessage(offerMessage);
             console.log("Sent offer to remote peer, Expected 'have-local-offer', got:  ", this.connection.signalingState);
         };
@@ -140,8 +147,8 @@ class NetworkConnectionManager {
                 return await this.connection.setLocalDescription(ultimateAnswer);
             }).then(async () => {
                 console.log("CreateAnswerFunction after setting local descp, Expected 'stable', got:  ", this.connection.signalingState);
-                const answerMessage = new NetworkMessages.RtcAnswer(this.localClientId, this.userNameLocalIsConnectedTo, ultimateAnswer);
-                console.log("Sending AnswerObject to: " + answerMessage.userNameToConnectTo);
+                const answerMessage = new NetworkMessages.RtcAnswer(this.localId, this.userNameLocalIsConnectedTo, ultimateAnswer);
+                console.log("AnswerObject: ", answerMessage);
                 await this.sendMessage(answerMessage);
             })
                 .catch(() => {
@@ -169,10 +176,8 @@ class NetworkConnectionManager {
         //#region ReceivingFunctions
         this.loginValidAddUser = (_assignedId, _loginSuccess, _originatorUserName) => {
             if (_loginSuccess) {
-                this.localClientId = _assignedId;
                 this.localUserName = _originatorUserName;
                 console.log("Local Username: " + this.localUserName);
-                console.log("COnnection at Login: " + this.localClientId + " ", this.connection);
             }
             else {
                 console.log("Login failed, username taken");
@@ -182,7 +187,8 @@ class NetworkConnectionManager {
         // DOMException: Failed to set remote offer sdp: Called in wrong state: STATE_SENTOFFER
         this.receiveOfferAndSetRemoteDescriptionThenCreateAndSendAnswer = (_offerMessage) => {
             console.log("Setting description on offer and sending answer to username: ", _offerMessage.userNameToConnectTo);
-            this.userNameLocalIsConnectedTo = _offerMessage.userNameToConnectTo;
+            this.userNameLocalIsConnectedTo = _offerMessage.originatorId;
+            console.log("Username to send answer to ", this.userNameLocalIsConnectedTo);
             let offerToSet = _offerMessage.offer;
             if (!offerToSet) {
                 return;
@@ -242,12 +248,12 @@ class NetworkConnectionManager {
         };
         this.ws = new WebSocket("ws://localhost:8080");
         this.localUserName = "";
-        this.localClientId = "undefined";
+        this.localId = "undefined";
         this.remoteConnection = null;
         this.userNameLocalIsConnectedTo = "";
         this.receivedDataChannelFromRemote = undefined;
         this.createRTCPeerConnectionAndAddListeners();
-        UiElementHandler_1.UiElementHandler.getAllUiElements();
+        // UiElementHandler.getAllUiElements();
         this.addUiListeners();
         this.addWsEventListeners();
     }

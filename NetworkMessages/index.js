@@ -8,3 +8,4 @@ __export(require("./IceCandidate"));
 __export(require("./RtcAnswer"));
 __export(require("./RtcOffer"));
 __export(require("./LoginResponse"));
+__export(require("./IdAssigned"));

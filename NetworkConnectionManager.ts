@@ -1,12 +1,13 @@
 import { UiElementHandler } from "./DataCollectors/UiElementHandler";
 import * as TYPES from "./DataCollectors/Enumerators/EnumeratorCollection";
 import * as NetworkMessages from "./NetworkMessages";
+import { types } from "util";
 
 
 
 export class NetworkConnectionManager {
     public ws: WebSocket;
-    public localClientId: string;
+    public localId: string;
     public localUserName: string;
     public connection!: RTCPeerConnection;
     public remoteConnection: RTCPeerConnection | null;
@@ -36,18 +37,18 @@ export class NetworkConnectionManager {
     constructor() {
         this.ws = new WebSocket("ws://localhost:8080");
         this.localUserName = "";
-        this.localClientId = "undefined";
+        this.localId = "undefined";
         this.remoteConnection = null;
         this.userNameLocalIsConnectedTo = "";
         this.receivedDataChannelFromRemote = undefined;
         this.createRTCPeerConnectionAndAddListeners();
-        UiElementHandler.getAllUiElements();
+        // UiElementHandler.getAllUiElements();
         this.addUiListeners();
         this.addWsEventListeners();
     }
 
     public addUiListeners = (): void => {
-        UiElementHandler.getAllUiElements();
+        // UiElementHandler.getAllUiElements();
         console.log(UiElementHandler.loginButton);
         UiElementHandler.loginButton.addEventListener("click", this.checkChosenUsernameAndCreateLoginRequest);
         UiElementHandler.connectToUserButton.addEventListener("click", this.checkUsernameToConnectToAndInitiateConnection);
@@ -84,16 +85,23 @@ export class NetworkConnectionManager {
 
         console.log("Received message:", objectifiedMessage);
         switch (objectifiedMessage.messageType) {
+            case TYPES.MESSAGE_TYPE.ID_ASSIGNED:
+                console.log("ID received, assigning to self");
+                this.localId = objectifiedMessage.assignedId;
+                break;
+
             case TYPES.MESSAGE_TYPE.LOGIN_RESPONSE:
-                console.log("LOGIN SUCCESS", objectifiedMessage.loginSuccess);
                 this.loginValidAddUser(objectifiedMessage.originatorId, objectifiedMessage.loginSuccess, objectifiedMessage.originatorUsername);
                 break;
+
             case TYPES.MESSAGE_TYPE.RTC_OFFER:
                 this.receiveOfferAndSetRemoteDescriptionThenCreateAndSendAnswer(objectifiedMessage);
                 break;
+
             case TYPES.MESSAGE_TYPE.RTC_ANSWER:
                 this.receiveAnswerAndSetRemoteDescription(objectifiedMessage.clientId, objectifiedMessage.answer);
                 break;
+                
             case TYPES.MESSAGE_TYPE.ICE_CANDIDATE:
                 this.handleCandidate(objectifiedMessage.candidate);
                 break;
@@ -160,7 +168,7 @@ export class NetworkConnectionManager {
     }
 
     public createOfferMessageAndSendToRemote = (_userNameForOffer: string) => {
-        const offerMessage: NetworkMessages.RtcOffer = new NetworkMessages.RtcOffer(this.localClientId, _userNameForOffer, this.connection.localDescription);
+        const offerMessage: NetworkMessages.RtcOffer = new NetworkMessages.RtcOffer(this.localId, _userNameForOffer, this.connection.localDescription);
         this.sendMessage(offerMessage);
         console.log("Sent offer to remote peer, Expected 'have-local-offer', got:  ", this.connection.signalingState);
     }
@@ -178,10 +186,10 @@ export class NetworkConnectionManager {
                 
                 const answerMessage: NetworkMessages.RtcAnswer =
                     new NetworkMessages.RtcAnswer
-                        (this.localClientId,
+                        (this.localId,
                          this.userNameLocalIsConnectedTo,
                          ultimateAnswer);
-                console.log("Sending AnswerObject to: " + answerMessage.userNameToConnectTo);
+                console.log("AnswerObject: ", answerMessage);
                 await this.sendMessage(answerMessage);
             })
             .catch(() => {
@@ -217,10 +225,8 @@ export class NetworkConnectionManager {
     //#region ReceivingFunctions
     public loginValidAddUser = (_assignedId: string, _loginSuccess: boolean, _originatorUserName: string): void => {
         if (_loginSuccess) {
-            this.localClientId = _assignedId;
             this.localUserName = _originatorUserName;
             console.log("Local Username: " + this.localUserName);
-            console.log("COnnection at Login: " + this.localClientId + " ", this.connection);
         } else {
             console.log("Login failed, username taken");
         }
@@ -231,6 +237,7 @@ export class NetworkConnectionManager {
     public receiveOfferAndSetRemoteDescriptionThenCreateAndSendAnswer = (_offerMessage: NetworkMessages.RtcOffer): void => {
         console.log("Setting description on offer and sending answer to username: ", _offerMessage.userNameToConnectTo);
         this.userNameLocalIsConnectedTo = _offerMessage.originatorId;
+        console.log("Username to send answer to ", this.userNameLocalIsConnectedTo);
         let offerToSet = _offerMessage.offer;
         if (!offerToSet) {
             return;

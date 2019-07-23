@@ -11,6 +11,7 @@ const WebSocket = __importStar(require("ws"));
 const NetworkMessages = __importStar(require("./../NetworkMessages"));
 const TYPES = __importStar(require("./../DataCollectors/Enumerators/EnumeratorCollection"));
 const Client_1 = require("./../DataCollectors/Client");
+const NetworkMessages_1 = require("./../NetworkMessages");
 class ServerMain {
     // TODO Check if event.type can be used for identification instead
     static serverHandleMessageType(_message, _websocketClient) {
@@ -25,8 +26,9 @@ class ServerMain {
         const messageData = parsedMessage;
         if (parsedMessage != null) {
             switch (parsedMessage.messageType) {
-                // TODO Enums ALLCAPS_ENUM
-                // TODO messageData.target doesn't work, gotta replace that to find client connection, probably use ID
+                case TYPES.MESSAGE_TYPE.ID_ASSIGNED:
+                    console.error("Id assignment received as Server");
+                    break;
                 case TYPES.MESSAGE_TYPE.LOGIN_REQUEST:
                     ServerMain.addUserOnValidLoginRequest(_websocketClient, messageData);
                     break;
@@ -59,7 +61,7 @@ class ServerMain {
             }
         }
         else {
-            ServerMain.sendTo(_websocketConnection, { type: "login", success: false });
+            ServerMain.sendTo(_websocketConnection, new NetworkMessages_1.LoginResponse(false, "", ""));
             usernameTaken = true;
             console.log("UsernameTaken");
         }
@@ -122,6 +124,7 @@ ServerMain.serverEventHandler = () => {
         // _websocketClient = _websocketClient;
         console.log("User connected FRESH");
         const uniqueIdOnConnection = ServerMain.createID();
+        ServerMain.sendTo(_websocketClient, new NetworkMessages.IdAssigned(uniqueIdOnConnection));
         const freshlyConnectedClient = new Client_1.Client(_websocketClient, uniqueIdOnConnection);
         ServerMain.usersCollection.push(freshlyConnectedClient);
         _websocketClient.on("message", (_message) => {

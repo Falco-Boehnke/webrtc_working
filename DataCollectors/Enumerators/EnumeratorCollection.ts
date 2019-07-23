@@ -1,5 +1,6 @@
 export enum MESSAGE_TYPE {
     UNDEFINED = "undefined",
+    ID_ASSIGNED = "id_assigned",
     LOGIN_REQUEST = "login_request",
     LOGIN_RESPONSE = "login_response",
     RTC_OFFER = "offer",
