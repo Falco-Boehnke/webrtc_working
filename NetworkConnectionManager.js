@@ -29,7 +29,6 @@ class NetworkConnectionManager {
                 { urls: "stun:stun.example.com" }
             ]
         };
-        this.isNegotiating = false;
         this.addUiListeners = () => {
             // UiElementHandler.getAllUiElements();
             console.log(UiElementHandler_1.UiElementHandler.loginButton);
@@ -52,7 +51,6 @@ class NetworkConnectionManager {
             console.log("Creating RTC Connection");
             this.connection = new RTCPeerConnection(this.configuration);
             this.connection.addEventListener("icecandidate", this.sendNewIceCandidatesToPeer);
-            this.connection.addEventListener("datachannel", this.receiveDataChannel);
             console.log("CreateRTCConection State, Expected 'stable', got:  ", this.connection.signalingState);
         };
         //#endregion
@@ -115,10 +113,12 @@ class NetworkConnectionManager {
         };
         this.initiateConnectionByCreatingDataChannelAndCreatingOffer = (_userNameForOffer) => {
             console.log("Creating Datachannel for connection and then creating offer");
+            this.isInitiator = true;
             this.localDataChannel = this.connection.createDataChannel("localDataChannel");
             this.localDataChannel.addEventListener("open", this.dataChannelStatusChangeHandler);
             this.localDataChannel.addEventListener("close", this.dataChannelStatusChangeHandler);
             this.localDataChannel.addEventListener("message", this.dataChannelMessageHandler);
+            const dataChannelConstant = this.localDataChannel;
             this.connection.createOffer()
                 .then(async (offer) => {
                 console.log("Beginning of createOffer in InitiateConnection, Expected 'stable', got:  ", this.connection.signalingState);
@@ -169,7 +169,11 @@ class NetworkConnectionManager {
         this.sendMessageViaDirectPeerConnection = () => {
             const message = UiElementHandler_1.UiElementHandler.msgInput.value;
             UiElementHandler_1.UiElementHandler.chatbox.innerHTML += "\n" + this.localUserName + ": " + message;
-            if (this.receivedDataChannelFromRemote) {
+            if (this.isInitiator && this.localDataChannel) {
+                this.localDataChannel.send(message);
+            }
+            else if (!this.isInitiator && this.receivedDataChannelFromRemote) {
+                console.log("Sending Message via received Datachannel");
                 this.receivedDataChannelFromRemote.send(message);
             }
             else {
@@ -191,6 +195,7 @@ class NetworkConnectionManager {
         // DOMException: Failed to set remote offer sdp: Called in wrong state: STATE_SENTOFFER
         this.receiveOfferAndSetRemoteDescriptionThenCreateAndSendAnswer = (_offerMessage) => {
             console.log("Setting description on offer and sending answer to username: ", _offerMessage.userNameToConnectTo);
+            this.connection.addEventListener("datachannel", this.receiveDataChannel);
             this.remoteClientId = _offerMessage.originatorId;
             console.log("UserID to send answer to ", this.remoteClientId);
             let offerToSet = _offerMessage.offer;
@@ -259,6 +264,7 @@ class NetworkConnectionManager {
         this.localId = "undefined";
         this.remoteConnection = null;
         this.remoteClientId = "";
+        this.isInitiator = false;
         this.receivedDataChannelFromRemote = undefined;
         this.createRTCPeerConnectionAndAddListeners();
         // UiElementHandler.getAllUiElements();

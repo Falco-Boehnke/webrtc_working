@@ -10,6 +10,7 @@ export class NetworkConnectionManager {
     public localId: string;
     public localUserName: string;
     public connection!: RTCPeerConnection;
+
     public remoteConnection: RTCPeerConnection | null;
     public remoteClientId: string;
     public localDataChannel: RTCDataChannel | undefined;
@@ -22,7 +23,8 @@ export class NetworkConnectionManager {
             { urls: "stun:stun.example.com" }
         ]
     };
-    private isNegotiating: boolean = false;
+    private isInitiator: boolean;
+
     // More info from here https://developer.mozilla.org/en-US/docs/Web/API/RTCConfiguration
     //     var configuration = { iceServers: [{
     //         urls: "stun:stun.services.mozilla.com",
@@ -40,6 +42,7 @@ export class NetworkConnectionManager {
         this.localId = "undefined";
         this.remoteConnection = null;
         this.remoteClientId = "";
+        this.isInitiator = false;
         this.receivedDataChannelFromRemote = undefined;
         this.createRTCPeerConnectionAndAddListeners();
         // UiElementHandler.getAllUiElements();
@@ -73,7 +76,6 @@ export class NetworkConnectionManager {
         this.connection = new RTCPeerConnection(this.configuration);
 
         this.connection.addEventListener("icecandidate", this.sendNewIceCandidatesToPeer);
-        this.connection.addEventListener("datachannel", this.receiveDataChannel);
         console.log("CreateRTCConection State, Expected 'stable', got:  ", this.connection.signalingState);
 
     }
@@ -149,6 +151,7 @@ export class NetworkConnectionManager {
 
     public initiateConnectionByCreatingDataChannelAndCreatingOffer = (_userNameForOffer: string): void => {
         console.log("Creating Datachannel for connection and then creating offer");
+        this.isInitiator = true;
         this.localDataChannel = this.connection.createDataChannel("localDataChannel");
         this.localDataChannel.addEventListener("open", this.dataChannelStatusChangeHandler);
         this.localDataChannel.addEventListener("close", this.dataChannelStatusChangeHandler);
@@ -214,7 +217,12 @@ export class NetworkConnectionManager {
     public sendMessageViaDirectPeerConnection = () => {
         const message: string = UiElementHandler.msgInput.value;
         UiElementHandler.chatbox.innerHTML += "\n" + this.localUserName + ": " + message;
-        if (this.receivedDataChannelFromRemote) {
+
+        if (this.isInitiator && this.localDataChannel) {
+            this.localDataChannel.send(message);
+        }
+        else if (!this.isInitiator && this.receivedDataChannelFromRemote) {
+            console.log("Sending Message via received Datachannel");
             this.receivedDataChannelFromRemote.send(message);
         }
         else {
@@ -238,6 +246,7 @@ export class NetworkConnectionManager {
     // DOMException: Failed to set remote offer sdp: Called in wrong state: STATE_SENTOFFER
     public receiveOfferAndSetRemoteDescriptionThenCreateAndSendAnswer = (_offerMessage: NetworkMessages.RtcOffer): void => {
         console.log("Setting description on offer and sending answer to username: ", _offerMessage.userNameToConnectTo);
+        this.connection.addEventListener("datachannel", this.receiveDataChannel);
         this.remoteClientId = _offerMessage.originatorId;
         console.log("UserID to send answer to ", this.remoteClientId);
         let offerToSet = _offerMessage.offer;
