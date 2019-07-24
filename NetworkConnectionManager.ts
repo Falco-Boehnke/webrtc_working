@@ -106,7 +106,7 @@ export class NetworkConnectionManager {
 
             case TYPES.MESSAGE_TYPE.ICE_CANDIDATE:
                 console.log("Received candidate, current signaling state: ", this.connection.signalingState);
-                this.handleCandidate(objectifiedMessage.candidate);
+                this.handleCandidate(objectifiedMessage);
                 break;
         }
     }
@@ -198,7 +198,8 @@ export class NetworkConnectionManager {
     }
 
     public sendNewIceCandidatesToPeer = ({ candidate }: any) => {
-        let message = new NetworkMessages.IceCandidate("", "", candidate);
+        console.log("Sending ICECandidates from: ", this.localId);
+        let message: NetworkMessages.IceCandidate = new NetworkMessages.IceCandidate(this.localId, this.remoteClientId, candidate);
         this.sendMessage(message);
 
     }
@@ -260,13 +261,15 @@ export class NetworkConnectionManager {
         //TODO DAS IST DIE FEHLERQUELLE
 
         this.connection.setRemoteDescription(descriptionAnswer);
-        console.log("Description set as answer");
+        console.log("Remote Description set");
+        console.log("Signaling state:", this.connection.signalingState);
     }
 
-    public handleCandidate = (event: MessageEvent) => {
-        console.log("Handling Remote Candidate");
-        console.log(event);
-
+    public handleCandidate = async (_receivedIceMessage: NetworkMessages.IceCandidate) => {
+        if (_receivedIceMessage.candidate) {
+            console.log("ASyncly adding candidates");
+            await this.connection.addIceCandidate(_receivedIceMessage.candidate);
+        }
     }
 
     public receiveDataChannel = (event: any) => {

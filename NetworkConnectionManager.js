@@ -78,7 +78,7 @@ class NetworkConnectionManager {
                     break;
                 case TYPES.MESSAGE_TYPE.ICE_CANDIDATE:
                     console.log("Received candidate, current signaling state: ", this.connection.signalingState);
-                    this.handleCandidate(objectifiedMessage.candidate);
+                    this.handleCandidate(objectifiedMessage);
                     break;
             }
         };
@@ -159,7 +159,8 @@ class NetworkConnectionManager {
             });
         };
         this.sendNewIceCandidatesToPeer = ({ candidate }) => {
-            let message = new NetworkMessages.IceCandidate("", "", candidate);
+            console.log("Sending ICECandidates from: ", this.localId);
+            let message = new NetworkMessages.IceCandidate(this.localId, this.remoteClientId, candidate);
             this.sendMessage(message);
         };
         this.sendMessage = (message) => {
@@ -210,11 +211,14 @@ class NetworkConnectionManager {
             console.log("Receiving Answer, setting remote desc Expected 'have-local-offer'|'have-remote-offer, got:  ", this.connection.signalingState);
             //TODO DAS IST DIE FEHLERQUELLE
             this.connection.setRemoteDescription(descriptionAnswer);
-            console.log("Description set as answer");
+            console.log("Remote Description set");
+            console.log("Signaling state:", this.connection.signalingState);
         };
-        this.handleCandidate = (event) => {
-            console.log("Handling Remote Candidate");
-            console.log(event);
+        this.handleCandidate = async (_receivedIceMessage) => {
+            if (_receivedIceMessage.candidate) {
+                console.log("ASyncly adding candidates");
+                await this.connection.addIceCandidate(_receivedIceMessage.candidate);
+            }
         };
         this.receiveDataChannel = (event) => {
             console.log("Receice Datachannel event");

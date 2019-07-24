@@ -91,10 +91,10 @@ class ServerMain {
         }
     }
     static sendIceCandidatesToRelevantPeers(_websocketClient, _messageData) {
-        console.log("Sending candidate to:", _messageData.userNameToConnectTo);
-        const clientToShareCandidatesWith = ServerMain.searchForPropertyValueInCollection(_messageData.userNameToConnectTo, "userName", ServerMain.connectedClientsCollection);
+        console.log("Sending candidate to:", _messageData.targetId, "from: ", _messageData.originatorId);
+        const clientToShareCandidatesWith = ServerMain.searchUserByUserIdAndReturnUser(_messageData.targetId, ServerMain.connectedClientsCollection);
         if (clientToShareCandidatesWith != null) {
-            const candidateToSend = new NetworkMessages.IceCandidate(_messageData.originatorId, clientToShareCandidatesWith.userName, _messageData.candidate);
+            const candidateToSend = new NetworkMessages.IceCandidate(_messageData.originatorId, clientToShareCandidatesWith.id, _messageData.candidate);
             ServerMain.sendTo(clientToShareCandidatesWith.clientConnection, candidateToSend);
         }
     }
