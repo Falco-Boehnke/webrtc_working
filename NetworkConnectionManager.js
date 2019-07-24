@@ -69,12 +69,15 @@ class NetworkConnectionManager {
                     this.loginValidAddUser(objectifiedMessage.originatorId, objectifiedMessage.loginSuccess, objectifiedMessage.originatorUsername);
                     break;
                 case TYPES.MESSAGE_TYPE.RTC_OFFER:
+                    console.log("Received offer, current signaling state: ", this.connection.signalingState);
                     this.receiveOfferAndSetRemoteDescriptionThenCreateAndSendAnswer(objectifiedMessage);
                     break;
                 case TYPES.MESSAGE_TYPE.RTC_ANSWER:
+                    console.log("Received answer, current signaling state: ", this.connection.signalingState);
                     this.receiveAnswerAndSetRemoteDescription(objectifiedMessage.clientId, objectifiedMessage.answer);
                     break;
                 case TYPES.MESSAGE_TYPE.ICE_CANDIDATE:
+                    console.log("Received candidate, current signaling state: ", this.connection.signalingState);
                     this.handleCandidate(objectifiedMessage.candidate);
                     break;
             }
@@ -94,7 +97,7 @@ class NetworkConnectionManager {
             this.createLoginRequestAndSendToServer(this.localUserName);
         };
         this.createLoginRequestAndSendToServer = (_requestingUsername) => {
-            const loginMessage = new NetworkMessages.LoginRequest(this.localUserName);
+            const loginMessage = new NetworkMessages.LoginRequest(this.localId, this.localUserName);
             this.sendMessage(loginMessage);
         };
         this.checkUsernameToConnectToAndInitiateConnection = () => {
@@ -106,9 +109,9 @@ class NetworkConnectionManager {
             // TODO Fehler ist das sich der answerer selbst die message schickt weil der
             // Username zu dem es connected ist nicht richtig gepeichert wird
             // Muss umwandeln zu IDs
-            this.userNameLocalIsConnectedTo = callToUsername;
-            console.log("Username to connect to: " + this.userNameLocalIsConnectedTo);
-            this.initiateConnectionByCreatingDataChannelAndCreatingOffer(this.userNameLocalIsConnectedTo);
+            this.remoteClientId = callToUsername;
+            console.log("Username to connect to: " + this.remoteClientId);
+            this.initiateConnectionByCreatingDataChannelAndCreatingOffer(this.remoteClientId);
         };
         this.initiateConnectionByCreatingDataChannelAndCreatingOffer = (_userNameForOffer) => {
             console.log("Creating Datachannel for connection and then creating offer");
@@ -137,7 +140,7 @@ class NetworkConnectionManager {
             this.sendMessage(offerMessage);
             console.log("Sent offer to remote peer, Expected 'have-local-offer', got:  ", this.connection.signalingState);
         };
-        this.createAnswerAndSendToRemote = () => {
+        this.createAnswerAndSendToRemote = (_remoteIdToAnswerTo) => {
             let ultimateAnswer;
             // Signaling example from here https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/createAnswer
             this.connection.createAnswer()
@@ -147,7 +150,7 @@ class NetworkConnectionManager {
                 return await this.connection.setLocalDescription(ultimateAnswer);
             }).then(async () => {
                 console.log("CreateAnswerFunction after setting local descp, Expected 'stable', got:  ", this.connection.signalingState);
-                const answerMessage = new NetworkMessages.RtcAnswer(this.localId, this.userNameLocalIsConnectedTo, ultimateAnswer);
+                const answerMessage = new NetworkMessages.RtcAnswer(this.localId, _remoteIdToAnswerTo, "", ultimateAnswer);
                 console.log("AnswerObject: ", answerMessage);
                 await this.sendMessage(answerMessage);
             })
@@ -187,8 +190,8 @@ class NetworkConnectionManager {
         // DOMException: Failed to set remote offer sdp: Called in wrong state: STATE_SENTOFFER
         this.receiveOfferAndSetRemoteDescriptionThenCreateAndSendAnswer = (_offerMessage) => {
             console.log("Setting description on offer and sending answer to username: ", _offerMessage.userNameToConnectTo);
-            this.userNameLocalIsConnectedTo = _offerMessage.originatorId;
-            console.log("Username to send answer to ", this.userNameLocalIsConnectedTo);
+            this.remoteClientId = _offerMessage.originatorId;
+            console.log("UserID to send answer to ", this.remoteClientId);
             let offerToSet = _offerMessage.offer;
             if (!offerToSet) {
                 return;
@@ -196,7 +199,7 @@ class NetworkConnectionManager {
             this.connection.setRemoteDescription(new RTCSessionDescription(offerToSet))
                 .then(async () => {
                 console.log("Received Offer and Set Descirpton, Expected 'have-remote-offer', got:  ", this.connection.signalingState);
-                await this.createAnswerAndSendToRemote();
+                await this.createAnswerAndSendToRemote(_offerMessage.originatorId);
             })
                 .catch(this.handleCreateAnswerError);
             console.log("End of Function Receive offer, Expected 'stable', got:  ", this.connection.signalingState);
@@ -209,7 +212,8 @@ class NetworkConnectionManager {
             this.connection.setRemoteDescription(descriptionAnswer);
             console.log("Description set as answer");
         };
-        this.handleCandidate = async (event) => {
+        this.handleCandidate = (event) => {
+            console.log("Handling Remote Candidate");
             console.log(event);
         };
         this.receiveDataChannel = (event) => {
@@ -244,13 +248,13 @@ class NetworkConnectionManager {
             return objectifiedMessage;
         };
         this.dataChannelMessageHandler = (_messageEvent) => {
-            UiElementHandler_1.UiElementHandler.chatbox.innerHTML += "\n" + this.userNameLocalIsConnectedTo + ": " + _messageEvent.data;
+            UiElementHandler_1.UiElementHandler.chatbox.innerHTML += "\n" + this.remoteClientId + ": " + _messageEvent.data;
         };
         this.ws = new WebSocket("ws://localhost:8080");
         this.localUserName = "";
         this.localId = "undefined";
         this.remoteConnection = null;
-        this.userNameLocalIsConnectedTo = "";
+        this.remoteClientId = "";
         this.receivedDataChannelFromRemote = undefined;
         this.createRTCPeerConnectionAndAddListeners();
         // UiElementHandler.getAllUiElements();

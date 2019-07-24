@@ -11,7 +11,7 @@ export class NetworkConnectionManager {
     public localUserName: string;
     public connection!: RTCPeerConnection;
     public remoteConnection: RTCPeerConnection | null;
-    public userNameLocalIsConnectedTo: string;
+    public remoteClientId: string;
     public localDataChannel: RTCDataChannel | undefined;
     public receivedDataChannelFromRemote: RTCDataChannel | undefined;
 
@@ -39,7 +39,7 @@ export class NetworkConnectionManager {
         this.localUserName = "";
         this.localId = "undefined";
         this.remoteConnection = null;
-        this.userNameLocalIsConnectedTo = "";
+        this.remoteClientId = "";
         this.receivedDataChannelFromRemote = undefined;
         this.createRTCPeerConnectionAndAddListeners();
         // UiElementHandler.getAllUiElements();
@@ -95,14 +95,17 @@ export class NetworkConnectionManager {
                 break;
 
             case TYPES.MESSAGE_TYPE.RTC_OFFER:
+                console.log("Received offer, current signaling state: ", this.connection.signalingState);
                 this.receiveOfferAndSetRemoteDescriptionThenCreateAndSendAnswer(objectifiedMessage);
                 break;
 
             case TYPES.MESSAGE_TYPE.RTC_ANSWER:
+                console.log("Received answer, current signaling state: ", this.connection.signalingState);
                 this.receiveAnswerAndSetRemoteDescription(objectifiedMessage.clientId, objectifiedMessage.answer);
                 break;
-                
+
             case TYPES.MESSAGE_TYPE.ICE_CANDIDATE:
+                console.log("Received candidate, current signaling state: ", this.connection.signalingState);
                 this.handleCandidate(objectifiedMessage.candidate);
                 break;
         }
@@ -125,7 +128,7 @@ export class NetworkConnectionManager {
     }
 
     public createLoginRequestAndSendToServer = (_requestingUsername: string) => {
-        const loginMessage: NetworkMessages.LoginRequest = new NetworkMessages.LoginRequest(this.localUserName);
+        const loginMessage: NetworkMessages.LoginRequest = new NetworkMessages.LoginRequest(this.localId, this.localUserName);
         this.sendMessage(loginMessage);
     }
 
@@ -139,9 +142,9 @@ export class NetworkConnectionManager {
         // TODO Fehler ist das sich der answerer selbst die message schickt weil der
         // Username zu dem es connected ist nicht richtig gepeichert wird
         // Muss umwandeln zu IDs
-        this.userNameLocalIsConnectedTo = callToUsername;
-        console.log("Username to connect to: " + this.userNameLocalIsConnectedTo);
-        this.initiateConnectionByCreatingDataChannelAndCreatingOffer(this.userNameLocalIsConnectedTo);
+        this.remoteClientId = callToUsername;
+        console.log("Username to connect to: " + this.remoteClientId);
+        this.initiateConnectionByCreatingDataChannelAndCreatingOffer(this.remoteClientId);
     }
 
     public initiateConnectionByCreatingDataChannelAndCreatingOffer = (_userNameForOffer: string): void => {
@@ -173,7 +176,7 @@ export class NetworkConnectionManager {
         console.log("Sent offer to remote peer, Expected 'have-local-offer', got:  ", this.connection.signalingState);
     }
 
-    public createAnswerAndSendToRemote = () => {
+    public createAnswerAndSendToRemote = (_remoteIdToAnswerTo: string) => {
         let ultimateAnswer: RTCSessionDescription;
         // Signaling example from here https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/createAnswer
         this.connection.createAnswer()
@@ -183,12 +186,9 @@ export class NetworkConnectionManager {
                 return await this.connection.setLocalDescription(ultimateAnswer);
             }).then(async () => {
                 console.log("CreateAnswerFunction after setting local descp, Expected 'stable', got:  ", this.connection.signalingState);
-                
+
                 const answerMessage: NetworkMessages.RtcAnswer =
-                    new NetworkMessages.RtcAnswer
-                        (this.localId,
-                         this.userNameLocalIsConnectedTo,
-                         ultimateAnswer);
+                    new NetworkMessages.RtcAnswer(this.localId, _remoteIdToAnswerTo, "", ultimateAnswer);
                 console.log("AnswerObject: ", answerMessage);
                 await this.sendMessage(answerMessage);
             })
@@ -236,8 +236,8 @@ export class NetworkConnectionManager {
     // DOMException: Failed to set remote offer sdp: Called in wrong state: STATE_SENTOFFER
     public receiveOfferAndSetRemoteDescriptionThenCreateAndSendAnswer = (_offerMessage: NetworkMessages.RtcOffer): void => {
         console.log("Setting description on offer and sending answer to username: ", _offerMessage.userNameToConnectTo);
-        this.userNameLocalIsConnectedTo = _offerMessage.originatorId;
-        console.log("Username to send answer to ", this.userNameLocalIsConnectedTo);
+        this.remoteClientId = _offerMessage.originatorId;
+        console.log("UserID to send answer to ", this.remoteClientId);
         let offerToSet = _offerMessage.offer;
         if (!offerToSet) {
             return;
@@ -245,7 +245,7 @@ export class NetworkConnectionManager {
         this.connection.setRemoteDescription(new RTCSessionDescription(offerToSet))
             .then(async () => {
                 console.log("Received Offer and Set Descirpton, Expected 'have-remote-offer', got:  ", this.connection.signalingState);
-                await this.createAnswerAndSendToRemote();
+                await this.createAnswerAndSendToRemote(_offerMessage.originatorId);
             })
             .catch(this.handleCreateAnswerError);
         console.log("End of Function Receive offer, Expected 'stable', got:  ", this.connection.signalingState);
@@ -263,7 +263,8 @@ export class NetworkConnectionManager {
         console.log("Description set as answer");
     }
 
-    public handleCandidate = async (event: MessageEvent) => {
+    public handleCandidate = (event: MessageEvent) => {
+        console.log("Handling Remote Candidate");
         console.log(event);
 
     }
@@ -309,7 +310,7 @@ export class NetworkConnectionManager {
     }
 
     public dataChannelMessageHandler = (_messageEvent: MessageEvent) => {
-        UiElementHandler.chatbox.innerHTML += "\n" + this.userNameLocalIsConnectedTo + ": " + _messageEvent.data;
+        UiElementHandler.chatbox.innerHTML += "\n" + this.remoteClientId + ": " + _messageEvent.data;
     }
     //#endregion
 
@@ -335,7 +336,7 @@ export class NetworkConnectionManager {
     //         });
     //         datachannelEvent.channel.addEventListener("message", (messageEvent) => {
     //             console.log("Received message: " + messageEvent.data);
-    //             UiElementHandler.chatbox.innerHTML += "\n" + this.userNameLocalIsConnectedTo + ": " + messageEvent.data;
+    //             UiElementHandler.chatbox.innerHTML += "\n" + this.remoteClientId + ": " + messageEvent.data;
     //         });
     //     };
 

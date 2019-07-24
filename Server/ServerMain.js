@@ -51,13 +51,13 @@ class ServerMain {
     static addUserOnValidLoginRequest(_websocketConnection, _messageData) {
         console.log("User logged: ", _messageData.loginUserName);
         let usernameTaken = true;
-        usernameTaken = ServerMain.searchForPropertyValueInCollection(_messageData.loginUserName, "userName", ServerMain.usersCollection) != null;
+        usernameTaken = ServerMain.searchUserByUserNameAndReturnUser(_messageData.loginUserName, ServerMain.connectedClientsCollection) != null;
         if (!usernameTaken) {
             console.log("Username available, logging in");
-            const associatedWebsocketConnectionClient = ServerMain.searchForPropertyValueInCollection(_websocketConnection, "clientConnection", ServerMain.usersCollection);
-            if (associatedWebsocketConnectionClient != null) {
-                associatedWebsocketConnectionClient.userName = _messageData.loginUserName;
-                ServerMain.sendTo(_websocketConnection, new NetworkMessages.LoginResponse(true, associatedWebsocketConnectionClient.id, associatedWebsocketConnectionClient.userName));
+            const clientBeingLoggedIn = ServerMain.searchUserByWebsocketConnectionAndReturnUser(_websocketConnection, ServerMain.connectedClientsCollection);
+            if (clientBeingLoggedIn != null) {
+                clientBeingLoggedIn.userName = _messageData.loginUserName;
+                ServerMain.sendTo(_websocketConnection, new NetworkMessages.LoginResponse(true, clientBeingLoggedIn.id, clientBeingLoggedIn.userName));
             }
         }
         else {
@@ -68,7 +68,7 @@ class ServerMain {
     }
     static sendRtcOfferToRequestedClient(_websocketClient, _messageData) {
         console.log("Sending offer to: ", _messageData.userNameToConnectTo);
-        const requestedClient = ServerMain.searchForPropertyValueInCollection(_messageData.userNameToConnectTo, "userName", ServerMain.usersCollection);
+        const requestedClient = ServerMain.searchForPropertyValueInCollection(_messageData.userNameToConnectTo, "userName", ServerMain.connectedClientsCollection);
         if (requestedClient != null) {
             console.log("User for offer found", requestedClient);
             requestedClient.clientConnection.otherUsername = _messageData.userNameToConnectTo;
@@ -80,24 +80,28 @@ class ServerMain {
         }
     }
     static answerRtcOfferOfClient(_websocketClient, _messageData) {
-        console.log("Sending answer to: ", _messageData.userNameToConnectTo);
-        const clientToSendAnswerTo = ServerMain.searchForPropertyValueInCollection(_messageData.userNameToConnectTo, "userName", ServerMain.usersCollection);
+        console.log("Sending answer to: ", _messageData.targetId);
+        const clientToSendAnswerTo = ServerMain.searchUserByUserIdAndReturnUser(_messageData.targetId, ServerMain.connectedClientsCollection);
         if (clientToSendAnswerTo != null) {
-            clientToSendAnswerTo.clientConnection.otherUsername = clientToSendAnswerTo.userName;
-            const answerToSend = new NetworkMessages.RtcAnswer(_messageData.originatorId, clientToSendAnswerTo.userName, _messageData.answer);
-            ServerMain.sendTo(clientToSendAnswerTo.clientConnection, answerToSend);
+            // TODO Probable source of error, need to test
+            // clientToSendAnswerTo.clientConnection.otherUsername = clientToSendAnswerTo.userName;
+            // const answerToSend: NetworkMessages.RtcAnswer = new NetworkMessages.RtcAnswer(_messageData.originatorId, clientToSendAnswerTo.userName, _messageData.answer);
+            if (clientToSendAnswerTo.clientConnection != null)
+                ServerMain.sendTo(clientToSendAnswerTo.clientConnection, _messageData);
         }
     }
     static sendIceCandidatesToRelevantPeers(_websocketClient, _messageData) {
         console.log("Sending candidate to:", _messageData.userNameToConnectTo);
-        const clientToShareCandidatesWith = ServerMain.searchForPropertyValueInCollection(_messageData.userNameToConnectTo, "userName", ServerMain.usersCollection);
+        const clientToShareCandidatesWith = ServerMain.searchForPropertyValueInCollection(_messageData.userNameToConnectTo, "userName", ServerMain.connectedClientsCollection);
         if (clientToShareCandidatesWith != null) {
             const candidateToSend = new NetworkMessages.IceCandidate(_messageData.originatorId, clientToShareCandidatesWith.userName, _messageData.candidate);
             ServerMain.sendTo(clientToShareCandidatesWith.clientConnection, candidateToSend);
         }
     }
+    //#endregion
+    //#region Helperfunctions
     static searchForClientWithId(_idToFind) {
-        return this.searchForPropertyValueInCollection(_idToFind, "id", this.usersCollection);
+        return this.searchForPropertyValueInCollection(_idToFind, "id", this.connectedClientsCollection);
     }
     //#endregion
     static parseMessageToJson(_messageToParse) {
@@ -111,7 +115,7 @@ class ServerMain {
         return parsedMessage;
     }
 }
-ServerMain.usersCollection = new Array();
+ServerMain.connectedClientsCollection = new Array();
 ServerMain.startUpServer = () => {
     ServerMain.websocketServer = new WebSocket.Server({ port: 8080 });
     ServerMain.serverEventHandler();
@@ -126,7 +130,7 @@ ServerMain.serverEventHandler = () => {
         const uniqueIdOnConnection = ServerMain.createID();
         ServerMain.sendTo(_websocketClient, new NetworkMessages.IdAssigned(uniqueIdOnConnection));
         const freshlyConnectedClient = new Client_1.Client(_websocketClient, uniqueIdOnConnection);
-        ServerMain.usersCollection.push(freshlyConnectedClient);
+        ServerMain.connectedClientsCollection.push(freshlyConnectedClient);
         _websocketClient.on("message", (_message) => {
             ServerMain.serverHandleMessageType(_message, _websocketClient);
         });
@@ -135,14 +139,20 @@ ServerMain.serverEventHandler = () => {
         });
     });
 };
-//#endregion
-//#region Helperfunctions
+ServerMain.createID = () => {
+    // Math.random should be random enough because of it's seed
+    // convert to base 36 and pick the first few digits after comma
+    return "_" + Math.random().toString(36).substr(2, 7);
+};
+ServerMain.sendTo = (_connection, _message) => {
+    _connection.send(JSON.stringify(_message));
+};
 // Helper function for searching through a collection, finding objects by key and value, returning
 // Object that has that value
 // tslint:disable-next-line: no-any
 ServerMain.searchForPropertyValueInCollection = (propertyValue, key, collectionToSearch) => {
     for (const propertyObject in collectionToSearch) {
-        if (ServerMain.usersCollection.hasOwnProperty(propertyObject)) {
+        if (ServerMain.connectedClientsCollection.hasOwnProperty(propertyObject)) {
             // tslint:disable-next-line: typedef
             const objectToSearchThrough = collectionToSearch[propertyObject];
             if (objectToSearchThrough[key] === propertyValue) {
@@ -152,12 +162,13 @@ ServerMain.searchForPropertyValueInCollection = (propertyValue, key, collectionT
     }
     return null;
 };
-ServerMain.createID = () => {
-    // Math.random should be random enough because of it's seed
-    // convert to base 36 and pick the first few digits after comma
-    return "_" + Math.random().toString(36).substr(2, 7);
+ServerMain.searchUserByUserNameAndReturnUser = (_userNameToSearchFor, _collectionToSearch) => {
+    return ServerMain.searchForPropertyValueInCollection(_userNameToSearchFor, "userName", _collectionToSearch);
 };
-ServerMain.sendTo = (_connection, _message) => {
-    _connection.send(JSON.stringify(_message));
+ServerMain.searchUserByUserIdAndReturnUser = (_userIdToSearchFor, _collectionToSearch) => {
+    return ServerMain.searchForPropertyValueInCollection(_userIdToSearchFor, "id", _collectionToSearch);
+};
+ServerMain.searchUserByWebsocketConnectionAndReturnUser = (_websocketConnectionToSearchFor, _collectionToSearch) => {
+    return ServerMain.searchForPropertyValueInCollection(_websocketConnectionToSearchFor, "clientConnection", _collectionToSearch);
 };
 ServerMain.startUpServer();
