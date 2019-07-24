@@ -249,7 +249,7 @@ export class NetworkConnectionManager {
         this.connection.addEventListener("datachannel", this.receiveDataChannel);
         this.remoteClientId = _offerMessage.originatorId;
         console.log("UserID to send answer to ", this.remoteClientId);
-        let offerToSet = _offerMessage.offer;
+        let offerToSet: RTCSessionDescription | RTCSessionDescriptionInit | null = _offerMessage.offer;
         if (!offerToSet) {
             return;
         }
@@ -282,7 +282,7 @@ export class NetworkConnectionManager {
         }
     }
 
-    public receiveDataChannel = (event: any) => {
+    public receiveDataChannel = (event: { channel: RTCDataChannel | undefined; }) => {
 
         console.log("Receice Datachannel event");
         this.receivedDataChannelFromRemote = event.channel;
