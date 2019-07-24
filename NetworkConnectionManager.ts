@@ -153,6 +153,7 @@ export class NetworkConnectionManager {
         this.localDataChannel.addEventListener("open", this.dataChannelStatusChangeHandler);
         this.localDataChannel.addEventListener("close", this.dataChannelStatusChangeHandler);
         this.localDataChannel.addEventListener("message", this.dataChannelMessageHandler);
+        const dataChannelConstant = this.localDataChannel;
         this.connection.createOffer()
             .then(async (offer) => {
                 console.log("Beginning of createOffer in InitiateConnection, Expected 'stable', got:  ", this.connection.signalingState);
@@ -316,47 +317,5 @@ export class NetworkConnectionManager {
         UiElementHandler.chatbox.innerHTML += "\n" + this.remoteClientId + ": " + _messageEvent.data;
     }
     //#endregion
-
-
-
-
-
-
-
-
-
-
-
-    // public createRTCConnection = () => {
-    //     this.connection = new RTCPeerConnection(this.configuration);
-    //     this.receivedDataChannelFromRemote = this.connection.createDataChannel("testChannel");
-
-    //     this.connection.ondatachannel = (datachannelEvent) => {
-    //         console.log("Data channel is created!");
-
-    //         datachannelEvent.channel.addEventListener("open", () => {
-    //             console.log("Data channel is open and ready to be used.");
-    //         });
-    //         datachannelEvent.channel.addEventListener("message", (messageEvent) => {
-    //             console.log("Received message: " + messageEvent.data);
-    //             UiElementHandler.chatbox.innerHTML += "\n" + this.remoteClientId + ": " + messageEvent.data;
-    //         });
-    //     };
-
-    //     this.receivedDataChannelFromRemote.onmessage = (event) => {
-    //         console.log("Received message from other peer:", event.data);
-    //         UiElementHandler.chatbox.innerHTML += "<br>" + event.data;
-    //     };
-
-
-    // }
-
-
-
-
-
-
-
-
 
 }
