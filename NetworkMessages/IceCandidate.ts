@@ -1,15 +1,16 @@
-/// <reference path = "./MessageBase.ts" />
-namespace NetworkMessages {
+import { MessageBase } from ".";
+import * as TYPES from "./../DataCollectors/Enumerators/EnumeratorCollection";
+export class IceCandidate implements MessageBase {
 
-    export class IceCandidate implements MessageBase {
+    public originatorId: string;
+    public targetId: string;
+    public messageType: TYPES.MESSAGE_TYPE = TYPES.MESSAGE_TYPE.ICE_CANDIDATE;
 
-        public messageType: MESSAGE_TYPE = MESSAGE_TYPE.RTC_CANDIDATE;
-        public userNameToConnectTo: string;
-        public candidate: RTCIceCandidate;
-        constructor(_userNameToConnectTo: string, _candidate: RTCIceCandidate) {
-            this.userNameToConnectTo = _userNameToConnectTo;
-            this.candidate = _candidate;
-        }
-
+    public candidate: RTCIceCandidate;
+    constructor(_originatorId: string, _targetId: string, _candidate: RTCIceCandidate) {
+        this.originatorId = _originatorId;
+        this.targetId = _targetId;
+        this.candidate = _candidate;
     }
+
 }

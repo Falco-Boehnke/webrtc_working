@@ -1,17 +1,18 @@
-/// <reference path = "./MessageBase.ts" />
-namespace NetworkMessages {
+import { MessageBase } from ".";
+import * as TYPES from "./../DataCollectors/Enumerators/EnumeratorCollection";
+export class RtcAnswer implements MessageBase {
 
-    export class RtcAnswer implements MessageBase {
+    public originatorId: string;
+    public targetId: string;
+    public messageType: TYPES.MESSAGE_TYPE = TYPES.MESSAGE_TYPE.RTC_ANSWER;
 
-        public messageType: MESSAGE_TYPE = MESSAGE_TYPE.RTC_ANSWER;
-        public userNameToConnectTo: string;
-        public answer: RTCSessionDescription | null;
+    public answer: RTCSessionDescription | null;
 
-        constructor(_userNameToConnectTo: string, _answer: RTCSessionDescription | null) {
-            this.userNameToConnectTo = _userNameToConnectTo;
-            this.answer = _answer;
-
-        }
+    constructor(_originatorId: string, _targetId: string, _userNameToConnectTo: string, _answer: RTCSessionDescription | null) {
+        this.originatorId = _originatorId;
+        this.targetId = _targetId;
+        this.answer = _answer;
 
     }
+
 }

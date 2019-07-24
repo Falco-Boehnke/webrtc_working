@@ -8,12 +8,12 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const TYPES = __importStar(require("./../DataCollectors/Enumerators/EnumeratorCollection"));
-class RtcAnswer {
-    constructor(_originatorId, _targetId, _userNameToConnectTo, _answer) {
-        this.messageType = TYPES.MESSAGE_TYPE.RTC_ANSWER;
-        this.originatorId = _originatorId;
-        this.targetId = _targetId;
-        this.answer = _answer;
+class LoginResponse {
+    constructor(_loginSuccess, _assignedId, _originatorUsername) {
+        this.messageType = TYPES.MESSAGE_TYPE.LOGIN_RESPONSE;
+        this.loginSuccess = _loginSuccess;
+        this.originatorId = _assignedId;
+        this.originatorUsername = _originatorUsername;
     }
 }
-exports.RtcAnswer = RtcAnswer;
+exports.LoginResponse = LoginResponse;
