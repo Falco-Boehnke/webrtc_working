@@ -8,12 +8,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const TYPES = __importStar(require("./../DataCollectors/Enumerators/EnumeratorCollection"));
-class RtcAnswer {
-    constructor(_originatorId, _targetId, _userNameToConnectTo, _answer) {
-        this.messageType = TYPES.MESSAGE_TYPE.RTC_ANSWER;
-        this.originatorId = _originatorId;
-        this.targetId = _targetId;
-        this.answer = _answer;
+class IdAssigned {
+    constructor(_assignedId) {
+        this.originatorId = "Server";
+        this.messageType = TYPES.MESSAGE_TYPE.ID_ASSIGNED;
+        this.assignedId = _assignedId;
     }
 }
-exports.RtcAnswer = RtcAnswer;
+exports.IdAssigned = IdAssigned;

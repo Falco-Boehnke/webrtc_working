@@ -3,12 +3,13 @@ import * as TYPES from "./../DataCollectors/Enumerators/EnumeratorCollection";
 export class IceCandidate implements MessageBase {
 
     public originatorId: string;
+    public targetId: string;
     public messageType: TYPES.MESSAGE_TYPE = TYPES.MESSAGE_TYPE.ICE_CANDIDATE;
-    public userNameToConnectTo: string;
+
     public candidate: RTCIceCandidate;
-    constructor(_originatorId: string, _userNameToConnectTo: string, _candidate: RTCIceCandidate) {
+    constructor(_originatorId: string, _targetId: string, _candidate: RTCIceCandidate) {
         this.originatorId = _originatorId;
-        this.userNameToConnectTo = _userNameToConnectTo;
+        this.targetId = _targetId;
         this.candidate = _candidate;
     }
 

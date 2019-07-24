@@ -9,10 +9,10 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const TYPES = __importStar(require("./../DataCollectors/Enumerators/EnumeratorCollection"));
 class IceCandidate {
-    constructor(_originatorId, _userNameToConnectTo, _candidate) {
+    constructor(_originatorId, _targetId, _candidate) {
         this.messageType = TYPES.MESSAGE_TYPE.ICE_CANDIDATE;
         this.originatorId = _originatorId;
-        this.userNameToConnectTo = _userNameToConnectTo;
+        this.targetId = _targetId;
         this.candidate = _candidate;
     }
 }
