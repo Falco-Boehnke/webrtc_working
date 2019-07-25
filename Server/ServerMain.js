@@ -71,7 +71,7 @@ class ServerMain {
         const requestedClient = ServerMain.searchForPropertyValueInCollection(_messageData.userNameToConnectTo, "userName", ServerMain.connectedClientsCollection);
         if (requestedClient != null) {
             console.log("User for offer found", requestedClient);
-            requestedClient.clientConnection.otherUsername = _messageData.userNameToConnectTo;
+            // requestedClient.clientConnection.otherUsername = _messageData.userNameToConnectTo;
             const offerMessage = new NetworkMessages.RtcOffer(_messageData.originatorId, requestedClient.userName, _messageData.offer);
             ServerMain.sendTo(requestedClient.clientConnection, offerMessage);
         }

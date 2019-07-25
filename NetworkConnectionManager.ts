@@ -156,7 +156,6 @@ export class NetworkConnectionManager {
         this.localDataChannel.addEventListener("open", this.dataChannelStatusChangeHandler);
         this.localDataChannel.addEventListener("close", this.dataChannelStatusChangeHandler);
         this.localDataChannel.addEventListener("message", this.dataChannelMessageHandler);
-        const dataChannelConstant = this.localDataChannel;
         this.connection.createOffer()
             .then(async (offer) => {
                 console.log("Beginning of createOffer in InitiateConnection, Expected 'stable', got:  ", this.connection.signalingState);
@@ -323,6 +322,7 @@ export class NetworkConnectionManager {
     }
 
     public dataChannelMessageHandler = (_messageEvent: MessageEvent) => {
+        // TODO Fix it so that both clients have names instead of IDs for usage
         UiElementHandler.chatbox.innerHTML += "\n" + this.remoteClientId + ": " + _messageEvent.data;
     }
     //#endregion

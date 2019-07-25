@@ -89,7 +89,7 @@ class ServerMain {
 
         if (!usernameTaken) {
             console.log("Username available, logging in");
-            const clientBeingLoggedIn = ServerMain.searchUserByWebsocketConnectionAndReturnUser(_websocketConnection, ServerMain.connectedClientsCollection);
+            const clientBeingLoggedIn: Client = ServerMain.searchUserByWebsocketConnectionAndReturnUser(_websocketConnection, ServerMain.connectedClientsCollection);
 
             if (clientBeingLoggedIn != null) {
                 clientBeingLoggedIn.userName = _messageData.loginUserName;
@@ -104,17 +104,15 @@ class ServerMain {
 
     public static sendRtcOfferToRequestedClient(_websocketClient: WebSocket, _messageData: NetworkMessages.RtcOffer): void {
         console.log("Sending offer to: ", _messageData.userNameToConnectTo);
-        const requestedClient = ServerMain.searchForPropertyValueInCollection(_messageData.userNameToConnectTo, "userName", ServerMain.connectedClientsCollection);
+        const requestedClient: Client = ServerMain.searchForPropertyValueInCollection(_messageData.userNameToConnectTo, "userName", ServerMain.connectedClientsCollection);
 
         if (requestedClient != null) {
-            console.log("User for offer found", requestedClient);
-            requestedClient.clientConnection.otherUsername = _messageData.userNameToConnectTo;
             const offerMessage: NetworkMessages.RtcOffer = new NetworkMessages.RtcOffer(_messageData.originatorId, requestedClient.userName, _messageData.offer);
             ServerMain.sendTo(requestedClient.clientConnection, offerMessage);
-        } else { console.error("Username to connect to doesn't exist"); }
+        } else { console.error("User to connect to doesn't exist under that Name"); }
     }
 
-    public static answerRtcOfferOfClient(_websocketClient: any, _messageData: NetworkMessages.RtcAnswer): void {
+    public static answerRtcOfferOfClient(_websocketClient: WebSocket, _messageData: NetworkMessages.RtcAnswer): void {
         console.log("Sending answer to: ", _messageData.targetId);
         const clientToSendAnswerTo: Client = ServerMain.searchUserByUserIdAndReturnUser(_messageData.targetId, ServerMain.connectedClientsCollection);
 
@@ -122,14 +120,13 @@ class ServerMain {
             // TODO Probable source of error, need to test
             // clientToSendAnswerTo.clientConnection.otherUsername = clientToSendAnswerTo.userName;
             // const answerToSend: NetworkMessages.RtcAnswer = new NetworkMessages.RtcAnswer(_messageData.originatorId, clientToSendAnswerTo.userName, _messageData.answer);
-            if(clientToSendAnswerTo.clientConnection != null)
+            if (clientToSendAnswerTo.clientConnection != null)
                 ServerMain.sendTo(clientToSendAnswerTo.clientConnection, _messageData);
         }
     }
 
     public static sendIceCandidatesToRelevantPeers(_websocketClient: WebSocket, _messageData: NetworkMessages.IceCandidate): void {
-        console.log("Sending candidate to:", _messageData.targetId, "from: ", _messageData.originatorId);
-        const clientToShareCandidatesWith = ServerMain.searchUserByUserIdAndReturnUser(_messageData.targetId, ServerMain.connectedClientsCollection);
+        const clientToShareCandidatesWith: Client = ServerMain.searchUserByUserIdAndReturnUser(_messageData.targetId, ServerMain.connectedClientsCollection);
 
         if (clientToShareCandidatesWith != null) {
             const candidateToSend: NetworkMessages.IceCandidate = new NetworkMessages.IceCandidate(_messageData.originatorId, clientToShareCandidatesWith.id, _messageData.candidate);
@@ -141,7 +138,7 @@ class ServerMain {
 
     //#region Helperfunctions
 
-    
+
 
     public static searchForClientWithId(_idToFind: string): Client {
         return this.searchForPropertyValueInCollection(_idToFind, "id", this.connectedClientsCollection);
@@ -166,6 +163,7 @@ class ServerMain {
         return parsedMessage;
     }
 
+    // TODO Type Websocket not assignable to type WebSocket ?!
     public static sendTo = (_connection: any, _message: Object) => {
         _connection.send(JSON.stringify(_message));
     }
