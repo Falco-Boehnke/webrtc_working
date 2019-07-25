@@ -89,7 +89,8 @@ export class NetworkConnectionManager {
         switch (objectifiedMessage.messageType) {
             case TYPES.MESSAGE_TYPE.ID_ASSIGNED:
                 console.log("ID received, assigning to self");
-                this.localId = objectifiedMessage.assignedId;
+
+                this.assignIdAndSendConfirmation(objectifiedMessage);
                 break;
 
             case TYPES.MESSAGE_TYPE.LOGIN_RESPONSE:
@@ -114,6 +115,10 @@ export class NetworkConnectionManager {
     }
 
 
+    public assignIdAndSendConfirmation = (_message: NetworkMessages.IdAssigned) => {
+        this.localId = _message.assignedId;
+        this.sendMessage(new NetworkMessages.IdAssigned(this.localId));
+    }
     //#region SendingFunctions
     public checkChosenUsernameAndCreateLoginRequest = (): void => {
         if (UiElementHandler.loginNameInput != null) {
