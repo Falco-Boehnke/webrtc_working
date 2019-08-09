@@ -34,6 +34,16 @@ class ServerMain {
 
             _websocketClient.addEventListener("close", () => {
                 console.error("Error at connection");
+                for (let i: number = 0; i < ServerMain.connectedClientsCollection.length; i++) {
+                    if (ServerMain.connectedClientsCollection[i].clientConnection === _websocketClient) {
+                        console.log("Client found, deleting");
+                        ServerMain.connectedClientsCollection.splice(i, 1);
+                        console.log(ServerMain.connectedClientsCollection);
+                    }
+                    else {
+                        console.log("Wrong client to delete, moving on");
+                    }
+                }
             });
 
         });

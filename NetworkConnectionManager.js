@@ -11,23 +11,22 @@ const UiElementHandler_1 = require("./DataCollectors/UiElementHandler");
 const TYPES = __importStar(require("./DataCollectors/Enumerators/EnumeratorCollection"));
 const NetworkMessages = __importStar(require("./NetworkMessages"));
 class NetworkConnectionManager {
-    // More info from here https://developer.mozilla.org/en-US/docs/Web/API/RTCConfiguration
-    //     var configuration = { iceServers: [{
-    //         urls: "stun:stun.services.mozilla.com",
-    //         username: "louis@mozilla.com",
-    //         credential: "webrtcdemo"
-    //     }, {
-    //         urls: ["stun:stun.example.com", "stun:stun-1.example.com"]
-    //     }]
-    // };
-    //#region Class initiation functions
     constructor() {
-        // tslint:disable-next-line: typedef
+        this.signalingServerUrl = "ws://localhost:8080";
+        // More info from here https://developer.mozilla.org/en-US/docs/Web/API/RTCConfiguration
         this.configuration = {
             iceServers: [
                 { urls: "stun:stun2.1.google.com:19302" },
                 { urls: "stun:stun.example.com" }
             ]
+        };
+        this.startUpSignalingServerFile = (_serverFileUri) => {
+            // TODO You can start the signaling server inside  the componente, so it can be toggled/clicked to make it happen
+            let server_test = require("./Server/ServerMain");
+        };
+        this.connectToSpecifiedSignalingServer = () => {
+            this.ws = new WebSocket(this.signalingServerUrl);
+            this.addWsEventListeners();
         };
         this.addUiListeners = () => {
             // UiElementHandler.getAllUiElements();
@@ -53,7 +52,27 @@ class NetworkConnectionManager {
             this.connection.addEventListener("icecandidate", this.sendNewIceCandidatesToPeer);
             console.log("CreateRTCConection State, Expected 'stable', got:  ", this.connection.signalingState);
         };
-        //#endregion
+        this.sendMessage = (message) => {
+            this.ws.send(JSON.stringify(message));
+        };
+        this.sendMessageViaDirectPeerConnection = () => {
+            const message = UiElementHandler_1.UiElementHandler.msgInput.value;
+            UiElementHandler_1.UiElementHandler.chatbox.innerHTML += "\n" + this.localUserName + ": " + message;
+            if (this.isInitiator && this.localDataChannel) {
+                this.localDataChannel.send(message);
+            }
+            else if (!this.isInitiator && this.receivedDataChannelFromRemote) {
+                console.log("Sending Message via received Datachannel");
+                this.receivedDataChannelFromRemote.send(message);
+            }
+            else {
+                console.error("Peer Connection undefined, connection likely lost");
+            }
+        };
+        this.createLoginRequestAndSendToServer = (_requestingUsername) => {
+            const loginMessage = new NetworkMessages.LoginRequest(this.localId, this.localUserName);
+            this.sendMessage(loginMessage);
+        };
         this.parseMessageAndCallCorrespondingMessageHandler = (_receivedMessage) => {
             // tslint:disable-next-line: typedef
             let objectifiedMessage = this.parseReceivedMessageAndReturnObject(_receivedMessage);
@@ -61,24 +80,28 @@ class NetworkConnectionManager {
             switch (objectifiedMessage.messageType) {
                 case TYPES.MESSAGE_TYPE.ID_ASSIGNED:
                     console.log("ID received, assigning to self");
-                    this.localId = objectifiedMessage.assignedId;
+                    this.assignIdAndSendConfirmation(objectifiedMessage);
                     break;
                 case TYPES.MESSAGE_TYPE.LOGIN_RESPONSE:
                     this.loginValidAddUser(objectifiedMessage.originatorId, objectifiedMessage.loginSuccess, objectifiedMessage.originatorUsername);
                     break;
                 case TYPES.MESSAGE_TYPE.RTC_OFFER:
-                    console.log("Received offer, current signaling state: ", this.connection.signalingState);
+                    // console.log("Received offer, current signaling state: ", this.connection.signalingState);
                     this.receiveOfferAndSetRemoteDescriptionThenCreateAndSendAnswer(objectifiedMessage);
                     break;
                 case TYPES.MESSAGE_TYPE.RTC_ANSWER:
-                    console.log("Received answer, current signaling state: ", this.connection.signalingState);
+                    // console.log("Received answer, current signaling state: ", this.connection.signalingState);
                     this.receiveAnswerAndSetRemoteDescription(objectifiedMessage.clientId, objectifiedMessage.answer);
                     break;
                 case TYPES.MESSAGE_TYPE.ICE_CANDIDATE:
-                    console.log("Received candidate, current signaling state: ", this.connection.signalingState);
+                    // console.log("Received candidate, current signaling state: ", this.connection.signalingState);
                     this.handleCandidate(objectifiedMessage);
                     break;
             }
+        };
+        this.assignIdAndSendConfirmation = (_message) => {
+            this.localId = _message.assignedId;
+            this.sendMessage(new NetworkMessages.IdAssigned(this.localId));
         };
         //#region SendingFunctions
         this.checkChosenUsernameAndCreateLoginRequest = () => {
@@ -93,10 +116,6 @@ class NetworkConnectionManager {
                 return;
             }
             this.createLoginRequestAndSendToServer(this.localUserName);
-        };
-        this.createLoginRequestAndSendToServer = (_requestingUsername) => {
-            const loginMessage = new NetworkMessages.LoginRequest(this.localId, this.localUserName);
-            this.sendMessage(loginMessage);
         };
         this.checkUsernameToConnectToAndInitiateConnection = () => {
             const callToUsername = UiElementHandler_1.UiElementHandler.usernameToConnectTo.value;
@@ -162,24 +181,6 @@ class NetworkConnectionManager {
             let message = new NetworkMessages.IceCandidate(this.localId, this.remoteClientId, candidate);
             this.sendMessage(message);
         };
-        this.sendMessage = (message) => {
-            this.ws.send(JSON.stringify(message));
-        };
-        this.sendMessageViaDirectPeerConnection = () => {
-            const message = UiElementHandler_1.UiElementHandler.msgInput.value;
-            UiElementHandler_1.UiElementHandler.chatbox.innerHTML += "\n" + this.localUserName + ": " + message;
-            if (this.isInitiator && this.localDataChannel) {
-                this.localDataChannel.send(message);
-            }
-            else if (!this.isInitiator && this.receivedDataChannelFromRemote) {
-                console.log("Sending Message via received Datachannel");
-                this.receivedDataChannelFromRemote.send(message);
-            }
-            else {
-                console.error("Peer Connection undefined, connection likely lost");
-            }
-        };
-        //#endregion
         //#region ReceivingFunctions
         this.loginValidAddUser = (_assignedId, _loginSuccess, _originatorUserName) => {
             if (_loginSuccess) {
@@ -210,22 +211,21 @@ class NetworkConnectionManager {
             console.log("End of Function Receive offer, Expected 'stable', got:  ", this.connection.signalingState);
         };
         this.receiveAnswerAndSetRemoteDescription = (_localhostId, _answer) => {
-            console.log("Setting description as answer");
+            // console.log("Setting description as answer");
             let descriptionAnswer = new RTCSessionDescription(_answer);
-            console.log("Receiving Answer, setting remote desc Expected 'have-local-offer'|'have-remote-offer, got:  ", this.connection.signalingState);
-            //TODO DAS IST DIE FEHLERQUELLE
+            // console.log("Receiving Answer, setting remote desc Expected 'have-local-offer'|'have-remote-offer, got:  ", this.connection.signalingState);
             this.connection.setRemoteDescription(descriptionAnswer);
-            console.log("Remote Description set");
-            console.log("Signaling state:", this.connection.signalingState);
+            // console.log("Remote Description set");
+            // console.log("Signaling state:", this.connection.signalingState);
         };
         this.handleCandidate = async (_receivedIceMessage) => {
             if (_receivedIceMessage.candidate) {
-                console.log("ASyncly adding candidates");
+                // console.log("ASyncly adding candidates");
                 await this.connection.addIceCandidate(_receivedIceMessage.candidate);
             }
         };
         this.receiveDataChannel = (event) => {
-            console.log("Receice Datachannel event");
+            // console.log("Receice Datachannel event");
             this.receivedDataChannelFromRemote = event.channel;
             if (this.receivedDataChannelFromRemote) {
                 this.receivedDataChannelFromRemote.addEventListener("message", this.dataChannelMessageHandler);
@@ -259,17 +259,12 @@ class NetworkConnectionManager {
             // TODO Fix it so that both clients have names instead of IDs for usage
             UiElementHandler_1.UiElementHandler.chatbox.innerHTML += "\n" + this.remoteClientId + ": " + _messageEvent.data;
         };
-        this.ws = new WebSocket("ws://localhost:8080");
         this.localUserName = "";
         this.localId = "undefined";
         this.remoteConnection = null;
         this.remoteClientId = "";
         this.isInitiator = false;
         this.receivedDataChannelFromRemote = undefined;
-        this.createRTCPeerConnectionAndAddListeners();
-        // UiElementHandler.getAllUiElements();
-        this.addUiListeners();
-        this.addWsEventListeners();
     }
 }
 exports.NetworkConnectionManager = NetworkConnectionManager;

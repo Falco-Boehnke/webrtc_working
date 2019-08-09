@@ -32,7 +32,7 @@ class AuthoritativeServer {
             const uniqueIdOnConnection: string = AuthoritativeServer.createID();
             AuthoritativeServer.sendTo(_websocketClient, new NetworkMessages.IdAssigned(uniqueIdOnConnection));
             const freshlyConnectedClient: Client = new Client(_websocketClient, uniqueIdOnConnection);
-            
+
             AuthoritativeServer.connectedWebsocketClients.push(freshlyConnectedClient);
 
             _websocketClient.on("message", (_message: string) => {
@@ -84,40 +84,41 @@ class AuthoritativeServer {
             }
         }
     }
-static dataChannelStatusChangeHandler = () => {
-    throw new Error("Method not implemented.");
+    static dataChannelStatusChangeHandler = () => {
+        throw new Error("Method not implemented.");
 
-}
+    }
 
-static dataChannelMessageHandler = (_event: MessageEvent) => {
-    console.log("MEssage received: ", _event.data );
+    static dataChannelMessageHandler = (_event: MessageEvent) => {
+        console.log("MEssage received: ", _event.data);
 
-}
+    }
 
     static beginPeerConnectionNegotiationWithClient = (_originatorId: string) => {
-            console.log("Creating Datachannel for connection and then creating offer");
-            const peerConnection: RTCPeerConnection = new RTCPeerConnection(AuthoritativeServer.configuration);
+        console.log("Creating Datachannel for connection and then creating offer");
+        console.log(RTCPeerConnection);
+        let peerConnection: RTCPeerConnection = new RTCPeerConnection(AuthoritativeServer.configuration);
 
-            const associatedDatachannel = peerConnection.createDataChannel("localDataChannel");
-            associatedDatachannel.addEventListener("open", AuthoritativeServer.dataChannelStatusChangeHandler);
-            associatedDatachannel.addEventListener("close", AuthoritativeServer.dataChannelStatusChangeHandler);
-            associatedDatachannel.addEventListener("message", AuthoritativeServer.dataChannelMessageHandler);
-            peerConnection.createOffer()
-                .then(async (offer) => {
-                    console.log("Beginning of createOffer in InitiateConnection, Expected 'stable', got:  ", peerConnection.signalingState);
-                    return offer;
-                })
-                .then(async (offer) => {
-                    await peerConnection.setLocalDescription(offer);
-                    console.log("Setting LocalDesc, Expected 'have-local-offer', got:  ", peerConnection.signalingState);
-                })
-                .then(() => {
-                    AuthoritativeServer.createOfferMessageAndSendToRemote(peerConnection,_originatorId);
-                })
-                .catch(() => {
-                    console.error("Offer creation error");
-                });
-        
+        const associatedDatachannel = peerConnection.createDataChannel("localDataChannel");
+        associatedDatachannel.addEventListener("open", AuthoritativeServer.dataChannelStatusChangeHandler);
+        associatedDatachannel.addEventListener("close", AuthoritativeServer.dataChannelStatusChangeHandler);
+        associatedDatachannel.addEventListener("message", AuthoritativeServer.dataChannelMessageHandler);
+        peerConnection.createOffer()
+            .then(async (offer) => {
+                console.log("Beginning of createOffer in InitiateConnection, Expected 'stable', got:  ", peerConnection.signalingState);
+                return offer;
+            })
+            .then(async (offer) => {
+                await peerConnection.setLocalDescription(offer);
+                console.log("Setting LocalDesc, Expected 'have-local-offer', got:  ", peerConnection.signalingState);
+            })
+            .then(() => {
+                AuthoritativeServer.createOfferMessageAndSendToRemote(peerConnection, _originatorId);
+            })
+            .catch(() => {
+                console.error("Offer creation error");
+            });
+
     }
 
     public static createOfferMessageAndSendToRemote = (_peerConnectionToEstablish: RTCPeerConnection, _userIdForOffer: string) => {
@@ -169,13 +170,11 @@ static dataChannelMessageHandler = (_event: MessageEvent) => {
         return this.searchForPropertyValueInCollection(_idToFind, "id", this.connectedWebsocketClients);
     }
 
-    public static searchClientConnectionWithId = (_idToFind: string): any =>
-    {
+    public static searchClientConnectionWithId = (_idToFind: string): any => {
         let clientConnectionToFind = AuthoritativeServer.searchForClientWithId(_idToFind).clientConnection;
-        
-        if(clientConnectionToFind)
-        {     
-               return clientConnectionToFind;
+
+        if (clientConnectionToFind) {
+            return clientConnectionToFind;
         }
         return null;
     }

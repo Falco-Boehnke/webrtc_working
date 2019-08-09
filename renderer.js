@@ -4,3 +4,7 @@ const NetworkConnectionManager_1 = require("./NetworkConnectionManager");
 const UiElementHandler_1 = require("./DataCollectors/UiElementHandler");
 UiElementHandler_1.UiElementHandler.getAllUiElements();
 const test = new NetworkConnectionManager_1.NetworkConnectionManager();
+test.createRTCPeerConnectionAndAddListeners();
+test.addUiListeners();
+// test.startUpSignalingServerFile("./Server/ServerMain");
+test.connectToSpecifiedSignalingServer();

@@ -70,13 +70,11 @@ class ServerMain {
         console.log("Sending offer to: ", _messageData.userNameToConnectTo);
         const requestedClient = ServerMain.searchForPropertyValueInCollection(_messageData.userNameToConnectTo, "userName", ServerMain.connectedClientsCollection);
         if (requestedClient != null) {
-            console.log("User for offer found", requestedClient);
-            // requestedClient.clientConnection.otherUsername = _messageData.userNameToConnectTo;
             const offerMessage = new NetworkMessages.RtcOffer(_messageData.originatorId, requestedClient.userName, _messageData.offer);
             ServerMain.sendTo(requestedClient.clientConnection, offerMessage);
         }
         else {
-            console.error("Username to connect to doesn't exist");
+            console.error("User to connect to doesn't exist under that Name");
         }
     }
     static answerRtcOfferOfClient(_websocketClient, _messageData) {
@@ -91,7 +89,6 @@ class ServerMain {
         }
     }
     static sendIceCandidatesToRelevantPeers(_websocketClient, _messageData) {
-        console.log("Sending candidate to:", _messageData.targetId, "from: ", _messageData.originatorId);
         const clientToShareCandidatesWith = ServerMain.searchUserByUserIdAndReturnUser(_messageData.targetId, ServerMain.connectedClientsCollection);
         if (clientToShareCandidatesWith != null) {
             const candidateToSend = new NetworkMessages.IceCandidate(_messageData.originatorId, clientToShareCandidatesWith.id, _messageData.candidate);
@@ -136,6 +133,16 @@ ServerMain.serverEventHandler = () => {
         });
         _websocketClient.addEventListener("close", () => {
             console.error("Error at connection");
+            for (let i = 0; i < ServerMain.connectedClientsCollection.length; i++) {
+                if (ServerMain.connectedClientsCollection[i].clientConnection === _websocketClient) {
+                    console.log("Client found, deleting");
+                    ServerMain.connectedClientsCollection.splice(i, 1);
+                    console.log(ServerMain.connectedClientsCollection);
+                }
+                else {
+                    console.log("Wrong client to delete, moving on");
+                }
+            }
         });
     });
 };
@@ -144,6 +151,7 @@ ServerMain.createID = () => {
     // convert to base 36 and pick the first few digits after comma
     return "_" + Math.random().toString(36).substr(2, 7);
 };
+// TODO Type Websocket not assignable to type WebSocket ?!
 ServerMain.sendTo = (_connection, _message) => {
     _connection.send(JSON.stringify(_message));
 };
