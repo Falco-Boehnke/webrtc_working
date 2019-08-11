@@ -3,7 +3,6 @@ import * as NetworkMessages from "./../NetworkMessages";
 import * as TYPES from "./../DataCollectors/Enumerators/EnumeratorCollection";
 
 import { Client } from "./../DataCollectors/Client";
-import { LoginResponse } from "./../NetworkMessages";
 class ServerMain {
     public static websocketServer: WebSocket.Server;
     public static connectedClientsCollection: Client[] = new Array();
@@ -102,7 +101,7 @@ class ServerMain {
                 ServerMain.sendTo(_websocketConnection, new NetworkMessages.LoginResponse(true, clientBeingLoggedIn.id, clientBeingLoggedIn.userName));
             }
         } else {
-            ServerMain.sendTo(_websocketConnection, new LoginResponse(false, "", ""));
+            ServerMain.sendTo(_websocketConnection, new NetworkMessages.LoginResponse(false, "", ""));
             usernameTaken = true;
             console.log("UsernameTaken");
         }
