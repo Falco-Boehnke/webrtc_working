@@ -13,10 +13,6 @@ class ServerMain {
         ServerMain.websocketServer = new WebSocket.Server({ port: 8080 });
         ServerMain.serverEventHandler();
     }
-    // TODO PArameter mit Unterstrich
-    // TODO Coding guidelines umsetzen
-
-    // handle closing
 
     public static serverEventHandler = (): void => {
         ServerMain.websocketServer.on("connection", (_websocketClient: any) => {
@@ -49,7 +45,7 @@ class ServerMain {
         });
     }
 
-    // TODO Check if event.type can be used for identification instead
+    // TODO Check if event.type can be used for identification instead => It cannot
     public static serverHandleMessageType(_message: string, _websocketClient: WebSocket): void {
         let parsedMessage: NetworkMessages.MessageBase | null = null;
         try {
@@ -58,13 +54,13 @@ class ServerMain {
         } catch (error) {
             console.error("Invalid JSON", error);
         }
-        // tslint:disable-next-line: no-any
+
         const messageData: any = parsedMessage;
 
         if (parsedMessage != null) {
             switch (parsedMessage.messageType) {
                 case TYPES.MESSAGE_TYPE.ID_ASSIGNED:
-                    console.error("Id assignment received as Server");
+                    console.log("Id confirmation received for client: " + parsedMessage.originatorId);
                     break;
 
                 case TYPES.MESSAGE_TYPE.LOGIN_REQUEST:

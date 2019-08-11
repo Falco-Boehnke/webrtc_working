@@ -13,7 +13,7 @@ const TYPES = __importStar(require("./../DataCollectors/Enumerators/EnumeratorCo
 const Client_1 = require("./../DataCollectors/Client");
 const NetworkMessages_1 = require("./../NetworkMessages");
 class ServerMain {
-    // TODO Check if event.type can be used for identification instead
+    // TODO Check if event.type can be used for identification instead => It cannot
     static serverHandleMessageType(_message, _websocketClient) {
         let parsedMessage = null;
         try {
@@ -22,7 +22,6 @@ class ServerMain {
         catch (error) {
             console.error("Invalid JSON", error);
         }
-        // tslint:disable-next-line: no-any
         const messageData = parsedMessage;
         if (parsedMessage != null) {
             switch (parsedMessage.messageType) {
@@ -117,9 +116,6 @@ ServerMain.startUpServer = () => {
     ServerMain.websocketServer = new WebSocket.Server({ port: 8080 });
     ServerMain.serverEventHandler();
 };
-// TODO PArameter mit Unterstrich
-// TODO Coding guidelines umsetzen
-// handle closing
 ServerMain.serverEventHandler = () => {
     ServerMain.websocketServer.on("connection", (_websocketClient) => {
         // _websocketClient = _websocketClient;

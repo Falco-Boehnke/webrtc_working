@@ -10,6 +10,7 @@ export abstract class UiElementHandler {
     public static connectToUserButton: HTMLElement;
     public static usernameToConnectTo: HTMLInputElement;
     public static disconnectButton: HTMLElement;
+    public static startSignalingButton: HTMLElement;
 
     public static getAllUiElements() {
         UiElementHandler.signalingUrl = document.getElementById("signaling_uri") as HTMLInputElement;
@@ -23,6 +24,7 @@ export abstract class UiElementHandler {
         UiElementHandler.connectToUserButton = document.getElementById("userConnect") as HTMLElement;
         UiElementHandler.usernameToConnectTo = document.getElementById("connectToUsername") as HTMLInputElement;
         UiElementHandler.disconnectButton = document.getElementById("disconnectBtn") as HTMLElement;
+        UiElementHandler.startSignalingButton = document.getElementById("start_signalingServerButton") as HTMLElement;
     }
 
 }

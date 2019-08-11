@@ -2,9 +2,6 @@ import { UiElementHandler } from "./DataCollectors/UiElementHandler";
 
 import * as TYPES from "./DataCollectors/Enumerators/EnumeratorCollection";
 import * as NetworkMessages from "./NetworkMessages";
-import { types } from "util";
-
-
 
 export class NetworkConnectionManager {
     public ws!: WebSocket;
@@ -94,12 +91,12 @@ export class NetworkConnectionManager {
             console.error("Peer Connection undefined, connection likely lost");
         }
     }
-    
+
     public createLoginRequestAndSendToServer = (_requestingUsername: string) => {
         const loginMessage: NetworkMessages.LoginRequest = new NetworkMessages.LoginRequest(this.localId, this.localUserName);
         this.sendMessage(loginMessage);
     }
-    
+
     private parseMessageAndCallCorrespondingMessageHandler = (_receivedMessage: MessageEvent) => {
         // tslint:disable-next-line: typedef
         let objectifiedMessage = this.parseReceivedMessageAndReturnObject(_receivedMessage);

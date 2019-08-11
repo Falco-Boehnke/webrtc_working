@@ -3,17 +3,9 @@ import * as NetworkMessages from "./../NetworkMessages";
 import * as TYPES from "./../DataCollectors/Enumerators/EnumeratorCollection";
 
 import { Client } from "./../DataCollectors/Client";
-import { LoginResponse } from "./../NetworkMessages";
 class AuthoritativeServer {
     public static websocketServer: WebSocket.Server;
-    public static connectedWebsocketClients: Client[] = new Array();
-    public static connectedClientPeerConnectionCollection: RTCPeerConnection[] = new Array();
-    public static configuration = {
-        iceServers: [
-            { urls: "stun:stun2.1.google.com:19302" },
-            { urls: "stun:stun.example.com" }
-        ]
-    };
+    public static connectedClientsCollection: Client[] = new Array();
 
 
     public static startUpServer = () => {
@@ -27,13 +19,13 @@ class AuthoritativeServer {
 
     public static serverEventHandler = (): void => {
         AuthoritativeServer.websocketServer.on("connection", (_websocketClient: any) => {
+            // _websocketClient = _websocketClient;
             console.log("User connected FRESH");
 
             const uniqueIdOnConnection: string = AuthoritativeServer.createID();
             AuthoritativeServer.sendTo(_websocketClient, new NetworkMessages.IdAssigned(uniqueIdOnConnection));
             const freshlyConnectedClient: Client = new Client(_websocketClient, uniqueIdOnConnection);
-
-            AuthoritativeServer.connectedWebsocketClients.push(freshlyConnectedClient);
+            AuthoritativeServer.connectedClientsCollection.push(freshlyConnectedClient);
 
             _websocketClient.on("message", (_message: string) => {
                 AuthoritativeServer.serverHandleMessageType(_message, _websocketClient);
@@ -41,6 +33,16 @@ class AuthoritativeServer {
 
             _websocketClient.addEventListener("close", () => {
                 console.error("Error at connection");
+                for (let i: number = 0; i < AuthoritativeServer.connectedClientsCollection.length; i++) {
+                    if (AuthoritativeServer.connectedClientsCollection[i].clientConnection === _websocketClient) {
+                        console.log("Client found, deleting");
+                        AuthoritativeServer.connectedClientsCollection.splice(i, 1);
+                        console.log(AuthoritativeServer.connectedClientsCollection);
+                    }
+                    else {
+                        console.log("Wrong client to delete, moving on");
+                    }
+                }
             });
 
         });
@@ -61,8 +63,11 @@ class AuthoritativeServer {
         if (parsedMessage != null) {
             switch (parsedMessage.messageType) {
                 case TYPES.MESSAGE_TYPE.ID_ASSIGNED:
-                    console.error("Id assignment received as Server, assignment Confirmed");
-                    AuthoritativeServer.beginPeerConnectionNegotiationWithClient(parsedMessage.originatorId);
+                    console.error("Id assignment received as Server");
+                    break;
+
+                case TYPES.MESSAGE_TYPE.LOGIN_REQUEST:
+                    AuthoritativeServer.addUserOnValidLoginRequest(_websocketClient, messageData);
                     break;
 
                 case TYPES.MESSAGE_TYPE.RTC_OFFER:
@@ -84,53 +89,31 @@ class AuthoritativeServer {
             }
         }
     }
-    static dataChannelStatusChangeHandler = () => {
-        throw new Error("Method not implemented.");
 
-    }
-
-    static dataChannelMessageHandler = (_event: MessageEvent) => {
-        console.log("MEssage received: ", _event.data);
-
-    }
-
-    static beginPeerConnectionNegotiationWithClient = (_originatorId: string) => {
-        console.log("Creating Datachannel for connection and then creating offer");
-        console.log(RTCPeerConnection);
-        let peerConnection: RTCPeerConnection = new RTCPeerConnection(AuthoritativeServer.configuration);
-
-        const associatedDatachannel = peerConnection.createDataChannel("localDataChannel");
-        associatedDatachannel.addEventListener("open", AuthoritativeServer.dataChannelStatusChangeHandler);
-        associatedDatachannel.addEventListener("close", AuthoritativeServer.dataChannelStatusChangeHandler);
-        associatedDatachannel.addEventListener("message", AuthoritativeServer.dataChannelMessageHandler);
-        peerConnection.createOffer()
-            .then(async (offer) => {
-                console.log("Beginning of createOffer in InitiateConnection, Expected 'stable', got:  ", peerConnection.signalingState);
-                return offer;
-            })
-            .then(async (offer) => {
-                await peerConnection.setLocalDescription(offer);
-                console.log("Setting LocalDesc, Expected 'have-local-offer', got:  ", peerConnection.signalingState);
-            })
-            .then(() => {
-                AuthoritativeServer.createOfferMessageAndSendToRemote(peerConnection, _originatorId);
-            })
-            .catch(() => {
-                console.error("Offer creation error");
-            });
-
-    }
-
-    public static createOfferMessageAndSendToRemote = (_peerConnectionToEstablish: RTCPeerConnection, _userIdForOffer: string) => {
-        const offerMessage: NetworkMessages.RtcOffer = new NetworkMessages.RtcOffer("Server", _userIdForOffer, _peerConnectionToEstablish.localDescription);
-        AuthoritativeServer.sendTo(AuthoritativeServer.searchClientConnectionWithId(_userIdForOffer), offerMessage);
-        console.log("Sent offer to remote peer, Expected 'have-local-offer', got:  ", _peerConnectionToEstablish.signalingState);
-    }
     //#region MessageHandler
+    public static addUserOnValidLoginRequest(_websocketConnection: WebSocket, _messageData: NetworkMessages.LoginRequest): void {
+        console.log("User logged: ", _messageData.loginUserName);
+        let usernameTaken: boolean = true;
+        usernameTaken = AuthoritativeServer.searchUserByUserNameAndReturnUser(_messageData.loginUserName, AuthoritativeServer.connectedClientsCollection) != null;
+
+        if (!usernameTaken) {
+            console.log("Username available, logging in");
+            const clientBeingLoggedIn: Client = AuthoritativeServer.searchUserByWebsocketConnectionAndReturnUser(_websocketConnection, AuthoritativeServer.connectedClientsCollection);
+
+            if (clientBeingLoggedIn != null) {
+                clientBeingLoggedIn.userName = _messageData.loginUserName;
+                AuthoritativeServer.sendTo(_websocketConnection, new NetworkMessages.LoginResponse(true, clientBeingLoggedIn.id, clientBeingLoggedIn.userName));
+            }
+        } else {
+            AuthoritativeServer.sendTo(_websocketConnection, new NetworkMessages.LoginResponse(false, "", ""));
+            usernameTaken = true;
+            console.log("UsernameTaken");
+        }
+    }
 
     public static sendRtcOfferToRequestedClient(_websocketClient: WebSocket, _messageData: NetworkMessages.RtcOffer): void {
         console.log("Sending offer to: ", _messageData.userNameToConnectTo);
-        const requestedClient: Client = AuthoritativeServer.searchForPropertyValueInCollection(_messageData.userNameToConnectTo, "userName", AuthoritativeServer.connectedWebsocketClients);
+        const requestedClient: Client = AuthoritativeServer.searchForPropertyValueInCollection(_messageData.userNameToConnectTo, "userName", AuthoritativeServer.connectedClientsCollection);
 
         if (requestedClient != null) {
             const offerMessage: NetworkMessages.RtcOffer = new NetworkMessages.RtcOffer(_messageData.originatorId, requestedClient.userName, _messageData.offer);
@@ -140,7 +123,7 @@ class AuthoritativeServer {
 
     public static answerRtcOfferOfClient(_websocketClient: WebSocket, _messageData: NetworkMessages.RtcAnswer): void {
         console.log("Sending answer to: ", _messageData.targetId);
-        const clientToSendAnswerTo: Client = AuthoritativeServer.searchUserByUserIdAndReturnUser(_messageData.targetId, AuthoritativeServer.connectedWebsocketClients);
+        const clientToSendAnswerTo: Client = AuthoritativeServer.searchUserByUserIdAndReturnUser(_messageData.targetId, AuthoritativeServer.connectedClientsCollection);
 
         if (clientToSendAnswerTo != null) {
             // TODO Probable source of error, need to test
@@ -152,7 +135,7 @@ class AuthoritativeServer {
     }
 
     public static sendIceCandidatesToRelevantPeers(_websocketClient: WebSocket, _messageData: NetworkMessages.IceCandidate): void {
-        const clientToShareCandidatesWith: Client = AuthoritativeServer.searchUserByUserIdAndReturnUser(_messageData.targetId, AuthoritativeServer.connectedWebsocketClients);
+        const clientToShareCandidatesWith: Client = AuthoritativeServer.searchUserByUserIdAndReturnUser(_messageData.targetId, AuthoritativeServer.connectedClientsCollection);
 
         if (clientToShareCandidatesWith != null) {
             const candidateToSend: NetworkMessages.IceCandidate = new NetworkMessages.IceCandidate(_messageData.originatorId, clientToShareCandidatesWith.id, _messageData.candidate);
@@ -167,16 +150,7 @@ class AuthoritativeServer {
 
 
     public static searchForClientWithId(_idToFind: string): Client {
-        return this.searchForPropertyValueInCollection(_idToFind, "id", this.connectedWebsocketClients);
-    }
-
-    public static searchClientConnectionWithId = (_idToFind: string): any => {
-        let clientConnectionToFind = AuthoritativeServer.searchForClientWithId(_idToFind).clientConnection;
-
-        if (clientConnectionToFind) {
-            return clientConnectionToFind;
-        }
-        return null;
+        return this.searchForPropertyValueInCollection(_idToFind, "id", this.connectedClientsCollection);
     }
 
     public static createID = (): string => {
@@ -208,7 +182,7 @@ class AuthoritativeServer {
     // tslint:disable-next-line: no-any
     private static searchForPropertyValueInCollection = (propertyValue: any, key: string, collectionToSearch: any[]) => {
         for (const propertyObject in collectionToSearch) {
-            if (AuthoritativeServer.connectedWebsocketClients.hasOwnProperty(propertyObject)) {
+            if (AuthoritativeServer.connectedClientsCollection.hasOwnProperty(propertyObject)) {
                 // tslint:disable-next-line: typedef
                 const objectToSearchThrough = collectionToSearch[propertyObject];
                 if (objectToSearchThrough[key] === propertyValue) {

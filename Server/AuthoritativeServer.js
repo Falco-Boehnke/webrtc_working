@@ -11,6 +11,7 @@ const WebSocket = __importStar(require("ws"));
 const NetworkMessages = __importStar(require("./../NetworkMessages"));
 const TYPES = __importStar(require("./../DataCollectors/Enumerators/EnumeratorCollection"));
 const Client_1 = require("./../DataCollectors/Client");
+const NetworkMessages_1 = require("./../NetworkMessages");
 class AuthoritativeServer {
     // TODO Check if event.type can be used for identification instead
     static serverHandleMessageType(_message, _websocketClient) {
@@ -26,8 +27,10 @@ class AuthoritativeServer {
         if (parsedMessage != null) {
             switch (parsedMessage.messageType) {
                 case TYPES.MESSAGE_TYPE.ID_ASSIGNED:
-                    console.error("Id assignment received as Server, assignment Confirmed");
-                    AuthoritativeServer.beginPeerConnectionNegotiationWithClient(parsedMessage.originatorId);
+                    console.error("Id assignment received as Server");
+                    break;
+                case TYPES.MESSAGE_TYPE.LOGIN_REQUEST:
+                    AuthoritativeServer.addUserOnValidLoginRequest(_websocketClient, messageData);
                     break;
                 case TYPES.MESSAGE_TYPE.RTC_OFFER:
                     AuthoritativeServer.sendRtcOfferToRequestedClient(_websocketClient, messageData);
@@ -45,9 +48,27 @@ class AuthoritativeServer {
         }
     }
     //#region MessageHandler
+    static addUserOnValidLoginRequest(_websocketConnection, _messageData) {
+        console.log("User logged: ", _messageData.loginUserName);
+        let usernameTaken = true;
+        usernameTaken = AuthoritativeServer.searchUserByUserNameAndReturnUser(_messageData.loginUserName, AuthoritativeServer.connectedClientsCollection) != null;
+        if (!usernameTaken) {
+            console.log("Username available, logging in");
+            const clientBeingLoggedIn = AuthoritativeServer.searchUserByWebsocketConnectionAndReturnUser(_websocketConnection, AuthoritativeServer.connectedClientsCollection);
+            if (clientBeingLoggedIn != null) {
+                clientBeingLoggedIn.userName = _messageData.loginUserName;
+                AuthoritativeServer.sendTo(_websocketConnection, new NetworkMessages.LoginResponse(true, clientBeingLoggedIn.id, clientBeingLoggedIn.userName));
+            }
+        }
+        else {
+            AuthoritativeServer.sendTo(_websocketConnection, new NetworkMessages_1.LoginResponse(false, "", ""));
+            usernameTaken = true;
+            console.log("UsernameTaken");
+        }
+    }
     static sendRtcOfferToRequestedClient(_websocketClient, _messageData) {
         console.log("Sending offer to: ", _messageData.userNameToConnectTo);
-        const requestedClient = AuthoritativeServer.searchForPropertyValueInCollection(_messageData.userNameToConnectTo, "userName", AuthoritativeServer.connectedWebsocketClients);
+        const requestedClient = AuthoritativeServer.searchForPropertyValueInCollection(_messageData.userNameToConnectTo, "userName", AuthoritativeServer.connectedClientsCollection);
         if (requestedClient != null) {
             const offerMessage = new NetworkMessages.RtcOffer(_messageData.originatorId, requestedClient.userName, _messageData.offer);
             AuthoritativeServer.sendTo(requestedClient.clientConnection, offerMessage);
@@ -58,7 +79,7 @@ class AuthoritativeServer {
     }
     static answerRtcOfferOfClient(_websocketClient, _messageData) {
         console.log("Sending answer to: ", _messageData.targetId);
-        const clientToSendAnswerTo = AuthoritativeServer.searchUserByUserIdAndReturnUser(_messageData.targetId, AuthoritativeServer.connectedWebsocketClients);
+        const clientToSendAnswerTo = AuthoritativeServer.searchUserByUserIdAndReturnUser(_messageData.targetId, AuthoritativeServer.connectedClientsCollection);
         if (clientToSendAnswerTo != null) {
             // TODO Probable source of error, need to test
             // clientToSendAnswerTo.clientConnection.otherUsername = clientToSendAnswerTo.userName;
@@ -68,7 +89,7 @@ class AuthoritativeServer {
         }
     }
     static sendIceCandidatesToRelevantPeers(_websocketClient, _messageData) {
-        const clientToShareCandidatesWith = AuthoritativeServer.searchUserByUserIdAndReturnUser(_messageData.targetId, AuthoritativeServer.connectedWebsocketClients);
+        const clientToShareCandidatesWith = AuthoritativeServer.searchUserByUserIdAndReturnUser(_messageData.targetId, AuthoritativeServer.connectedClientsCollection);
         if (clientToShareCandidatesWith != null) {
             const candidateToSend = new NetworkMessages.IceCandidate(_messageData.originatorId, clientToShareCandidatesWith.id, _messageData.candidate);
             AuthoritativeServer.sendTo(clientToShareCandidatesWith.clientConnection, candidateToSend);
@@ -77,7 +98,7 @@ class AuthoritativeServer {
     //#endregion
     //#region Helperfunctions
     static searchForClientWithId(_idToFind) {
-        return this.searchForPropertyValueInCollection(_idToFind, "id", this.connectedWebsocketClients);
+        return this.searchForPropertyValueInCollection(_idToFind, "id", this.connectedClientsCollection);
     }
     //#endregion
     static parseMessageToJson(_messageToParse) {
@@ -91,14 +112,7 @@ class AuthoritativeServer {
         return parsedMessage;
     }
 }
-AuthoritativeServer.connectedWebsocketClients = new Array();
-AuthoritativeServer.connectedClientPeerConnectionCollection = new Array();
-AuthoritativeServer.configuration = {
-    iceServers: [
-        { urls: "stun:stun2.1.google.com:19302" },
-        { urls: "stun:stun.example.com" }
-    ]
-};
+AuthoritativeServer.connectedClientsCollection = new Array();
 AuthoritativeServer.startUpServer = () => {
     AuthoritativeServer.websocketServer = new WebSocket.Server({ port: 8080 });
     AuthoritativeServer.serverEventHandler();
@@ -108,60 +122,29 @@ AuthoritativeServer.startUpServer = () => {
 // handle closing
 AuthoritativeServer.serverEventHandler = () => {
     AuthoritativeServer.websocketServer.on("connection", (_websocketClient) => {
+        // _websocketClient = _websocketClient;
         console.log("User connected FRESH");
         const uniqueIdOnConnection = AuthoritativeServer.createID();
         AuthoritativeServer.sendTo(_websocketClient, new NetworkMessages.IdAssigned(uniqueIdOnConnection));
         const freshlyConnectedClient = new Client_1.Client(_websocketClient, uniqueIdOnConnection);
-        AuthoritativeServer.connectedWebsocketClients.push(freshlyConnectedClient);
+        AuthoritativeServer.connectedClientsCollection.push(freshlyConnectedClient);
         _websocketClient.on("message", (_message) => {
             AuthoritativeServer.serverHandleMessageType(_message, _websocketClient);
         });
         _websocketClient.addEventListener("close", () => {
             console.error("Error at connection");
+            for (let i = 0; i < AuthoritativeServer.connectedClientsCollection.length; i++) {
+                if (AuthoritativeServer.connectedClientsCollection[i].clientConnection === _websocketClient) {
+                    console.log("Client found, deleting");
+                    AuthoritativeServer.connectedClientsCollection.splice(i, 1);
+                    console.log(AuthoritativeServer.connectedClientsCollection);
+                }
+                else {
+                    console.log("Wrong client to delete, moving on");
+                }
+            }
         });
     });
-};
-AuthoritativeServer.dataChannelStatusChangeHandler = () => {
-    throw new Error("Method not implemented.");
-};
-AuthoritativeServer.dataChannelMessageHandler = (_event) => {
-    console.log("MEssage received: ", _event.data);
-};
-AuthoritativeServer.beginPeerConnectionNegotiationWithClient = (_originatorId) => {
-    console.log("Creating Datachannel for connection and then creating offer");
-    console.log(RTCPeerConnection);
-    let peerConnection = new RTCPeerConnection(AuthoritativeServer.configuration);
-    const associatedDatachannel = peerConnection.createDataChannel("localDataChannel");
-    associatedDatachannel.addEventListener("open", AuthoritativeServer.dataChannelStatusChangeHandler);
-    associatedDatachannel.addEventListener("close", AuthoritativeServer.dataChannelStatusChangeHandler);
-    associatedDatachannel.addEventListener("message", AuthoritativeServer.dataChannelMessageHandler);
-    peerConnection.createOffer()
-        .then(async (offer) => {
-        console.log("Beginning of createOffer in InitiateConnection, Expected 'stable', got:  ", peerConnection.signalingState);
-        return offer;
-    })
-        .then(async (offer) => {
-        await peerConnection.setLocalDescription(offer);
-        console.log("Setting LocalDesc, Expected 'have-local-offer', got:  ", peerConnection.signalingState);
-    })
-        .then(() => {
-        AuthoritativeServer.createOfferMessageAndSendToRemote(peerConnection, _originatorId);
-    })
-        .catch(() => {
-        console.error("Offer creation error");
-    });
-};
-AuthoritativeServer.createOfferMessageAndSendToRemote = (_peerConnectionToEstablish, _userIdForOffer) => {
-    const offerMessage = new NetworkMessages.RtcOffer("Server", _userIdForOffer, _peerConnectionToEstablish.localDescription);
-    AuthoritativeServer.sendTo(AuthoritativeServer.searchClientConnectionWithId(_userIdForOffer), offerMessage);
-    console.log("Sent offer to remote peer, Expected 'have-local-offer', got:  ", _peerConnectionToEstablish.signalingState);
-};
-AuthoritativeServer.searchClientConnectionWithId = (_idToFind) => {
-    let clientConnectionToFind = AuthoritativeServer.searchForClientWithId(_idToFind).clientConnection;
-    if (clientConnectionToFind) {
-        return clientConnectionToFind;
-    }
-    return null;
 };
 AuthoritativeServer.createID = () => {
     // Math.random should be random enough because of it's seed
@@ -177,7 +160,7 @@ AuthoritativeServer.sendTo = (_connection, _message) => {
 // tslint:disable-next-line: no-any
 AuthoritativeServer.searchForPropertyValueInCollection = (propertyValue, key, collectionToSearch) => {
     for (const propertyObject in collectionToSearch) {
-        if (AuthoritativeServer.connectedWebsocketClients.hasOwnProperty(propertyObject)) {
+        if (AuthoritativeServer.connectedClientsCollection.hasOwnProperty(propertyObject)) {
             // tslint:disable-next-line: typedef
             const objectToSearchThrough = collectionToSearch[propertyObject];
             if (objectToSearchThrough[key] === propertyValue) {

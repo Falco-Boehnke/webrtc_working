@@ -13,6 +13,7 @@ class UiElementHandler {
         UiElementHandler.connectToUserButton = document.getElementById("userConnect");
         UiElementHandler.usernameToConnectTo = document.getElementById("connectToUsername");
         UiElementHandler.disconnectButton = document.getElementById("disconnectBtn");
+        UiElementHandler.startSignalingButton = document.getElementById("start_signalingServerButton");
     }
 }
 exports.UiElementHandler = UiElementHandler;
