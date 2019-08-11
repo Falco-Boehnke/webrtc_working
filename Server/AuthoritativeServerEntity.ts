@@ -23,6 +23,12 @@ export class AuthoritativeServerEntity {
 
     public collectClientCreatePeerConnectionAndCreateOffer = (_freshlyConnectedClient: Client) => {
         let newPeerConnection: RTCPeerConnection = new RTCPeerConnection(this.configuration);
+        // TODO Get the ID of the connection that fired the icecandidate event to send the candidates to the
+        // corresponding client, otherwise we stuck
+        newPeerConnection.addEventListener("icecandidate", ({candidate}) =>{
+        let message: NetworkMessages.IceCandidate = new NetworkMessages.IceCandidate("SERVER", _freshlyConnectedClient.id, {candidate});
+        this.sendMessage(message);
+});
         _freshlyConnectedClient.peerConnection = newPeerConnection;
         this.notYetPeerConnectedClientCollection.push(_freshlyConnectedClient);
         this.initiateConnectionByCreatingDataChannelAndCreatingOffer(_freshlyConnectedClient);
@@ -54,6 +60,13 @@ export class AuthoritativeServerEntity {
         let descriptionAnswer: RTCSessionDescription = new RTCSessionDescription(_answer.answer);
         clientToConnect.peerConnection.setRemoteDescription(descriptionAnswer);
         console.log("Remote Description set");
+    }
+
+    // TODO Use or delete
+    private sendNewIceCandidatesToPeer = ({ candidate }: any) => {
+        let message: NetworkMessages.IceCandidate = new NetworkMessages.IceCandidate("SERVER", this.remoteClientId, candidate);
+        this.sendMessage(message);
+
     }
 
     private initiateConnectionByCreatingDataChannelAndCreatingOffer = (_clientToConnect: Client): void => {

@@ -47,12 +47,9 @@ class AuthoritativeServerEntity {
             console.log("Received answer");
             let clientToConnect = this.searchUserByWebsocketConnectionAndReturnUser(_websocketClient, this.notYetPeerConnectedClientCollection);
             console.log(clientToConnect);
-            // console.log("Setting description as answer");
             let descriptionAnswer = new RTCSessionDescription(_answer.answer);
-            // console.log("Receiving Answer, setting remote desc Expected 'have-local-offer'|'have-remote-offer, got:  ", this.connection.signalingState);
             clientToConnect.peerConnection.setRemoteDescription(descriptionAnswer);
-            // console.log("Remote Description set");
-            // console.log("Signaling state:", this.connection.signalingState);
+            console.log("Remote Description set");
         };
         this.initiateConnectionByCreatingDataChannelAndCreatingOffer = (_clientToConnect) => {
             console.log("Initiating connection to : " + _clientToConnect);
