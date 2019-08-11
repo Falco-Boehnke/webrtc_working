@@ -11,7 +11,6 @@ const WebSocket = __importStar(require("ws"));
 const NetworkMessages = __importStar(require("./../NetworkMessages"));
 const TYPES = __importStar(require("./../DataCollectors/Enumerators/EnumeratorCollection"));
 const Client_1 = require("./../DataCollectors/Client");
-const NetworkMessages_1 = require("./../NetworkMessages");
 class AuthoritativeServer {
     // TODO Check if event.type can be used for identification instead
     static serverHandleMessageType(_message, _websocketClient) {
@@ -61,7 +60,7 @@ class AuthoritativeServer {
             }
         }
         else {
-            AuthoritativeServer.sendTo(_websocketConnection, new NetworkMessages_1.LoginResponse(false, "", ""));
+            AuthoritativeServer.sendTo(_websocketConnection, new NetworkMessages.LoginResponse(false, "", ""));
             usernameTaken = true;
             console.log("UsernameTaken");
         }
@@ -117,9 +116,6 @@ AuthoritativeServer.startUpServer = () => {
     AuthoritativeServer.websocketServer = new WebSocket.Server({ port: 8080 });
     AuthoritativeServer.serverEventHandler();
 };
-// TODO PArameter mit Unterstrich
-// TODO Coding guidelines umsetzen
-// handle closing
 AuthoritativeServer.serverEventHandler = () => {
     AuthoritativeServer.websocketServer.on("connection", (_websocketClient) => {
         // _websocketClient = _websocketClient;

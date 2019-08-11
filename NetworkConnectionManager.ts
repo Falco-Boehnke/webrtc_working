@@ -42,13 +42,7 @@ export class NetworkConnectionManager {
         this.ws = new WebSocket(this.signalingServerUrl);
         this.addWsEventListeners();
     }
-    public addUiListeners = (): void => {
-        // UiElementHandler.getAllUiElements();
-        console.log(UiElementHandler.loginButton);
-        UiElementHandler.loginButton.addEventListener("click", this.checkChosenUsernameAndCreateLoginRequest);
-        UiElementHandler.connectToUserButton.addEventListener("click", this.checkUsernameToConnectToAndInitiateConnection);
-        UiElementHandler.sendMsgButton.addEventListener("click", this.sendMessageViaDirectPeerConnection);
-    }
+
     public addWsEventListeners = (): void => {
         this.ws.addEventListener("open", (_connOpen: Event) => {
             console.log("Conneced to the signaling server", _connOpen);
@@ -68,8 +62,6 @@ export class NetworkConnectionManager {
         this.connection = new RTCPeerConnection(this.configuration);
 
         this.connection.addEventListener("icecandidate", this.sendNewIceCandidatesToPeer);
-        console.log("CreateRTCConection State, Expected 'stable', got:  ", this.connection.signalingState);
-
     }
 
     public sendMessage = (message: Object) => {
@@ -95,6 +87,37 @@ export class NetworkConnectionManager {
     public createLoginRequestAndSendToServer = (_requestingUsername: string) => {
         const loginMessage: NetworkMessages.LoginRequest = new NetworkMessages.LoginRequest(this.localId, this.localUserName);
         this.sendMessage(loginMessage);
+    }
+
+    public checkChosenUsernameAndCreateLoginRequest = (): void => {
+        if (UiElementHandler.loginNameInput != null) {
+            this.localUserName = UiElementHandler.loginNameInput.value;
+        }
+        else {
+            console.error("UI element missing: Loginname Input field");
+        }
+        if (this.localUserName.length <= 0) {
+            console.log("Please enter username");
+            return;
+        }
+        this.createLoginRequestAndSendToServer(this.localUserName);
+    }
+
+
+
+    public checkUsernameToConnectToAndInitiateConnection = (): void => {
+        const callToUsername: string = UiElementHandler.usernameToConnectTo.value;
+        if (callToUsername.length === 0) {
+            console.error("Enter a username 😉");
+            return;
+        }
+
+        // TODO Fehler ist das sich der answerer selbst die message schickt weil der
+        // Username zu dem es connected ist nicht richtig gepeichert wird
+        // Muss umwandeln zu IDs
+        this.remoteClientId = callToUsername;
+        console.log("Username to connect to: " + this.remoteClientId);
+        this.initiateConnectionByCreatingDataChannelAndCreatingOffer(this.remoteClientId);
     }
 
     private parseMessageAndCallCorrespondingMessageHandler = (_receivedMessage: MessageEvent) => {
@@ -136,36 +159,7 @@ export class NetworkConnectionManager {
         this.sendMessage(new NetworkMessages.IdAssigned(this.localId));
     }
     //#region SendingFunctions
-    private checkChosenUsernameAndCreateLoginRequest = (): void => {
-        if (UiElementHandler.loginNameInput != null) {
-            this.localUserName = UiElementHandler.loginNameInput.value;
-        }
-        else {
-            console.error("UI element missing: Loginname Input field");
-        }
-        if (this.localUserName.length <= 0) {
-            console.log("Please enter username");
-            return;
-        }
-        this.createLoginRequestAndSendToServer(this.localUserName);
-    }
-
-
-
-    private checkUsernameToConnectToAndInitiateConnection = (): void => {
-        const callToUsername: string = UiElementHandler.usernameToConnectTo.value;
-        if (callToUsername.length === 0) {
-            alert("Enter a username 😉");
-            return;
-        }
-
-        // TODO Fehler ist das sich der answerer selbst die message schickt weil der
-        // Username zu dem es connected ist nicht richtig gepeichert wird
-        // Muss umwandeln zu IDs
-        this.remoteClientId = callToUsername;
-        console.log("Username to connect to: " + this.remoteClientId);
-        this.initiateConnectionByCreatingDataChannelAndCreatingOffer(this.remoteClientId);
-    }
+   
 
     private initiateConnectionByCreatingDataChannelAndCreatingOffer = (_userNameForOffer: string): void => {
         console.log("Creating Datachannel for connection and then creating offer");

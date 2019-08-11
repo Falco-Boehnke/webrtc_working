@@ -1,6 +1,6 @@
 import { NetworkConnectionManager } from "./NetworkConnectionManager";
 import { UiElementHandler } from "./DataCollectors/UiElementHandler";
-
+import { SignalingServer } from "./Server/SignalingServer";
 
 UiElementHandler.getAllUiElements();
 const test: NetworkConnectionManager = new NetworkConnectionManager();
@@ -9,12 +9,14 @@ test.addUiListeners();
 
 
 
-UiElementHandler.startSignalingButton.addEventListener("click", startingUpServer);
-UiElementHandler.signalingSubmit.addEventListener("click",connectToSignalingServer);
-function startingUpServer() {
-    if (test) {
-        test.startUpSignalingServerFile("./Server/ServerMain");
-    }
+UiElementHandler.startSignalingButton.addEventListener("click", startingUpSignalingServer);
+UiElementHandler.signalingSubmit.addEventListener("click", connectToSignalingServer);
+UiElementHandler.loginButton.addEventListener("click", test.checkChosenUsernameAndCreateLoginRequest);
+UiElementHandler.connectToUserButton.addEventListener("click", test.checkUsernameToConnectToAndInitiateConnection);
+UiElementHandler.sendMsgButton.addEventListener("click", test.sendMessageViaDirectPeerConnection);
+
+function startingUpSignalingServer() {
+    SignalingServer.startUpServer(7070);
 }
 
 function connectToSignalingServer() {

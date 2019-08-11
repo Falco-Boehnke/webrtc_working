@@ -9,6 +9,7 @@ var MESSAGE_TYPE;
     MESSAGE_TYPE["RTC_OFFER"] = "offer";
     MESSAGE_TYPE["RTC_ANSWER"] = "answer";
     MESSAGE_TYPE["ICE_CANDIDATE"] = "candidate";
+    MESSAGE_TYPE["SERVER_ASSIGNMENT_REQUEST"] = "server_assignment_request";
 })(MESSAGE_TYPE = exports.MESSAGE_TYPE || (exports.MESSAGE_TYPE = {}));
 var TEST_ENUM;
 (function (TEST_ENUM) {

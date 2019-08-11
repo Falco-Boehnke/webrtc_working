@@ -12,10 +12,6 @@ class AuthoritativeServer {
         AuthoritativeServer.websocketServer = new WebSocket.Server({ port: 8080 });
         AuthoritativeServer.serverEventHandler();
     }
-    // TODO PArameter mit Unterstrich
-    // TODO Coding guidelines umsetzen
-
-    // handle closing
 
     public static serverEventHandler = (): void => {
         AuthoritativeServer.websocketServer.on("connection", (_websocketClient: any) => {

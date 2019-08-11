@@ -31,9 +31,6 @@ class NetworkConnectionManager {
         this.addUiListeners = () => {
             // UiElementHandler.getAllUiElements();
             console.log(UiElementHandler_1.UiElementHandler.loginButton);
-            UiElementHandler_1.UiElementHandler.loginButton.addEventListener("click", this.checkChosenUsernameAndCreateLoginRequest);
-            UiElementHandler_1.UiElementHandler.connectToUserButton.addEventListener("click", this.checkUsernameToConnectToAndInitiateConnection);
-            UiElementHandler_1.UiElementHandler.sendMsgButton.addEventListener("click", this.sendMessageViaDirectPeerConnection);
         };
         this.addWsEventListeners = () => {
             this.ws.addEventListener("open", (_connOpen) => {
@@ -73,6 +70,32 @@ class NetworkConnectionManager {
             const loginMessage = new NetworkMessages.LoginRequest(this.localId, this.localUserName);
             this.sendMessage(loginMessage);
         };
+        this.checkChosenUsernameAndCreateLoginRequest = () => {
+            if (UiElementHandler_1.UiElementHandler.loginNameInput != null) {
+                this.localUserName = UiElementHandler_1.UiElementHandler.loginNameInput.value;
+            }
+            else {
+                console.error("UI element missing: Loginname Input field");
+            }
+            if (this.localUserName.length <= 0) {
+                console.log("Please enter username");
+                return;
+            }
+            this.createLoginRequestAndSendToServer(this.localUserName);
+        };
+        this.checkUsernameToConnectToAndInitiateConnection = () => {
+            const callToUsername = UiElementHandler_1.UiElementHandler.usernameToConnectTo.value;
+            if (callToUsername.length === 0) {
+                console.error("Enter a username 😉");
+                return;
+            }
+            // TODO Fehler ist das sich der answerer selbst die message schickt weil der
+            // Username zu dem es connected ist nicht richtig gepeichert wird
+            // Muss umwandeln zu IDs
+            this.remoteClientId = callToUsername;
+            console.log("Username to connect to: " + this.remoteClientId);
+            this.initiateConnectionByCreatingDataChannelAndCreatingOffer(this.remoteClientId);
+        };
         this.parseMessageAndCallCorrespondingMessageHandler = (_receivedMessage) => {
             // tslint:disable-next-line: typedef
             let objectifiedMessage = this.parseReceivedMessageAndReturnObject(_receivedMessage);
@@ -104,32 +127,6 @@ class NetworkConnectionManager {
             this.sendMessage(new NetworkMessages.IdAssigned(this.localId));
         };
         //#region SendingFunctions
-        this.checkChosenUsernameAndCreateLoginRequest = () => {
-            if (UiElementHandler_1.UiElementHandler.loginNameInput != null) {
-                this.localUserName = UiElementHandler_1.UiElementHandler.loginNameInput.value;
-            }
-            else {
-                console.error("UI element missing: Loginname Input field");
-            }
-            if (this.localUserName.length <= 0) {
-                console.log("Please enter username");
-                return;
-            }
-            this.createLoginRequestAndSendToServer(this.localUserName);
-        };
-        this.checkUsernameToConnectToAndInitiateConnection = () => {
-            const callToUsername = UiElementHandler_1.UiElementHandler.usernameToConnectTo.value;
-            if (callToUsername.length === 0) {
-                alert("Enter a username 😉");
-                return;
-            }
-            // TODO Fehler ist das sich der answerer selbst die message schickt weil der
-            // Username zu dem es connected ist nicht richtig gepeichert wird
-            // Muss umwandeln zu IDs
-            this.remoteClientId = callToUsername;
-            console.log("Username to connect to: " + this.remoteClientId);
-            this.initiateConnectionByCreatingDataChannelAndCreatingOffer(this.remoteClientId);
-        };
         this.initiateConnectionByCreatingDataChannelAndCreatingOffer = (_userNameForOffer) => {
             console.log("Creating Datachannel for connection and then creating offer");
             this.isInitiator = true;

@@ -8,9 +8,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const WebSocket = __importStar(require("ws"));
-const NetworkMessages = __importStar(require("./../NetworkMessages"));
-const TYPES = __importStar(require("./../DataCollectors/Enumerators/EnumeratorCollection"));
-const Client_1 = require("./../DataCollectors/Client");
+const NetworkMessages = __importStar(require("../NetworkMessages"));
+const TYPES = __importStar(require("../DataCollectors/Enumerators/EnumeratorCollection"));
+const Client_1 = require("../DataCollectors/Client");
 class SignalingServer {
     // TODO Check if event.type can be used for identification instead => It cannot
     static serverHandleMessageType(_message, _websocketClient) {
@@ -111,8 +111,14 @@ class SignalingServer {
     }
 }
 SignalingServer.connectedClientsCollection = new Array();
-SignalingServer.startUpServer = () => {
-    SignalingServer.websocketServer = new WebSocket.Server({ port: 8080 });
+SignalingServer.startUpServer = (_serverPort) => {
+    console.log(_serverPort);
+    if (!_serverPort) {
+        SignalingServer.websocketServer = new WebSocket.Server({ port: 8080 });
+    }
+    else {
+        SignalingServer.websocketServer = new WebSocket.Server({ port: _serverPort });
+    }
     SignalingServer.serverEventHandler();
 };
 SignalingServer.serverEventHandler = () => {
@@ -174,4 +180,5 @@ SignalingServer.searchUserByUserIdAndReturnUser = (_userIdToSearchFor, _collecti
 SignalingServer.searchUserByWebsocketConnectionAndReturnUser = (_websocketConnectionToSearchFor, _collectionToSearch) => {
     return SignalingServer.searchForPropertyValueInCollection(_websocketConnectionToSearchFor, "clientConnection", _collectionToSearch);
 };
-SignalingServer.startUpServer();
+exports.SignalingServer = SignalingServer;
+// SignalingServer.startUpServer();

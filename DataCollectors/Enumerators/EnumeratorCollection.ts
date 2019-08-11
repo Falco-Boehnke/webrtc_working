@@ -6,6 +6,7 @@ export enum MESSAGE_TYPE {
     RTC_OFFER = "offer",
     RTC_ANSWER = "answer",
     ICE_CANDIDATE = "candidate",
+    SERVER_ASSIGNMENT_REQUEST = "server_assignment_request",
 }
 enum TEST_ENUM {
     SERIOUSLY = "wtf",
