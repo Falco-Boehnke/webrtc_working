@@ -28,10 +28,6 @@ class NetworkConnectionManager {
             this.ws = new WebSocket(this.signalingServerUrl);
             this.addWsEventListeners();
         };
-        this.addUiListeners = () => {
-            // UiElementHandler.getAllUiElements();
-            console.log(UiElementHandler_1.UiElementHandler.loginButton);
-        };
         this.addWsEventListeners = () => {
             this.ws.addEventListener("open", (_connOpen) => {
                 console.log("Conneced to the signaling server", _connOpen);
@@ -47,7 +43,6 @@ class NetworkConnectionManager {
             console.log("Creating RTC Connection");
             this.connection = new RTCPeerConnection(this.configuration);
             this.connection.addEventListener("icecandidate", this.sendNewIceCandidatesToPeer);
-            console.log("CreateRTCConection State, Expected 'stable', got:  ", this.connection.signalingState);
         };
         this.sendMessage = (message) => {
             this.ws.send(JSON.stringify(message));

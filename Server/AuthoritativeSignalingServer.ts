@@ -3,7 +3,7 @@ import * as NetworkMessages from "../NetworkMessages";
 import * as TYPES from "../DataCollectors/Enumerators/EnumeratorCollection";
 import { Client } from "../DataCollectors/Client";
 
-export class SignalingServer {
+export class AuthoritativeSignalingServer {
     public static websocketServer: WebSocket.Server;
     public static connectedClientsCollection: Client[] = new Array();
 
@@ -11,36 +11,34 @@ export class SignalingServer {
     public static startUpServer = (_serverPort?: number) => {
         console.log(_serverPort);
         if (!_serverPort) {
-            SignalingServer.websocketServer = new WebSocket.Server({ port: 8080 });
+            AuthoritativeSignalingServer.websocketServer = new WebSocket.Server({ port: 8080 });
         }
         else {
-            SignalingServer.websocketServer = new WebSocket.Server({ port: _serverPort });
+            AuthoritativeSignalingServer.websocketServer = new WebSocket.Server({ port: _serverPort });
 
         }
-        SignalingServer.serverEventHandler();
+        AuthoritativeSignalingServer.serverEventHandler();
     }
 
     public static serverEventHandler = (): void => {
-        SignalingServer.websocketServer.on("connection", (_websocketClient: any) => {
-            // _websocketClient = _websocketClient;
+        AuthoritativeSignalingServer.websocketServer.on("connection", (_websocketClient: any) => {
             console.log("User connected FRESH");
 
-            const uniqueIdOnConnection: string = SignalingServer.createID();
-            SignalingServer.sendTo(_websocketClient, new NetworkMessages.IdAssigned(uniqueIdOnConnection));
+            const uniqueIdOnConnection: string = AuthoritativeSignalingServer.createID();
             const freshlyConnectedClient: Client = new Client(_websocketClient, uniqueIdOnConnection);
-            SignalingServer.connectedClientsCollection.push(freshlyConnectedClient);
+            AuthoritativeSignalingServer.connectedClientsCollection.push(freshlyConnectedClient);
 
             _websocketClient.on("message", (_message: string) => {
-                SignalingServer.serverHandleMessageType(_message, _websocketClient);
+                AuthoritativeSignalingServer.serverHandleMessageType(_message, _websocketClient);
             });
 
             _websocketClient.addEventListener("close", () => {
                 console.error("Error at connection");
-                for (let i: number = 0; i < SignalingServer.connectedClientsCollection.length; i++) {
-                    if (SignalingServer.connectedClientsCollection[i].clientConnection === _websocketClient) {
+                for (let i: number = 0; i < AuthoritativeSignalingServer.connectedClientsCollection.length; i++) {
+                    if (AuthoritativeSignalingServer.connectedClientsCollection[i].clientConnection === _websocketClient) {
                         console.log("Client found, deleting");
-                        SignalingServer.connectedClientsCollection.splice(i, 1);
-                        console.log(SignalingServer.connectedClientsCollection);
+                        AuthoritativeSignalingServer.connectedClientsCollection.splice(i, 1);
+                        console.log(AuthoritativeSignalingServer.connectedClientsCollection);
                     }
                     else {
                         console.log("Wrong client to delete, moving on");
@@ -70,19 +68,19 @@ export class SignalingServer {
                     break;
 
                 case TYPES.MESSAGE_TYPE.LOGIN_REQUEST:
-                    SignalingServer.addUserOnValidLoginRequest(_websocketClient, messageData);
+                    AuthoritativeSignalingServer.addUserOnValidLoginRequest(_websocketClient, messageData);
                     break;
 
                 case TYPES.MESSAGE_TYPE.RTC_OFFER:
-                    SignalingServer.sendRtcOfferToRequestedClient(_websocketClient, messageData);
+                    AuthoritativeSignalingServer.sendRtcOfferToRequestedClient(_websocketClient, messageData);
                     break;
 
                 case TYPES.MESSAGE_TYPE.RTC_ANSWER:
-                    SignalingServer.answerRtcOfferOfClient(_websocketClient, messageData);
+                    AuthoritativeSignalingServer.answerRtcOfferOfClient(_websocketClient, messageData);
                     break;
 
                 case TYPES.MESSAGE_TYPE.ICE_CANDIDATE:
-                    SignalingServer.sendIceCandidatesToRelevantPeers(_websocketClient, messageData);
+                    AuthoritativeSignalingServer.sendIceCandidatesToRelevantPeers(_websocketClient, messageData);
                     break;
 
                 default:
@@ -97,18 +95,18 @@ export class SignalingServer {
     public static addUserOnValidLoginRequest(_websocketConnection: WebSocket, _messageData: NetworkMessages.LoginRequest): void {
         console.log("User logged: ", _messageData.loginUserName);
         let usernameTaken: boolean = true;
-        usernameTaken = SignalingServer.searchUserByUserNameAndReturnUser(_messageData.loginUserName, SignalingServer.connectedClientsCollection) != null;
+        usernameTaken = AuthoritativeSignalingServer.searchUserByUserNameAndReturnUser(_messageData.loginUserName, AuthoritativeSignalingServer.connectedClientsCollection) != null;
 
         if (!usernameTaken) {
             console.log("Username available, logging in");
-            const clientBeingLoggedIn: Client = SignalingServer.searchUserByWebsocketConnectionAndReturnUser(_websocketConnection, SignalingServer.connectedClientsCollection);
+            const clientBeingLoggedIn: Client = AuthoritativeSignalingServer.searchUserByWebsocketConnectionAndReturnUser(_websocketConnection, AuthoritativeSignalingServer.connectedClientsCollection);
 
             if (clientBeingLoggedIn != null) {
                 clientBeingLoggedIn.userName = _messageData.loginUserName;
-                SignalingServer.sendTo(_websocketConnection, new NetworkMessages.LoginResponse(true, clientBeingLoggedIn.id, clientBeingLoggedIn.userName));
+                AuthoritativeSignalingServer.sendTo(_websocketConnection, new NetworkMessages.LoginResponse(true, clientBeingLoggedIn.id, clientBeingLoggedIn.userName));
             }
         } else {
-            SignalingServer.sendTo(_websocketConnection, new NetworkMessages.LoginResponse(false, "", ""));
+            AuthoritativeSignalingServer.sendTo(_websocketConnection, new NetworkMessages.LoginResponse(false, "", ""));
             usernameTaken = true;
             console.log("UsernameTaken");
         }
@@ -116,33 +114,33 @@ export class SignalingServer {
 
     public static sendRtcOfferToRequestedClient(_websocketClient: WebSocket, _messageData: NetworkMessages.RtcOffer): void {
         console.log("Sending offer to: ", _messageData.userNameToConnectTo);
-        const requestedClient: Client = SignalingServer.searchForPropertyValueInCollection(_messageData.userNameToConnectTo, "userName", SignalingServer.connectedClientsCollection);
+        const requestedClient: Client = AuthoritativeSignalingServer.searchForPropertyValueInCollection(_messageData.userNameToConnectTo, "userName", AuthoritativeSignalingServer.connectedClientsCollection);
 
         if (requestedClient != null) {
             const offerMessage: NetworkMessages.RtcOffer = new NetworkMessages.RtcOffer(_messageData.originatorId, requestedClient.userName, _messageData.offer);
-            SignalingServer.sendTo(requestedClient.clientConnection, offerMessage);
+            AuthoritativeSignalingServer.sendTo(requestedClient.clientConnection, offerMessage);
         } else { console.error("User to connect to doesn't exist under that Name"); }
     }
 
     public static answerRtcOfferOfClient(_websocketClient: WebSocket, _messageData: NetworkMessages.RtcAnswer): void {
         console.log("Sending answer to: ", _messageData.targetId);
-        const clientToSendAnswerTo: Client = SignalingServer.searchUserByUserIdAndReturnUser(_messageData.targetId, SignalingServer.connectedClientsCollection);
+        const clientToSendAnswerTo: Client = AuthoritativeSignalingServer.searchUserByUserIdAndReturnUser(_messageData.targetId, AuthoritativeSignalingServer.connectedClientsCollection);
 
         if (clientToSendAnswerTo != null) {
             // TODO Probable source of error, need to test
             // clientToSendAnswerTo.clientConnection.otherUsername = clientToSendAnswerTo.userName;
             // const answerToSend: NetworkMessages.RtcAnswer = new NetworkMessages.RtcAnswer(_messageData.originatorId, clientToSendAnswerTo.userName, _messageData.answer);
             if (clientToSendAnswerTo.clientConnection != null)
-                SignalingServer.sendTo(clientToSendAnswerTo.clientConnection, _messageData);
+                AuthoritativeSignalingServer.sendTo(clientToSendAnswerTo.clientConnection, _messageData);
         }
     }
 
     public static sendIceCandidatesToRelevantPeers(_websocketClient: WebSocket, _messageData: NetworkMessages.IceCandidate): void {
-        const clientToShareCandidatesWith: Client = SignalingServer.searchUserByUserIdAndReturnUser(_messageData.targetId, SignalingServer.connectedClientsCollection);
+        const clientToShareCandidatesWith: Client = AuthoritativeSignalingServer.searchUserByUserIdAndReturnUser(_messageData.targetId, AuthoritativeSignalingServer.connectedClientsCollection);
 
         if (clientToShareCandidatesWith != null) {
             const candidateToSend: NetworkMessages.IceCandidate = new NetworkMessages.IceCandidate(_messageData.originatorId, clientToShareCandidatesWith.id, _messageData.candidate);
-            SignalingServer.sendTo(clientToShareCandidatesWith.clientConnection, candidateToSend);
+            AuthoritativeSignalingServer.sendTo(clientToShareCandidatesWith.clientConnection, candidateToSend);
         }
     }
 
@@ -185,7 +183,7 @@ export class SignalingServer {
     // tslint:disable-next-line: no-any
     private static searchForPropertyValueInCollection = (propertyValue: any, key: string, collectionToSearch: any[]) => {
         for (const propertyObject in collectionToSearch) {
-            if (SignalingServer.connectedClientsCollection.hasOwnProperty(propertyObject)) {
+            if (AuthoritativeSignalingServer.connectedClientsCollection.hasOwnProperty(propertyObject)) {
                 // tslint:disable-next-line: typedef
                 const objectToSearchThrough = collectionToSearch[propertyObject];
                 if (objectToSearchThrough[key] === propertyValue) {
@@ -197,14 +195,14 @@ export class SignalingServer {
     }
 
     private static searchUserByUserNameAndReturnUser = (_userNameToSearchFor: string, _collectionToSearch: Client[]): Client => {
-        return SignalingServer.searchForPropertyValueInCollection(_userNameToSearchFor, "userName", _collectionToSearch);
+        return AuthoritativeSignalingServer.searchForPropertyValueInCollection(_userNameToSearchFor, "userName", _collectionToSearch);
     }
     private static searchUserByUserIdAndReturnUser = (_userIdToSearchFor: string, _collectionToSearch: Client[]): Client => {
-        return SignalingServer.searchForPropertyValueInCollection(_userIdToSearchFor, "id", _collectionToSearch);
+        return AuthoritativeSignalingServer.searchForPropertyValueInCollection(_userIdToSearchFor, "id", _collectionToSearch);
     }
 
     private static searchUserByWebsocketConnectionAndReturnUser = (_websocketConnectionToSearchFor: WebSocket, _collectionToSearch: Client[]) => {
-        return SignalingServer.searchForPropertyValueInCollection(_websocketConnectionToSearchFor, "clientConnection", _collectionToSearch);
+        return AuthoritativeSignalingServer.searchForPropertyValueInCollection(_websocketConnectionToSearchFor, "clientConnection", _collectionToSearch);
     }
 }
-// SignalingServer.startUpServer();
+// AuthoritativeSignalingServer.startUpServer();

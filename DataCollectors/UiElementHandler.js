@@ -2,6 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 class UiElementHandler {
     static getAllUiElements() {
+        UiElementHandler.switchModeButton = document.getElementById("switch");
+        UiElementHandler.authoritativeElements = document.getElementById("authoritative_elements");
         UiElementHandler.signalingUrl = document.getElementById("signaling_uri");
         UiElementHandler.signalingSubmit = document.getElementById("submit_button");
         UiElementHandler.loginNameInput = document.getElementById("login_name");
@@ -14,6 +16,7 @@ class UiElementHandler {
         UiElementHandler.usernameToConnectTo = document.getElementById("connectToUsername");
         UiElementHandler.disconnectButton = document.getElementById("disconnectBtn");
         UiElementHandler.startSignalingButton = document.getElementById("start_signalingServerButton");
+        UiElementHandler.peerToPeerHtmlElements = document.getElementById("peer_to_peer_elements");
     }
 }
 exports.UiElementHandler = UiElementHandler;

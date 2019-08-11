@@ -11,8 +11,12 @@ export abstract class UiElementHandler {
     public static usernameToConnectTo: HTMLInputElement;
     public static disconnectButton: HTMLElement;
     public static startSignalingButton: HTMLElement;
-
+    public static peerToPeerHtmlElements: HTMLElement;
+    public static authoritativeElements: HTMLElement;
+    public static switchModeButton: HTMLElement;
     public static getAllUiElements() {
+        UiElementHandler.switchModeButton = document.getElementById("switch") as HTMLElement;
+        UiElementHandler.authoritativeElements = document.getElementById("authoritative_elements") as HTMLElement;
         UiElementHandler.signalingUrl = document.getElementById("signaling_uri") as HTMLInputElement;
         UiElementHandler.signalingSubmit = document.getElementById("submit_button") as HTMLElement;
         UiElementHandler.loginNameInput = document.getElementById("login_name") as HTMLInputElement;
@@ -25,6 +29,7 @@ export abstract class UiElementHandler {
         UiElementHandler.usernameToConnectTo = document.getElementById("connectToUsername") as HTMLInputElement;
         UiElementHandler.disconnectButton = document.getElementById("disconnectBtn") as HTMLElement;
         UiElementHandler.startSignalingButton = document.getElementById("start_signalingServerButton") as HTMLElement;
+        UiElementHandler.peerToPeerHtmlElements = document.getElementById("peer_to_peer_elements") as HTMLElement;
     }
 
 }
