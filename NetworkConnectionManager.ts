@@ -31,6 +31,8 @@ export class NetworkConnectionManager {
         this.remoteClientId = "";
         this.isInitiator = false;
         this.receivedDataChannelFromRemote = undefined;
+
+        this.createRTCPeerConnectionAndAddListeners();
     }
 
     public startUpSignalingServerFile = (_serverFileUri: string): void => {
@@ -57,12 +59,7 @@ export class NetworkConnectionManager {
         });
     }
 
-    public createRTCPeerConnectionAndAddListeners = () => {
-        console.log("Creating RTC Connection");
-        this.connection = new RTCPeerConnection(this.configuration);
 
-        this.connection.addEventListener("icecandidate", this.sendNewIceCandidatesToPeer);
-    }
 
     public sendMessage = (message: Object) => {
         this.ws.send(JSON.stringify(message));
@@ -153,12 +150,17 @@ export class NetworkConnectionManager {
         }
     }
 
+    private createRTCPeerConnectionAndAddListeners = () => {
+        console.log("Creating RTC Connection");
+        this.connection = new RTCPeerConnection(this.configuration);
+        this.connection.addEventListener("icecandidate", this.sendNewIceCandidatesToPeer);
+    }
 
     private assignIdAndSendConfirmation = (_message: NetworkMessages.IdAssigned) => {
         this.localId = _message.assignedId;
         this.sendMessage(new NetworkMessages.IdAssigned(this.localId));
     }
-    //#region SendingFunctions
+
    
 
     private initiateConnectionByCreatingDataChannelAndCreatingOffer = (_userNameForOffer: string): void => {
@@ -219,7 +221,6 @@ export class NetworkConnectionManager {
 
     }
 
-    //#region ReceivingFunctions
     private loginValidAddUser = (_assignedId: string, _loginSuccess: boolean, _originatorUserName: string): void => {
         if (_loginSuccess) {
             this.localUserName = _originatorUserName;
@@ -278,9 +279,6 @@ export class NetworkConnectionManager {
         }
     }
 
-    //#endregion
-
-    //#region HelperFunctions
     private handleCreateAnswerError = (err: any) => {
         console.error(err);
     }
@@ -311,6 +309,4 @@ export class NetworkConnectionManager {
         // TODO Fix it so that both clients have names instead of IDs for usage
         UiElementHandler.chatbox.innerHTML += "\n" + this.remoteClientId + ": " + _messageEvent.data;
     }
-    //#endregion
-
 }

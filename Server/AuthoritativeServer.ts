@@ -3,8 +3,16 @@ import * as NetworkMessages from "./../NetworkMessages";
 import * as TYPES from "./../DataCollectors/Enumerators/EnumeratorCollection";
 
 import { Client } from "./../DataCollectors/Client";
-class AuthoritativeServer {
+export class AuthoritativeServer {
+
+
+    private peerConnectedClientCollection: Client[] = new Array();
     
+    constructor(){
+        console.log("AuthoritativeServerStartet");
+    }
+
+   
 
 
     public static createID = (): string => {
@@ -30,6 +38,39 @@ class AuthoritativeServer {
     public static sendTo = (_connection: any, _message: Object) => {
         _connection.send(JSON.stringify(_message));
     }
+
+    // private initiateConnectionByCreatingDataChannelAndCreatingOffer = (_userNameForOffer: string): void => {
+    //     console.log("Creating Datachannel for connection and then creating offer");
+    //     this.localDataChannel = this.connection.createDataChannel("localDataChannel");
+    //     this.localDataChannel.addEventListener("open", this.dataChannelStatusChangeHandler);
+    //     this.localDataChannel.addEventListener("close", this.dataChannelStatusChangeHandler);
+    //     this.localDataChannel.addEventListener("message", this.dataChannelMessageHandler);
+    //     this.connection.createOffer()
+    //         .then(async (offer) => {
+    //             console.log("Beginning of createOffer in InitiateConnection, Expected 'stable', got:  ", this.connection.signalingState);
+    //             return offer;
+    //         })
+    //         .then(async (offer) => {
+    //             await this.connection.setLocalDescription(offer);
+    //             console.log("Setting LocalDesc, Expected 'have-local-offer', got:  ", this.connection.signalingState);
+    //         })
+    //         .then(() => {
+    //             this.createOfferMessageAndSendToRemote(_userNameForOffer);
+    //         })
+    //         .catch(() => {
+    //             console.error("Offer creation error");
+    //         });
+    // }
+
+    // private createOfferMessageAndSendToRemote = (_userNameForOffer: string) => {
+    //     const offerMessage: NetworkMessages.RtcOffer = new NetworkMessages.RtcOffer(this.localId, _userNameForOffer, this.connection.localDescription);
+    //     this.sendMessage(offerMessage);
+    //     console.log("Sent offer to remote peer, Expected 'have-local-offer', got:  ", this.connection.signalingState);
+    // }
+
+
+
+
 
     // Helper function for searching through a collection, finding objects by key and value, returning
     // Object that has that value

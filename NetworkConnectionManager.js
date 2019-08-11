@@ -39,11 +39,6 @@ class NetworkConnectionManager {
                 this.parseMessageAndCallCorrespondingMessageHandler(_receivedMessage);
             });
         };
-        this.createRTCPeerConnectionAndAddListeners = () => {
-            console.log("Creating RTC Connection");
-            this.connection = new RTCPeerConnection(this.configuration);
-            this.connection.addEventListener("icecandidate", this.sendNewIceCandidatesToPeer);
-        };
         this.sendMessage = (message) => {
             this.ws.send(JSON.stringify(message));
         };
@@ -117,11 +112,15 @@ class NetworkConnectionManager {
                     break;
             }
         };
+        this.createRTCPeerConnectionAndAddListeners = () => {
+            console.log("Creating RTC Connection");
+            this.connection = new RTCPeerConnection(this.configuration);
+            this.connection.addEventListener("icecandidate", this.sendNewIceCandidatesToPeer);
+        };
         this.assignIdAndSendConfirmation = (_message) => {
             this.localId = _message.assignedId;
             this.sendMessage(new NetworkMessages.IdAssigned(this.localId));
         };
-        //#region SendingFunctions
         this.initiateConnectionByCreatingDataChannelAndCreatingOffer = (_userNameForOffer) => {
             console.log("Creating Datachannel for connection and then creating offer");
             this.isInitiator = true;
@@ -173,7 +172,6 @@ class NetworkConnectionManager {
             let message = new NetworkMessages.IceCandidate(this.localId, this.remoteClientId, candidate);
             this.sendMessage(message);
         };
-        //#region ReceivingFunctions
         this.loginValidAddUser = (_assignedId, _loginSuccess, _originatorUserName) => {
             if (_loginSuccess) {
                 this.localUserName = _originatorUserName;
@@ -225,8 +223,6 @@ class NetworkConnectionManager {
                 this.receivedDataChannelFromRemote.addEventListener("close", this.dataChannelStatusChangeHandler);
             }
         };
-        //#endregion
-        //#region HelperFunctions
         this.handleCreateAnswerError = (err) => {
             console.error(err);
         };
@@ -257,6 +253,7 @@ class NetworkConnectionManager {
         this.remoteClientId = "";
         this.isInitiator = false;
         this.receivedDataChannelFromRemote = undefined;
+        this.createRTCPeerConnectionAndAddListeners();
     }
 }
 exports.NetworkConnectionManager = NetworkConnectionManager;

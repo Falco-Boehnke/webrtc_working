@@ -14,9 +14,11 @@ export abstract class UiElementHandler {
     public static peerToPeerHtmlElements: HTMLElement;
     public static authoritativeElements: HTMLElement;
     public static switchModeButton: HTMLElement;
+    public static stopSignalingServer: HTMLElement;
     public static getAllUiElements() {
         UiElementHandler.switchModeButton = document.getElementById("switch") as HTMLElement;
         UiElementHandler.authoritativeElements = document.getElementById("authoritative_elements") as HTMLElement;
+        UiElementHandler.stopSignalingServer = document.getElementById("stop_signalingServerButton") as HTMLElement;
         UiElementHandler.signalingUrl = document.getElementById("signaling_uri") as HTMLInputElement;
         UiElementHandler.signalingSubmit = document.getElementById("submit_button") as HTMLElement;
         UiElementHandler.loginNameInput = document.getElementById("login_name") as HTMLInputElement;

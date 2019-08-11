@@ -20,9 +20,12 @@ export class PeerToPeerSignalingServer {
         PeerToPeerSignalingServer.serverEventHandler();
     }
 
+    public static closeDownServer = () => {
+        PeerToPeerSignalingServer.websocketServer.close();
+    }
     public static serverEventHandler = (): void => {
         PeerToPeerSignalingServer.websocketServer.on("connection", (_websocketClient: any) => {
-            console.log("User connected FRESH");
+            console.log("User connected to P2P SignalingServer");
 
             const uniqueIdOnConnection: string = PeerToPeerSignalingServer.createID();
             PeerToPeerSignalingServer.sendTo(_websocketClient, new NetworkMessages.IdAssigned(uniqueIdOnConnection));

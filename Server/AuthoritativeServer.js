@@ -9,6 +9,10 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const TYPES = __importStar(require("./../DataCollectors/Enumerators/EnumeratorCollection"));
 class AuthoritativeServer {
+    constructor() {
+        this.peerConnectedClientCollection = new Array();
+        console.log("AuthoritativeServerStartet");
+    }
     //#endregion
     static parseMessageToJson(_messageToParse) {
         let parsedMessage = { originatorId: " ", messageType: TYPES.MESSAGE_TYPE.UNDEFINED };
@@ -30,6 +34,33 @@ AuthoritativeServer.createID = () => {
 AuthoritativeServer.sendTo = (_connection, _message) => {
     _connection.send(JSON.stringify(_message));
 };
+// private initiateConnectionByCreatingDataChannelAndCreatingOffer = (_userNameForOffer: string): void => {
+//     console.log("Creating Datachannel for connection and then creating offer");
+//     this.localDataChannel = this.connection.createDataChannel("localDataChannel");
+//     this.localDataChannel.addEventListener("open", this.dataChannelStatusChangeHandler);
+//     this.localDataChannel.addEventListener("close", this.dataChannelStatusChangeHandler);
+//     this.localDataChannel.addEventListener("message", this.dataChannelMessageHandler);
+//     this.connection.createOffer()
+//         .then(async (offer) => {
+//             console.log("Beginning of createOffer in InitiateConnection, Expected 'stable', got:  ", this.connection.signalingState);
+//             return offer;
+//         })
+//         .then(async (offer) => {
+//             await this.connection.setLocalDescription(offer);
+//             console.log("Setting LocalDesc, Expected 'have-local-offer', got:  ", this.connection.signalingState);
+//         })
+//         .then(() => {
+//             this.createOfferMessageAndSendToRemote(_userNameForOffer);
+//         })
+//         .catch(() => {
+//             console.error("Offer creation error");
+//         });
+// }
+// private createOfferMessageAndSendToRemote = (_userNameForOffer: string) => {
+//     const offerMessage: NetworkMessages.RtcOffer = new NetworkMessages.RtcOffer(this.localId, _userNameForOffer, this.connection.localDescription);
+//     this.sendMessage(offerMessage);
+//     console.log("Sent offer to remote peer, Expected 'have-local-offer', got:  ", this.connection.signalingState);
+// }
 // Helper function for searching through a collection, finding objects by key and value, returning
 // Object that has that value
 // tslint:disable-next-line: no-any
@@ -54,3 +85,4 @@ AuthoritativeServer.searchUserByUserIdAndReturnUser = (_userIdToSearchFor, _coll
 AuthoritativeServer.searchUserByWebsocketConnectionAndReturnUser = (_websocketConnectionToSearchFor, _collectionToSearch) => {
     return AuthoritativeServer.searchForPropertyValueInCollection(_websocketConnectionToSearchFor, "clientConnection", _collectionToSearch);
 };
+exports.AuthoritativeServer = AuthoritativeServer;

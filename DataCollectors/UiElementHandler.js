@@ -4,6 +4,7 @@ class UiElementHandler {
     static getAllUiElements() {
         UiElementHandler.switchModeButton = document.getElementById("switch");
         UiElementHandler.authoritativeElements = document.getElementById("authoritative_elements");
+        UiElementHandler.stopSignalingServer = document.getElementById("stop_signalingServerButton");
         UiElementHandler.signalingUrl = document.getElementById("signaling_uri");
         UiElementHandler.signalingSubmit = document.getElementById("submit_button");
         UiElementHandler.loginNameInput = document.getElementById("login_name");

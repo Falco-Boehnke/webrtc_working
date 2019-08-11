@@ -2,11 +2,11 @@ import * as WebSocket from "ws";
 import * as NetworkMessages from "../NetworkMessages";
 import * as TYPES from "../DataCollectors/Enumerators/EnumeratorCollection";
 import { Client } from "../DataCollectors/Client";
-
+import { AuthoritativeServer } from "../Server/AuthoritativeServer";
 export class AuthoritativeSignalingServer {
     public static websocketServer: WebSocket.Server;
     public static connectedClientsCollection: Client[] = new Array();
-
+    public static authoritativeServerEntity: AuthoritativeServer;
 
     public static startUpServer = (_serverPort?: number) => {
         console.log(_serverPort);
@@ -17,12 +17,17 @@ export class AuthoritativeSignalingServer {
             AuthoritativeSignalingServer.websocketServer = new WebSocket.Server({ port: _serverPort });
 
         }
+        AuthoritativeSignalingServer.authoritativeServerEntity = new AuthoritativeServer();
         AuthoritativeSignalingServer.serverEventHandler();
+    }
+
+    public static closeDownServer = () => {
+        AuthoritativeSignalingServer.websocketServer.close();
     }
 
     public static serverEventHandler = (): void => {
         AuthoritativeSignalingServer.websocketServer.on("connection", (_websocketClient: any) => {
-            console.log("User connected FRESH");
+            console.log("User connected to autho-SignalingServer");
 
             const uniqueIdOnConnection: string = AuthoritativeSignalingServer.createID();
             const freshlyConnectedClient: Client = new Client(_websocketClient, uniqueIdOnConnection);
