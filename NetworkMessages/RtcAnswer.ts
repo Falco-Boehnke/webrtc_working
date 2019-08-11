@@ -6,9 +6,9 @@ export class RtcAnswer implements MessageBase {
     public targetId: string;
     public messageType: TYPES.MESSAGE_TYPE = TYPES.MESSAGE_TYPE.RTC_ANSWER;
 
-    public answer: RTCSessionDescription | null;
+    public answer: RTCSessionDescription;
 
-    constructor(_originatorId: string, _targetId: string, _userNameToConnectTo: string, _answer: RTCSessionDescription | null) {
+    constructor(_originatorId: string, _targetId: string, _userNameToConnectTo: string, _answer: RTCSessionDescription) {
         this.originatorId = _originatorId;
         this.targetId = _targetId;
         this.answer = _answer;

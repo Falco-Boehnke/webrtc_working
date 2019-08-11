@@ -2,11 +2,11 @@ import * as WebSocket from "ws";
 import * as NetworkMessages from "../NetworkMessages";
 import * as TYPES from "../DataCollectors/Enumerators/EnumeratorCollection";
 import { Client } from "../DataCollectors/Client";
-import { AuthoritativeServer } from "../Server/AuthoritativeServer";
+import { AuthoritativeServerEntity } from "./AuthoritativeServerEntity";
 export class AuthoritativeSignalingServer {
     public static websocketServer: WebSocket.Server;
     public static connectedClientsCollection: Client[] = new Array();
-    public static authoritativeServerEntity: AuthoritativeServer;
+    public static authoritativeServerEntity: AuthoritativeServerEntity;
 
     public static startUpServer = (_serverPort?: number) => {
         console.log(_serverPort);
@@ -17,7 +17,7 @@ export class AuthoritativeSignalingServer {
             AuthoritativeSignalingServer.websocketServer = new WebSocket.Server({ port: _serverPort });
 
         }
-        AuthoritativeSignalingServer.authoritativeServerEntity = new AuthoritativeServer();
+        AuthoritativeSignalingServer.authoritativeServerEntity = new AuthoritativeServerEntity();
         AuthoritativeSignalingServer.serverEventHandler();
     }
 
@@ -32,6 +32,9 @@ export class AuthoritativeSignalingServer {
             const uniqueIdOnConnection: string = AuthoritativeSignalingServer.createID();
             const freshlyConnectedClient: Client = new Client(_websocketClient, uniqueIdOnConnection);
             AuthoritativeSignalingServer.connectedClientsCollection.push(freshlyConnectedClient);
+
+            AuthoritativeSignalingServer.authoritativeServerEntity.collectClientCreatePeerConnectionAndCreateOffer(freshlyConnectedClient);
+
 
             _websocketClient.on("message", (_message: string) => {
                 AuthoritativeSignalingServer.serverHandleMessageType(_message, _websocketClient);
@@ -70,14 +73,6 @@ export class AuthoritativeSignalingServer {
             switch (parsedMessage.messageType) {
                 case TYPES.MESSAGE_TYPE.ID_ASSIGNED:
                     console.log("Id confirmation received for client: " + parsedMessage.originatorId);
-                    break;
-
-                case TYPES.MESSAGE_TYPE.LOGIN_REQUEST:
-                    AuthoritativeSignalingServer.addUserOnValidLoginRequest(_websocketClient, messageData);
-                    break;
-
-                case TYPES.MESSAGE_TYPE.RTC_OFFER:
-                    AuthoritativeSignalingServer.sendRtcOfferToRequestedClient(_websocketClient, messageData);
                     break;
 
                 case TYPES.MESSAGE_TYPE.RTC_ANSWER:
@@ -128,16 +123,9 @@ export class AuthoritativeSignalingServer {
     }
 
     public static answerRtcOfferOfClient(_websocketClient: WebSocket, _messageData: NetworkMessages.RtcAnswer): void {
-        console.log("Sending answer to: ", _messageData.targetId);
-        const clientToSendAnswerTo: Client = AuthoritativeSignalingServer.searchUserByUserIdAndReturnUser(_messageData.targetId, AuthoritativeSignalingServer.connectedClientsCollection);
+        console.log("Sending answer to AS-Entity");
+        AuthoritativeSignalingServer.authoritativeServerEntity.receiveAnswerAndSetRemoteDescription(_websocketClient, _messageData);
 
-        if (clientToSendAnswerTo != null) {
-            // TODO Probable source of error, need to test
-            // clientToSendAnswerTo.clientConnection.otherUsername = clientToSendAnswerTo.userName;
-            // const answerToSend: NetworkMessages.RtcAnswer = new NetworkMessages.RtcAnswer(_messageData.originatorId, clientToSendAnswerTo.userName, _messageData.answer);
-            if (clientToSendAnswerTo.clientConnection != null)
-                AuthoritativeSignalingServer.sendTo(clientToSendAnswerTo.clientConnection, _messageData);
-        }
     }
 
     public static sendIceCandidatesToRelevantPeers(_websocketClient: WebSocket, _messageData: NetworkMessages.IceCandidate): void {
@@ -181,6 +169,14 @@ export class AuthoritativeSignalingServer {
     // TODO Type Websocket not assignable to type WebSocket ?!
     public static sendTo = (_connection: any, _message: Object) => {
         _connection.send(JSON.stringify(_message));
+    }
+
+    public static sendToId = (_clientId: string, _message: Object) => {
+        let client = AuthoritativeSignalingServer.searchForClientWithId(_clientId);
+        if (client.clientConnection) {
+            client.clientConnection.send(JSON.stringify(_message));
+        }
+
     }
 
     // Helper function for searching through a collection, finding objects by key and value, returning

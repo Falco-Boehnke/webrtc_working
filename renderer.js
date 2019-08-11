@@ -17,13 +17,13 @@ UiElementHandler_1.UiElementHandler.stopSignalingServer.addEventListener("click"
 function switchServerMode() {
     let switchbutton = UiElementHandler_1.UiElementHandler.switchModeButton;
     if (!asMode) {
-        switchbutton.innerHTML = "Switch To P2P Mode";
+        switchbutton.textContent = "Switch To P2P Mode";
         UiElementHandler_1.UiElementHandler.peerToPeerHtmlElements.style.display = "none";
         UiElementHandler_1.UiElementHandler.authoritativeElements.style.display = "block";
         asMode = true;
     }
     else {
-        switchbutton.innerHTML = "Switch To Authoritative Mode";
+        switchbutton.textContent = "Switch To Authoritative Mode";
         UiElementHandler_1.UiElementHandler.peerToPeerHtmlElements.style.display = "block";
         UiElementHandler_1.UiElementHandler.authoritativeElements.style.display = "none";
         asMode = false;
@@ -37,12 +37,12 @@ function startingUpSignalingServer() {
     else {
         PeerToPeerSignalingServer_1.PeerToPeerSignalingServer.startUpServer(7070);
     }
-    let buttontest = UiElementHandler_1.UiElementHandler.startSignalingButton;
-    buttontest.disabled = true;
-    let buttontest2 = UiElementHandler_1.UiElementHandler.stopSignalingServer;
-    buttontest2.disabled = false;
-    let buttontest3 = UiElementHandler_1.UiElementHandler.switchModeButton;
-    buttontest3.disabled = true;
+    let startSignalingButton = UiElementHandler_1.UiElementHandler.startSignalingButton;
+    startSignalingButton.disabled = true;
+    let stopSignalingButton = UiElementHandler_1.UiElementHandler.stopSignalingServer;
+    stopSignalingButton.disabled = false;
+    let switchButton = UiElementHandler_1.UiElementHandler.switchModeButton;
+    switchButton.disabled = true;
 }
 function turnOffSignalingServer() {
     console.log("Turning server offline");
@@ -52,12 +52,12 @@ function turnOffSignalingServer() {
     else {
         PeerToPeerSignalingServer_1.PeerToPeerSignalingServer.closeDownServer();
     }
-    let buttontest = UiElementHandler_1.UiElementHandler.startSignalingButton;
-    buttontest.disabled = false;
-    let buttontest2 = UiElementHandler_1.UiElementHandler.stopSignalingServer;
-    buttontest2.disabled = true;
-    let buttontest3 = UiElementHandler_1.UiElementHandler.switchModeButton;
-    buttontest3.disabled = false;
+    let startSignalingButton = UiElementHandler_1.UiElementHandler.startSignalingButton;
+    startSignalingButton.disabled = false;
+    let stopSignalingButton = UiElementHandler_1.UiElementHandler.stopSignalingServer;
+    stopSignalingButton.disabled = true;
+    let switchButton = UiElementHandler_1.UiElementHandler.switchModeButton;
+    switchButton.disabled = false;
 }
 function connectToSignalingServer() {
     test.signalingServerUrl = "ws://" + UiElementHandler_1.UiElementHandler.signalingUrl.value;
