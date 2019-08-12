@@ -149,7 +149,7 @@ export class AuthoritativeServerEntity {
         if(_messageToBroadcast != "" || _messageToBroadcast)
        {
            this.notYetPeerConnectedClientCollection.forEach(client => {
-               
+               client.dataChannel.send(_messageToBroadcast);
            });
        }
     }
