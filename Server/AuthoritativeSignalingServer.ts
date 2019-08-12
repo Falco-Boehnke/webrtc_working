@@ -31,8 +31,9 @@ export class AuthoritativeSignalingServer {
 
             const uniqueIdOnConnection: string = AuthoritativeSignalingServer.createID();
             const freshlyConnectedClient: Client = new Client(_websocketClient, uniqueIdOnConnection);
+            AuthoritativeSignalingServer.sendTo(_websocketClient, new NetworkMessages.IdAssigned(uniqueIdOnConnection));
             AuthoritativeSignalingServer.connectedClientsCollection.push(freshlyConnectedClient);
-
+            
             AuthoritativeSignalingServer.authoritativeServerEntity.collectClientCreatePeerConnectionAndCreateOffer(freshlyConnectedClient);
 
 
@@ -80,7 +81,7 @@ export class AuthoritativeSignalingServer {
                     break;
 
                 case TYPES.MESSAGE_TYPE.ICE_CANDIDATE:
-                    AuthoritativeSignalingServer.sendIceCandidatesToRelevantPeers(_websocketClient, messageData);
+                    AuthoritativeSignalingServer.sendIceCandidatesToRelevantPeers(messageData);
                     break;
 
                 default:
@@ -128,13 +129,8 @@ export class AuthoritativeSignalingServer {
 
     }
 
-    public static sendIceCandidatesToRelevantPeers(_websocketClient: WebSocket, _messageData: NetworkMessages.IceCandidate): void {
-        const clientToShareCandidatesWith: Client = AuthoritativeSignalingServer.searchUserByUserIdAndReturnUser(_messageData.targetId, AuthoritativeSignalingServer.connectedClientsCollection);
-
-        if (clientToShareCandidatesWith != null) {
-            const candidateToSend: NetworkMessages.IceCandidate = new NetworkMessages.IceCandidate(_messageData.originatorId, clientToShareCandidatesWith.id, _messageData.candidate);
-            AuthoritativeSignalingServer.sendTo(clientToShareCandidatesWith.clientConnection, candidateToSend);
-        }
+    public static sendIceCandidatesToRelevantPeers(_messageData: NetworkMessages.IceCandidate): void {
+        this.authoritativeServerEntity.addIceCandidateToServerConnection(_messageData);
     }
 
     //#endregion

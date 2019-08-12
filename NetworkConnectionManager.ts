@@ -270,7 +270,7 @@ export class NetworkConnectionManager {
 
     private receiveDataChannel = (event: { channel: RTCDataChannel | undefined; }) => {
 
-        // console.log("Receice Datachannel event");
+        console.log("Receice Datachannel event");
         this.receivedDataChannelFromRemote = event.channel;
         if (this.receivedDataChannelFromRemote) {
             this.receivedDataChannelFromRemote.addEventListener("message", this.dataChannelMessageHandler);

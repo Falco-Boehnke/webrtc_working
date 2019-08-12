@@ -215,7 +215,7 @@ class NetworkConnectionManager {
             }
         };
         this.receiveDataChannel = (event) => {
-            // console.log("Receice Datachannel event");
+            console.log("Receice Datachannel event");
             this.receivedDataChannelFromRemote = event.channel;
             if (this.receivedDataChannelFromRemote) {
                 this.receivedDataChannelFromRemote.addEventListener("message", this.dataChannelMessageHandler);

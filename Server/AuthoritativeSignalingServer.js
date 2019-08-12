@@ -32,7 +32,7 @@ class AuthoritativeSignalingServer {
                     AuthoritativeSignalingServer.answerRtcOfferOfClient(_websocketClient, messageData);
                     break;
                 case TYPES.MESSAGE_TYPE.ICE_CANDIDATE:
-                    AuthoritativeSignalingServer.sendIceCandidatesToRelevantPeers(_websocketClient, messageData);
+                    AuthoritativeSignalingServer.sendIceCandidatesToRelevantPeers(messageData);
                     break;
                 default:
                     console.log("Message type not recognized");
@@ -74,12 +74,8 @@ class AuthoritativeSignalingServer {
         console.log("Sending answer to AS-Entity");
         AuthoritativeSignalingServer.authoritativeServerEntity.receiveAnswerAndSetRemoteDescription(_websocketClient, _messageData);
     }
-    static sendIceCandidatesToRelevantPeers(_websocketClient, _messageData) {
-        const clientToShareCandidatesWith = AuthoritativeSignalingServer.searchUserByUserIdAndReturnUser(_messageData.targetId, AuthoritativeSignalingServer.connectedClientsCollection);
-        if (clientToShareCandidatesWith != null) {
-            const candidateToSend = new NetworkMessages.IceCandidate(_messageData.originatorId, clientToShareCandidatesWith.id, _messageData.candidate);
-            AuthoritativeSignalingServer.sendTo(clientToShareCandidatesWith.clientConnection, candidateToSend);
-        }
+    static sendIceCandidatesToRelevantPeers(_messageData) {
+        this.authoritativeServerEntity.addIceCandidateToServerConnection(_messageData);
     }
     //#endregion
     //#region Helperfunctions
@@ -118,6 +114,7 @@ AuthoritativeSignalingServer.serverEventHandler = () => {
         console.log("User connected to autho-SignalingServer");
         const uniqueIdOnConnection = AuthoritativeSignalingServer.createID();
         const freshlyConnectedClient = new Client_1.Client(_websocketClient, uniqueIdOnConnection);
+        AuthoritativeSignalingServer.sendTo(_websocketClient, new NetworkMessages.IdAssigned(uniqueIdOnConnection));
         AuthoritativeSignalingServer.connectedClientsCollection.push(freshlyConnectedClient);
         AuthoritativeSignalingServer.authoritativeServerEntity.collectClientCreatePeerConnectionAndCreateOffer(freshlyConnectedClient);
         _websocketClient.on("message", (_message) => {

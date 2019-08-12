@@ -25,10 +25,7 @@ export class AuthoritativeServerEntity {
         let newPeerConnection: RTCPeerConnection = new RTCPeerConnection(this.configuration);
         // TODO Get the ID of the connection that fired the icecandidate event to send the candidates to the
         // corresponding client, otherwise we stuck
-        newPeerConnection.addEventListener("icecandidate", ({candidate}) =>{
-        let message: NetworkMessages.IceCandidate = new NetworkMessages.IceCandidate("SERVER", _freshlyConnectedClient.id, {candidate});
-        this.sendMessage(message);
-});
+        newPeerConnection.addEventListener("icecandidate", this.sendNewIceCandidatesToPeer);
         _freshlyConnectedClient.peerConnection = newPeerConnection;
         this.notYetPeerConnectedClientCollection.push(_freshlyConnectedClient);
         this.initiateConnectionByCreatingDataChannelAndCreatingOffer(_freshlyConnectedClient);
@@ -39,8 +36,13 @@ export class AuthoritativeServerEntity {
         // convert to base 36 and pick the first few digits after comma
         return "_" + Math.random().toString(36).substr(2, 7);
     }
-    //#endregion
-
+    public addIceCandidateToServerConnection = async (_receivedIceMessage: NetworkMessages.IceCandidate) => {
+        if (_receivedIceMessage.candidate) {
+            let client: Client = this.searchUserByUserIdAndReturnUser(_receivedIceMessage.originatorId, this.notYetPeerConnectedClientCollection);
+            console.log("server received candidates from: ", client);
+            await client.peerConnection.addIceCandidate(_receivedIceMessage.candidate);
+        }
+    }
 
     public parseMessageToJson = (_messageToParse: string): NetworkMessages.MessageBase => {
         let parsedMessage: NetworkMessages.MessageBase = { originatorId: " ", messageType: TYPES.MESSAGE_TYPE.UNDEFINED };
@@ -64,17 +66,26 @@ export class AuthoritativeServerEntity {
 
     // TODO Use or delete
     private sendNewIceCandidatesToPeer = ({ candidate }: any) => {
-        let message: NetworkMessages.IceCandidate = new NetworkMessages.IceCandidate("SERVER", this.remoteClientId, candidate);
-        this.sendMessage(message);
+        console.log("Server wants to send ice candidates to peer." , candidate);
+        // let message: NetworkMessages.IceCandidate = new NetworkMessages.IceCandidate("SERVER", this.remoteClientId, candidate);
+        // this.sendMessage(message);
 
+    }
+
+    private dataChannelStatusChangeHandler = (event:any) =>{
+        console.log("Server Datachannel opened");
+    }
+
+    private dataChannelMessageHandler = (_message: MessageEvent) => {
+        console.log("Message received", _message);
     }
 
     private initiateConnectionByCreatingDataChannelAndCreatingOffer = (_clientToConnect: Client): void => {
         console.log("Initiating connection to : " + _clientToConnect);
-        let newDataChannel = _clientToConnect.peerConnection.createDataChannel(_clientToConnect.id);
-        // newDataChannel.addEventListener("open", this.dataChannelStatusChangeHandler);
+        let newDataChannel: RTCDataChannel = _clientToConnect.peerConnection.createDataChannel(_clientToConnect.id);
+        newDataChannel.addEventListener("open", this.dataChannelStatusChangeHandler);
         // newDataChannel.addEventListener("close", this.dataChannelStatusChangeHandler);
-        // newDataChannel.addEventListener("message", this.dataChannelMessageHandler);
+        newDataChannel.addEventListener("message", this.dataChannelMessageHandler);
         _clientToConnect.peerConnection.createOffer()
             .then(async (offer) => {
                 console.log("Beginning of createOffer in InitiateConnection, Expected 'stable', got:  ", _clientToConnect.peerConnection.signalingState);
@@ -99,7 +110,7 @@ export class AuthoritativeServerEntity {
     }
 
  
-
+   
 
 
 

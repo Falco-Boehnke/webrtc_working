@@ -5,6 +5,7 @@ export class Client {
     public id: string;
     public userName: string;
     public peerConnection: RTCPeerConnection;
+    public dataChannel: RTCDataChannel;
     public connectedRoom: ServerRoom | null;
 
     constructor(websocketConnection?: WebSocket,
@@ -14,6 +15,7 @@ export class Client {
 
         this.clientConnection = websocketConnection || null;
         this.peerConnection = new RTCPeerConnection();
+        this.dataChannel = this.peerConnection.createDataChannel("placeholder");
         this.id = uniqueClientId || "";
         this.userName = loginName || "";
         this.connectedRoom = connectedToRoom || null;
