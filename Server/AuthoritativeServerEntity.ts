@@ -64,6 +64,14 @@ export class AuthoritativeServerEntity {
         console.log("Remote Description set");
     }
 
+    public broadcastMessageToAllConnectedClients = (_messageToBroadcast: string) => {
+           this.notYetPeerConnectedClientCollection.forEach(client => {
+               console.log(client.dataChannel);
+               client.dataChannel.send(_messageToBroadcast);
+           });
+       
+    }
+
     // TODO Use or delete
     private sendNewIceCandidatesToPeer = ({ candidate }: any) => {
         console.log("Server wants to send ice candidates to peer." , candidate);
@@ -83,6 +91,7 @@ export class AuthoritativeServerEntity {
     private initiateConnectionByCreatingDataChannelAndCreatingOffer = (_clientToConnect: Client): void => {
         console.log("Initiating connection to : " + _clientToConnect);
         let newDataChannel: RTCDataChannel = _clientToConnect.peerConnection.createDataChannel(_clientToConnect.id);
+        _clientToConnect.dataChannel = newDataChannel;
         newDataChannel.addEventListener("open", this.dataChannelStatusChangeHandler);
         // newDataChannel.addEventListener("close", this.dataChannelStatusChangeHandler);
         newDataChannel.addEventListener("message", this.dataChannelMessageHandler);
@@ -145,12 +154,5 @@ export class AuthoritativeServerEntity {
     //     return this.searchForPropertyValueInCollection(_idToFind, "id", this.connectedClientsCollection);
     // }
 
-    public broadcastMessageToAllConnectedClients = (_messageToBroadcast?: string) => {
-        if(_messageToBroadcast != "" || _messageToBroadcast)
-       {
-           this.notYetPeerConnectedClientCollection.forEach(client => {
-               client.dataChannel.send(_messageToBroadcast);
-           });
-       }
-    }
+
 }
