@@ -32,10 +32,10 @@ function switchServerMode() {
 function startingUpSignalingServer() {
     console.log("Turning server ONLINE");
     if (asMode) {
-        AuthoritativeSignalingServer_1.AuthoritativeSignalingServer.startUpServer(7070);
+        AuthoritativeSignalingServer_1.AuthoritativeSignalingServer.startUpServer(9090);
     }
     else {
-        PeerToPeerSignalingServer_1.PeerToPeerSignalingServer.startUpServer(7070);
+        PeerToPeerSignalingServer_1.PeerToPeerSignalingServer.startUpServer(9090);
     }
     let startSignalingButton = UiElementHandler_1.UiElementHandler.startSignalingButton;
     startSignalingButton.disabled = true;

@@ -15,6 +15,8 @@ export abstract class UiElementHandler {
     public static authoritativeElements: HTMLElement;
     public static switchModeButton: HTMLElement;
     public static stopSignalingServer: HTMLElement;
+    public static broadcastButton: HTMLElement;
+
     public static getAllUiElements() {
         UiElementHandler.switchModeButton = document.getElementById("switch") as HTMLElement;
         UiElementHandler.authoritativeElements = document.getElementById("authoritative_elements") as HTMLElement;
@@ -32,6 +34,7 @@ export abstract class UiElementHandler {
         UiElementHandler.disconnectButton = document.getElementById("disconnectBtn") as HTMLElement;
         UiElementHandler.startSignalingButton = document.getElementById("start_signalingServerButton") as HTMLElement;
         UiElementHandler.peerToPeerHtmlElements = document.getElementById("peer_to_peer_elements") as HTMLElement;
+        UiElementHandler.broadcastButton = document.getElementById("broadcastButton") as HTMLElement;
     }
 
 }

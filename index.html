@@ -12,14 +12,15 @@
   <div>
     <button id="start_signalingServerButton">Start up Signaling Server</button>
     <button id="stop_signalingServerButton" disabled>stop Signaling Server</button>
-    Enter Signaling server URL:
-    <input id="signaling_uri" type="text" value="localhost:9090"></input>
-    <button id="submit_button">Connect</button>
+    
+
 
   </div>
 
   <div id="peer_to_peer_elements">
-
+      Enter Signaling server URL:
+    <input id="signaling_uri" type="text" value="localhost:9090"></input>
+    <button id="submit_button">Connect</button>
     <div>
       <input id="login_name" type="text"></input>
       <button id="login_button">Login</button>
@@ -37,7 +38,7 @@
   </div>
 
   <div id="authoritative_elements" style="display: none">
-    <button id="elevateButton">Elevate To AServer</button>
+    <button id="broadcastButton">Broadcast Message</button>
     
   </div>
   <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>

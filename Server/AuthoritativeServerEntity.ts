@@ -144,4 +144,13 @@ export class AuthoritativeServerEntity {
     // public static searchForClientWithId(_idToFind: string): Client {
     //     return this.searchForPropertyValueInCollection(_idToFind, "id", this.connectedClientsCollection);
     // }
+
+    public broadcastMessageToAllConnectedClients = (_messageToBroadcast?: string) => {
+        if(_messageToBroadcast != "" || _messageToBroadcast)
+       {
+           this.notYetPeerConnectedClientCollection.forEach(client => {
+               
+           });
+       }
+    }
 }

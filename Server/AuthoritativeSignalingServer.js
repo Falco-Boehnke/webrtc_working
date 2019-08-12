@@ -75,6 +75,7 @@ class AuthoritativeSignalingServer {
         AuthoritativeSignalingServer.authoritativeServerEntity.receiveAnswerAndSetRemoteDescription(_websocketClient, _messageData);
     }
     static sendIceCandidatesToRelevantPeers(_messageData) {
+        const clientToShareCandidatesWith = AuthoritativeSignalingServer.searchUserByUserIdAndReturnUser(_messageData.targetId, AuthoritativeSignalingServer.connectedClientsCollection);
         this.authoritativeServerEntity.addIceCandidateToServerConnection(_messageData);
     }
     //#endregion
@@ -120,8 +121,8 @@ AuthoritativeSignalingServer.serverEventHandler = () => {
         _websocketClient.on("message", (_message) => {
             AuthoritativeSignalingServer.serverHandleMessageType(_message, _websocketClient);
         });
-        _websocketClient.addEventListener("close", () => {
-            console.error("Error at connection");
+        _websocketClient.addEventListener("close", (error) => {
+            console.error("Error at connection", error);
             for (let i = 0; i < AuthoritativeSignalingServer.connectedClientsCollection.length; i++) {
                 if (AuthoritativeSignalingServer.connectedClientsCollection[i].clientConnection === _websocketClient) {
                     console.log("Client found, deleting");

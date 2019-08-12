@@ -16,6 +16,12 @@ UiElementHandler.connectToUserButton.addEventListener("click", test.checkUsernam
 UiElementHandler.sendMsgButton.addEventListener("click", test.sendMessageViaDirectPeerConnection);
 UiElementHandler.switchModeButton.addEventListener("click", switchServerMode);
 UiElementHandler.stopSignalingServer.addEventListener("click", turnOffSignalingServer);
+UiElementHandler.broadcastButton.addEventListener("click", broadcastMessageToClients);
+
+function broadcastMessageToClients(){
+    AuthoritativeSignalingServer.authoritativeServerEntity.broadcastMessageToAllConnectedClients("TEST");
+}
+
 
 function switchServerMode(): void {
     let switchbutton: HTMLButtonElement = UiElementHandler.switchModeButton as HTMLButtonElement;
@@ -38,10 +44,10 @@ function switchServerMode(): void {
 function startingUpSignalingServer(): void {
     console.log("Turning server ONLINE");
     if (asMode) {
-        AuthoritativeSignalingServer.startUpServer(7070);
+        AuthoritativeSignalingServer.startUpServer(9090);
     }
     else {
-        PeerToPeerSignalingServer.startUpServer(7070);
+        PeerToPeerSignalingServer.startUpServer(9090);
     }
     let startSignalingButton: HTMLButtonElement = UiElementHandler.startSignalingButton as HTMLButtonElement;
     startSignalingButton.disabled = true;

@@ -41,8 +41,8 @@ export class AuthoritativeSignalingServer {
                 AuthoritativeSignalingServer.serverHandleMessageType(_message, _websocketClient);
             });
 
-            _websocketClient.addEventListener("close", () => {
-                console.error("Error at connection");
+            _websocketClient.addEventListener("close", (error: any) => {
+                console.error("Error at connection", error);
                 for (let i: number = 0; i < AuthoritativeSignalingServer.connectedClientsCollection.length; i++) {
                     if (AuthoritativeSignalingServer.connectedClientsCollection[i].clientConnection === _websocketClient) {
                         console.log("Client found, deleting");
@@ -130,6 +130,7 @@ export class AuthoritativeSignalingServer {
     }
 
     public static sendIceCandidatesToRelevantPeers(_messageData: NetworkMessages.IceCandidate): void {
+        const clientToShareCandidatesWith: Client = AuthoritativeSignalingServer.searchUserByUserIdAndReturnUser(_messageData.targetId, AuthoritativeSignalingServer.connectedClientsCollection);
         this.authoritativeServerEntity.addIceCandidateToServerConnection(_messageData);
     }
 
