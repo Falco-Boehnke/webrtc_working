@@ -4,6 +4,7 @@ export class LoginResponse implements MessageBase {
     public originatorId: string;
     public originatorUsername: string;
     public messageType: TYPES.MESSAGE_TYPE = TYPES.MESSAGE_TYPE.LOGIN_RESPONSE;
+    // public messageType: NETWORKENUMS.MESSAGE_TYPE = NETWORKENUMS.MESSAGE_TYPE.LOGIN_RESPONSE;
     public loginSuccess: boolean;
 
 

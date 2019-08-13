@@ -5,6 +5,7 @@ export class RtcAnswer implements MessageBase {
     public originatorId: string;
     public targetId: string;
     public messageType: TYPES.MESSAGE_TYPE = TYPES.MESSAGE_TYPE.RTC_ANSWER;
+    // public messageType: NETWORKENUMS.MESSAGE_TYPE = NETWORKENUMS.MESSAGE_TYPE.RTC_ANSWER;
 
     public answer: RTCSessionDescription;
 

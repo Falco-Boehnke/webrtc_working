@@ -4,6 +4,8 @@ export class RtcOffer implements MessageBase {
 
     public originatorId: string;
     public messageType: TYPES.MESSAGE_TYPE = TYPES.MESSAGE_TYPE.RTC_OFFER;
+    // public messageType: NETWORKENUMS.MESSAGE_TYPE = NETWORKENUMS.MESSAGE_TYPE.RTC_OFFER;
+
     public userNameToConnectTo: string;
     public offer: RTCSessionDescription | RTCSessionDescriptionInit | null;
     constructor(_originatorId: string, _userNameToConnectTo: string, _offer: RTCSessionDescription | RTCSessionDescriptionInit | null) {
