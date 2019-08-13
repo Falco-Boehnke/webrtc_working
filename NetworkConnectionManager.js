@@ -35,14 +35,15 @@ var FudgeNetwork;
                 this.ws.send(JSON.stringify(message));
             };
             this.sendMessageViaDirectPeerConnection = () => {
-                const message = FudgeNetwork.UiElementHandler.msgInput.value;
+                let message = new FudgeNetwork.PeerMessageSimpleText(this.localId, FudgeNetwork.UiElementHandler.msgInput.value);
                 FudgeNetwork.UiElementHandler.chatbox.innerHTML += "\n" + this.localUserName + ": " + message;
+                let stringifiedMessage = JSON.stringify(message);
                 if (this.isInitiator && this.localDataChannel) {
-                    this.localDataChannel.send(message);
+                    this.localDataChannel.send(stringifiedMessage);
                 }
                 else if (!this.isInitiator && this.receivedDataChannelFromRemote) {
                     console.log("Sending Message via received Datachannel");
-                    this.receivedDataChannelFromRemote.send(message);
+                    this.receivedDataChannelFromRemote.send(stringifiedMessage);
                 }
                 else {
                     console.error("Peer Connection undefined, connection likely lost");
@@ -83,22 +84,22 @@ var FudgeNetwork;
                 let objectifiedMessage = this.parseReceivedMessageAndReturnObject(_receivedMessage);
                 console.log("Received message:", objectifiedMessage);
                 switch (objectifiedMessage.messageType) {
-                    case NetworkTypes.MESSAGE_TYPE.ID_ASSIGNED:
+                    case FudgeNetwork.MESSAGE_TYPE.ID_ASSIGNED:
                         console.log("ID received, assigning to self");
                         this.assignIdAndSendConfirmation(objectifiedMessage);
                         break;
-                    case NetworkTypes.MESSAGE_TYPE.LOGIN_RESPONSE:
+                    case FudgeNetwork.MESSAGE_TYPE.LOGIN_RESPONSE:
                         this.loginValidAddUser(objectifiedMessage.originatorId, objectifiedMessage.loginSuccess, objectifiedMessage.originatorUsername);
                         break;
-                    case NetworkTypes.MESSAGE_TYPE.RTC_OFFER:
+                    case FudgeNetwork.MESSAGE_TYPE.RTC_OFFER:
                         // console.log("Received offer, current signaling state: ", this.connection.signalingState);
                         this.receiveOfferAndSetRemoteDescriptionThenCreateAndSendAnswer(objectifiedMessage);
                         break;
-                    case NetworkTypes.MESSAGE_TYPE.RTC_ANSWER:
+                    case FudgeNetwork.MESSAGE_TYPE.RTC_ANSWER:
                         // console.log("Received answer, current signaling state: ", this.connection.signalingState);
                         this.receiveAnswerAndSetRemoteDescription(objectifiedMessage.clientId, objectifiedMessage.answer);
                         break;
-                    case NetworkTypes.MESSAGE_TYPE.ICE_CANDIDATE:
+                    case FudgeNetwork.MESSAGE_TYPE.ICE_CANDIDATE:
                         // console.log("Received candidate, current signaling state: ", this.connection.signalingState);
                         this.handleCandidate(objectifiedMessage);
                         break;
@@ -212,12 +213,27 @@ var FudgeNetwork;
                 this.receivedDataChannelFromRemote = event.channel;
                 if (this.receivedDataChannelFromRemote) {
                     this.receivedDataChannelFromRemote.addEventListener("message", this.dataChannelMessageHandler);
-                    this.receivedDataChannelFromRemote.addEventListener("open", this.dataChannelStatusChangeHandler);
+                    this.receivedDataChannelFromRemote.addEventListener("open", this.enableKeyboardPressesForSending);
                     this.receivedDataChannelFromRemote.addEventListener("close", this.dataChannelStatusChangeHandler);
                 }
             };
             this.handleCreateAnswerError = (err) => {
                 console.error(err);
+            };
+            this.enableKeyboardPressesForSending = () => {
+                let browser = FudgeNetwork.UiElementHandler.electronWindow;
+                browser.addEventListener("keydown", (event) => {
+                    console.log("Key pressed");
+                    let x = JSON.stringify(event.keyCode);
+                    this.sendKeyPress(x);
+                });
+            };
+            this.sendKeyPress = (_keyCode) => {
+                console.log(this.localDataChannel);
+                if (this.localDataChannel != undefined) {
+                    console.log("Sending message");
+                    this.localDataChannel.send(_keyCode);
+                }
             };
             this.dataChannelStatusChangeHandler = (event) => {
                 //TODO Reconnection logic

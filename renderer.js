@@ -42,11 +42,11 @@ function startingUpSignalingServer() {
         PeerToPeerSignalingServer_1.PeerToPeerSignalingServer.startUpServer(9090);
     }
     let startSignalingButton = FudgeNetwork.UiElementHandler.startSignalingButton;
-    startSignalingButton.disabled = true;
+    startSignalingButton.hidden = true;
     let stopSignalingButton = FudgeNetwork.UiElementHandler.stopSignalingServer;
-    stopSignalingButton.disabled = false;
+    stopSignalingButton.hidden = false;
     let switchButton = FudgeNetwork.UiElementHandler.switchModeButton;
-    switchButton.disabled = true;
+    switchButton.hidden = true;
 }
 function turnOffSignalingServer() {
     console.log("Turning server offline");
@@ -57,11 +57,11 @@ function turnOffSignalingServer() {
         PeerToPeerSignalingServer_1.PeerToPeerSignalingServer.closeDownServer();
     }
     let startSignalingButton = FudgeNetwork.UiElementHandler.startSignalingButton;
-    startSignalingButton.disabled = false;
+    startSignalingButton.hidden = false;
     let stopSignalingButton = FudgeNetwork.UiElementHandler.stopSignalingServer;
-    stopSignalingButton.disabled = true;
+    stopSignalingButton.hidden = true;
     let switchButton = FudgeNetwork.UiElementHandler.switchModeButton;
-    switchButton.disabled = false;
+    switchButton.hidden = false;
 }
 function connectToSignalingServer() {
     test.signalingServerUrl = "ws://" + FudgeNetwork.UiElementHandler.signalingUrl.value;

@@ -16,7 +16,6 @@ declare namespace FudgeNetwork {
         };
         private isInitiator;
         constructor();
-        startUpSignalingServerFile: (_serverFileUri: string) => void;
         connectToSpecifiedSignalingServer: () => void;
         addWsEventListeners: () => void;
         sendMessage: (message: Object) => void;
@@ -37,6 +36,8 @@ declare namespace FudgeNetwork {
         private handleCandidate;
         private receiveDataChannel;
         private handleCreateAnswerError;
+        private enableKeyboardPressesForSending;
+        private sendKeyPress;
         private dataChannelStatusChangeHandler;
         private parseReceivedMessageAndReturnObject;
         private dataChannelMessageHandler;

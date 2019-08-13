@@ -8,6 +8,7 @@ import { PeerToPeerSignalingServer } from "./Server/PeerToPeerSignalingServer";
 let asMode = false;
 const test: FudgeNetwork.NetworkConnectionManager = new FudgeNetwork.NetworkConnectionManager();
 
+
 FudgeNetwork.UiElementHandler.getAllUiElements();
 FudgeNetwork.UiElementHandler.startSignalingButton.addEventListener("click", startingUpSignalingServer);
 FudgeNetwork.UiElementHandler.signalingSubmit.addEventListener("click", connectToSignalingServer);
@@ -18,9 +19,13 @@ FudgeNetwork.UiElementHandler.switchModeButton.addEventListener("click", switchS
 FudgeNetwork.UiElementHandler.stopSignalingServer.addEventListener("click", turnOffSignalingServer);
 FudgeNetwork.UiElementHandler.broadcastButton.addEventListener("click", broadcastMessageToClients);
 
+
+
+
 function broadcastMessageToClients(){
     AuthoritativeSignalingServer.authoritativeServerEntity.broadcastMessageToAllConnectedClients("TEST");
 }
+
 
 
 function switchServerMode(): void {
@@ -50,11 +55,11 @@ function startingUpSignalingServer(): void {
         PeerToPeerSignalingServer.startUpServer(9090);
     }
     let startSignalingButton: HTMLButtonElement = FudgeNetwork.UiElementHandler.startSignalingButton as HTMLButtonElement;
-    startSignalingButton.disabled = true;
+    startSignalingButton.hidden = true;
     let stopSignalingButton: HTMLButtonElement = FudgeNetwork.UiElementHandler.stopSignalingServer as HTMLButtonElement;
-    stopSignalingButton.disabled = false;
+    stopSignalingButton.hidden = false;
     let switchButton: HTMLButtonElement = FudgeNetwork.UiElementHandler.switchModeButton as HTMLButtonElement;
-    switchButton.disabled = true;
+    switchButton.hidden = true;
 }
 
 function turnOffSignalingServer(): void {
@@ -68,11 +73,11 @@ function turnOffSignalingServer(): void {
     }
 
     let startSignalingButton: HTMLButtonElement = FudgeNetwork.UiElementHandler.startSignalingButton as HTMLButtonElement;
-    startSignalingButton.disabled = false;
+    startSignalingButton.hidden = false;
     let stopSignalingButton: HTMLButtonElement = FudgeNetwork.UiElementHandler.stopSignalingServer as HTMLButtonElement;
-    stopSignalingButton.disabled = true;
+    stopSignalingButton.hidden = true;
     let switchButton: HTMLButtonElement = FudgeNetwork.UiElementHandler.switchModeButton as HTMLButtonElement;
-    switchButton.disabled = false;
+    switchButton.hidden = false;
 }
 function connectToSignalingServer(): void {
     test.signalingServerUrl = "ws://" + FudgeNetwork.UiElementHandler.signalingUrl.value;

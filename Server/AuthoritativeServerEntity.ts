@@ -1,5 +1,3 @@
-// import { Client } from "../DataCollectors/Client";
-// import { AuthoritativeSignalingServer } from "./AuthoritativeSignalingServer";
 namespace FudgeNetwork {
     export class AuthoritativeServerEntity {
 
@@ -23,8 +21,6 @@ namespace FudgeNetwork {
 
         public collectClientCreatePeerConnectionAndCreateOffer = (_freshlyConnectedClient: Client) => {
             let newPeerConnection: RTCPeerConnection = new RTCPeerConnection(this.configuration);
-            // TODO Get the ID of the connection that fired the icecandidate event to send the candidates to the
-            // corresponding client, otherwise we stuck
             newPeerConnection.addEventListener("icecandidate", this.sendNewIceCandidatesToPeer);
             _freshlyConnectedClient.peerConnection = newPeerConnection;
             this.notYetPeerConnectedClientCollection.push(_freshlyConnectedClient);
@@ -45,7 +41,7 @@ namespace FudgeNetwork {
         }
 
         public parseMessageToJson = (_messageToParse: string): FudgeNetwork.NetworkMessageMessageBase => {
-            let parsedMessage: FudgeNetwork.NetworkMessageMessageBase = { originatorId: " ", messageType: NetworkTypes.MESSAGE_TYPE.UNDEFINED };
+            let parsedMessage: FudgeNetwork.NetworkMessageMessageBase = { originatorId: " ", messageType: FudgeNetwork.MESSAGE_TYPE.UNDEFINED };
 
             try {
                 parsedMessage = JSON.parse(_messageToParse);
@@ -89,6 +85,15 @@ namespace FudgeNetwork {
 
         private dataChannelMessageHandler = (_message: MessageEvent) => {
             console.log("Message received", _message);
+            let parsedMessage: any = JSON.parse(_message.data);
+
+            console.log("Keycode: " + parsedMessage);
+
+            console.log(".");
+            console.log("ID: " + parsedMessage.originatorId);
+            console.log("MessageType: " + parsedMessage.messageType);
+            console.log("MessageData: " + parsedMessage.messageData);
+            console.log(".");
         }
 
         private initiateConnectionByCreatingDataChannelAndCreatingOffer = (_clientToConnect: Client): void => {

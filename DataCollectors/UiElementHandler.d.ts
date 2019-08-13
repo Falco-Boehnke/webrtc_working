@@ -1,5 +1,6 @@
 declare namespace FudgeNetwork {
     abstract class UiElementHandler {
+        static electronWindow: Document;
         static signalingSubmit: HTMLElement;
         static signalingUrl: HTMLInputElement;
         static loginNameInput: HTMLInputElement | null;

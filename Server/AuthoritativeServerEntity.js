@@ -1,6 +1,4 @@
 "use strict";
-// import { Client } from "../DataCollectors/Client";
-// import { AuthoritativeSignalingServer } from "./AuthoritativeSignalingServer";
 var FudgeNetwork;
 (function (FudgeNetwork) {
     class AuthoritativeServerEntity {
@@ -17,8 +15,6 @@ var FudgeNetwork;
             };
             this.collectClientCreatePeerConnectionAndCreateOffer = (_freshlyConnectedClient) => {
                 let newPeerConnection = new RTCPeerConnection(this.configuration);
-                // TODO Get the ID of the connection that fired the icecandidate event to send the candidates to the
-                // corresponding client, otherwise we stuck
                 newPeerConnection.addEventListener("icecandidate", this.sendNewIceCandidatesToPeer);
                 _freshlyConnectedClient.peerConnection = newPeerConnection;
                 this.notYetPeerConnectedClientCollection.push(_freshlyConnectedClient);
@@ -37,7 +33,7 @@ var FudgeNetwork;
                 }
             };
             this.parseMessageToJson = (_messageToParse) => {
-                let parsedMessage = { originatorId: " ", messageType: NetworkTypes.MESSAGE_TYPE.UNDEFINED };
+                let parsedMessage = { originatorId: " ", messageType: FudgeNetwork.MESSAGE_TYPE.UNDEFINED };
                 try {
                     parsedMessage = JSON.parse(_messageToParse);
                 }
@@ -74,6 +70,13 @@ var FudgeNetwork;
             };
             this.dataChannelMessageHandler = (_message) => {
                 console.log("Message received", _message);
+                let parsedMessage = JSON.parse(_message.data);
+                console.log("Keycode: " + parsedMessage);
+                console.log(".");
+                console.log("ID: " + parsedMessage.originatorId);
+                console.log("MessageType: " + parsedMessage.messageType);
+                console.log("MessageData: " + parsedMessage.messageData);
+                console.log(".");
             };
             this.initiateConnectionByCreatingDataChannelAndCreatingOffer = (_clientToConnect) => {
                 console.log("Initiating connection to : " + _clientToConnect);

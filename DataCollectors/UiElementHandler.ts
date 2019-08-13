@@ -1,5 +1,7 @@
 namespace FudgeNetwork {
     export abstract class UiElementHandler {
+        // tslint:disable-next-line: typedef
+        public static electronWindow: Document;
         public static signalingSubmit: HTMLElement;
         public static signalingUrl: HTMLInputElement;
         public static loginNameInput: HTMLInputElement | null;
@@ -18,6 +20,7 @@ namespace FudgeNetwork {
         public static broadcastButton: HTMLElement;
 
         public static getAllUiElements() {
+            UiElementHandler.electronWindow = document;
             UiElementHandler.switchModeButton = document.getElementById("switch") as HTMLElement;
             UiElementHandler.authoritativeElements = document.getElementById("authoritative_elements") as HTMLElement;
             UiElementHandler.stopSignalingServer = document.getElementById("stop_signalingServerButton") as HTMLElement;

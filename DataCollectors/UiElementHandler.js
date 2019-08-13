@@ -3,6 +3,7 @@ var FudgeNetwork;
 (function (FudgeNetwork) {
     class UiElementHandler {
         static getAllUiElements() {
+            UiElementHandler.electronWindow = document;
             UiElementHandler.switchModeButton = document.getElementById("switch");
             UiElementHandler.authoritativeElements = document.getElementById("authoritative_elements");
             UiElementHandler.stopSignalingServer = document.getElementById("stop_signalingServerButton");

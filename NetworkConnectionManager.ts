@@ -5,7 +5,6 @@ namespace FudgeNetwork {
         public localId: string;
         public localUserName: string;
         public connection!: RTCPeerConnection;
-
         public remoteConnection: RTCPeerConnection | null;
         public remoteClientId: string;
         public localDataChannel: RTCDataChannel | undefined;
@@ -63,15 +62,16 @@ namespace FudgeNetwork {
         }
 
         public sendMessageViaDirectPeerConnection = () => {
-            const message: string = UiElementHandler.msgInput.value;
+            let message: PeerMessageSimpleText = new PeerMessageSimpleText(this.localId, UiElementHandler.msgInput.value);
             UiElementHandler.chatbox.innerHTML += "\n" + this.localUserName + ": " + message;
+            let stringifiedMessage: string = JSON.stringify(message);
 
             if (this.isInitiator && this.localDataChannel) {
-                this.localDataChannel.send(message);
+                this.localDataChannel.send(stringifiedMessage);
             }
             else if (!this.isInitiator && this.receivedDataChannelFromRemote) {
                 console.log("Sending Message via received Datachannel");
-                this.receivedDataChannelFromRemote.send(message);
+                this.receivedDataChannelFromRemote.send(stringifiedMessage);
             }
             else {
                 console.error("Peer Connection undefined, connection likely lost");
@@ -120,27 +120,27 @@ namespace FudgeNetwork {
 
             console.log("Received message:", objectifiedMessage);
             switch (objectifiedMessage.messageType) {
-                case NetworkTypes.MESSAGE_TYPE.ID_ASSIGNED:
+                case FudgeNetwork.MESSAGE_TYPE.ID_ASSIGNED:
                     console.log("ID received, assigning to self");
 
                     this.assignIdAndSendConfirmation(objectifiedMessage);
                     break;
 
-                case NetworkTypes.MESSAGE_TYPE.LOGIN_RESPONSE:
+                case FudgeNetwork.MESSAGE_TYPE.LOGIN_RESPONSE:
                     this.loginValidAddUser(objectifiedMessage.originatorId, objectifiedMessage.loginSuccess, objectifiedMessage.originatorUsername);
                     break;
 
-                case NetworkTypes.MESSAGE_TYPE.RTC_OFFER:
+                case FudgeNetwork.MESSAGE_TYPE.RTC_OFFER:
                     // console.log("Received offer, current signaling state: ", this.connection.signalingState);
                     this.receiveOfferAndSetRemoteDescriptionThenCreateAndSendAnswer(objectifiedMessage);
                     break;
 
-                case NetworkTypes.MESSAGE_TYPE.RTC_ANSWER:
+                case FudgeNetwork.MESSAGE_TYPE.RTC_ANSWER:
                     // console.log("Received answer, current signaling state: ", this.connection.signalingState);
                     this.receiveAnswerAndSetRemoteDescription(objectifiedMessage.clientId, objectifiedMessage.answer);
                     break;
 
-                case NetworkTypes.MESSAGE_TYPE.ICE_CANDIDATE:
+                case FudgeNetwork.MESSAGE_TYPE.ICE_CANDIDATE:
                     // console.log("Received candidate, current signaling state: ", this.connection.signalingState);
                     this.handleCandidate(objectifiedMessage);
                     break;
@@ -272,13 +272,30 @@ namespace FudgeNetwork {
             this.receivedDataChannelFromRemote = event.channel;
             if (this.receivedDataChannelFromRemote) {
                 this.receivedDataChannelFromRemote.addEventListener("message", this.dataChannelMessageHandler);
-                this.receivedDataChannelFromRemote.addEventListener("open", this.dataChannelStatusChangeHandler);
+                this.receivedDataChannelFromRemote.addEventListener("open", this.enableKeyboardPressesForSending);
                 this.receivedDataChannelFromRemote.addEventListener("close", this.dataChannelStatusChangeHandler);
             }
         }
 
         private handleCreateAnswerError = (err: Event) => {
             console.error(err);
+        }
+
+        private enableKeyboardPressesForSending = () => {
+            let browser: Document = UiElementHandler.electronWindow;
+            browser.addEventListener("keydown", (event: KeyboardEvent) => {
+                console.log("Key pressed");
+                let x = JSON.stringify(event.keyCode);
+                this.sendKeyPress(x);
+            });
+        }
+
+        private sendKeyPress = (_keyCode: string) => {
+            console.log(this.localDataChannel);
+            if (this.localDataChannel != undefined) {
+                console.log("Sending message");
+                this.localDataChannel.send(_keyCode);
+            }
         }
 
         private dataChannelStatusChangeHandler = (event: Event) => {
