@@ -1,7 +1,9 @@
-import * as TYPES from "./../DataCollectors/Enumerators/EnumeratorCollection";
+namespace NetworkMessages{
+
 export interface MessageBase {
 
-    readonly messageType: TYPES.MESSAGE_TYPE;
+    readonly messageType: NetworkTypes.MESSAGE_TYPE;
     readonly originatorId: string;
 
+}
 }

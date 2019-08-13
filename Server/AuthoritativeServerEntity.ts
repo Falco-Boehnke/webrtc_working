@@ -1,6 +1,6 @@
 import * as WebSocket from "ws";
-import * as NetworkMessages from "../NetworkMessages";
-import * as TYPES from "../DataCollectors/Enumerators/EnumeratorCollection";
+// import * as NetworkMessages from "../NetworkMessages";
+// import * as TYPES from "../DataCollectors/Enumerators/EnumeratorCollection";
 
 import { Client } from "../DataCollectors/Client";
 import { AuthoritativeSignalingServer } from "./AuthoritativeSignalingServer";
@@ -45,7 +45,7 @@ export class AuthoritativeServerEntity {
     }
 
     public parseMessageToJson = (_messageToParse: string): NetworkMessages.MessageBase => {
-        let parsedMessage: NetworkMessages.MessageBase = { originatorId: " ", messageType: TYPES.MESSAGE_TYPE.UNDEFINED };
+        let parsedMessage: NetworkMessages.MessageBase = { originatorId: " ", messageType: NetworkTypes.MESSAGE_TYPE.UNDEFINED};
 
         try {
             parsedMessage = JSON.parse(_messageToParse);

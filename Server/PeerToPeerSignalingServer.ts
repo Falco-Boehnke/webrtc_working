@@ -1,6 +1,6 @@
 import * as WebSocket from "ws";
-import * as NetworkMessages from "../NetworkMessages";
-import * as TYPES from "../DataCollectors/Enumerators/EnumeratorCollection";
+// import * as NetworkMessages from "../NetworkMessages";
+// import * as TYPES from "../DataCollectors/Enumerators/EnumeratorCollection";
 import { Client } from "../DataCollectors/Client";
 
 export class PeerToPeerSignalingServer {
@@ -55,7 +55,7 @@ export class PeerToPeerSignalingServer {
 
     // TODO Check if event.type can be used for identification instead => It cannot
     public static serverHandleMessageType(_message: string, _websocketClient: WebSocket): void {
-        let parsedMessage: NetworkMessages.MessageBase | null = null;
+        let parsedMessage;
         try {
             parsedMessage = JSON.parse(_message);
 
@@ -67,23 +67,23 @@ export class PeerToPeerSignalingServer {
 
         if (parsedMessage != null) {
             switch (parsedMessage.messageType) {
-                case TYPES.MESSAGE_TYPE.ID_ASSIGNED:
+                case NetworkTypes.MESSAGE_TYPE.ID_ASSIGNED:
                     console.log("Id confirmation received for client: " + parsedMessage.originatorId);
                     break;
 
-                case TYPES.MESSAGE_TYPE.LOGIN_REQUEST:
+                case NetworkTypes.MESSAGE_TYPE.LOGIN_REQUEST:
                     PeerToPeerSignalingServer.addUserOnValidLoginRequest(_websocketClient, messageData);
                     break;
 
-                case TYPES.MESSAGE_TYPE.RTC_OFFER:
+                case NetworkTypes.MESSAGE_TYPE.RTC_OFFER:
                     PeerToPeerSignalingServer.sendRtcOfferToRequestedClient(_websocketClient, messageData);
                     break;
 
-                case TYPES.MESSAGE_TYPE.RTC_ANSWER:
+                case NetworkTypes.MESSAGE_TYPE.RTC_ANSWER:
                     PeerToPeerSignalingServer.answerRtcOfferOfClient(_websocketClient, messageData);
                     break;
 
-                case TYPES.MESSAGE_TYPE.ICE_CANDIDATE:
+                case NetworkTypes.MESSAGE_TYPE.ICE_CANDIDATE:
                     PeerToPeerSignalingServer.sendIceCandidatesToRelevantPeers(_websocketClient, messageData);
                     break;
 
@@ -167,7 +167,7 @@ export class PeerToPeerSignalingServer {
 
 
     public static parseMessageToJson(_messageToParse: string): NetworkMessages.MessageBase {
-        let parsedMessage: NetworkMessages.MessageBase = { originatorId: " ", messageType: TYPES.MESSAGE_TYPE.UNDEFINED };
+        let parsedMessage: NetworkMessages.MessageBase = { originatorId: " ", messageType: NetworkTypes.MESSAGE_TYPE.UNDEFINED};
 
         try {
             parsedMessage = JSON.parse(_messageToParse);

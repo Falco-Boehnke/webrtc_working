@@ -1,7 +1,7 @@
 import { UiElementHandler } from "./DataCollectors/UiElementHandler";
 
-import * as TYPES from "./DataCollectors/Enumerators/EnumeratorCollection";
-import * as NetworkMessages from "./NetworkMessages";
+// import * as NetworkTypes from "./DataCollectors/Enumerators/EnumeratorCollection";
+// import * as NetworkMessages from "./NetworkMessages";
 
 export class NetworkConnectionManager {
     public ws!: WebSocket;
@@ -123,27 +123,27 @@ export class NetworkConnectionManager {
 
         console.log("Received message:", objectifiedMessage);
         switch (objectifiedMessage.messageType) {
-            case TYPES.MESSAGE_TYPE.ID_ASSIGNED:
+            case NetworkTypes.MESSAGE_TYPE.ID_ASSIGNED:
                 console.log("ID received, assigning to self");
 
                 this.assignIdAndSendConfirmation(objectifiedMessage);
                 break;
 
-            case TYPES.MESSAGE_TYPE.LOGIN_RESPONSE:
+            case NetworkTypes.MESSAGE_TYPE.LOGIN_RESPONSE:
                 this.loginValidAddUser(objectifiedMessage.originatorId, objectifiedMessage.loginSuccess, objectifiedMessage.originatorUsername);
                 break;
 
-            case TYPES.MESSAGE_TYPE.RTC_OFFER:
+            case NetworkTypes.MESSAGE_TYPE.RTC_OFFER:
                 // console.log("Received offer, current signaling state: ", this.connection.signalingState);
                 this.receiveOfferAndSetRemoteDescriptionThenCreateAndSendAnswer(objectifiedMessage);
                 break;
 
-            case TYPES.MESSAGE_TYPE.RTC_ANSWER:
+            case NetworkTypes.MESSAGE_TYPE.RTC_ANSWER:
                 // console.log("Received answer, current signaling state: ", this.connection.signalingState);
                 this.receiveAnswerAndSetRemoteDescription(objectifiedMessage.clientId, objectifiedMessage.answer);
                 break;
 
-            case TYPES.MESSAGE_TYPE.ICE_CANDIDATE:
+            case NetworkTypes.MESSAGE_TYPE.ICE_CANDIDATE:
                 // console.log("Received candidate, current signaling state: ", this.connection.signalingState);
                 this.handleCandidate(objectifiedMessage);
                 break;
