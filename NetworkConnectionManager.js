@@ -5,16 +5,17 @@ var FudgeNetwork;
         constructor() {
             this.signalingServerUrl = "ws://localhost:8080";
             // More info from here https://developer.mozilla.org/en-US/docs/Web/API/RTCConfiguration
+            // tslint:disable-next-line: typedef
             this.configuration = {
                 iceServers: [
                     { urls: "stun:stun2.1.google.com:19302" },
                     { urls: "stun:stun.example.com" }
                 ]
             };
-            this.startUpSignalingServerFile = (_serverFileUri) => {
-                // TODO You can start the signaling server inside  the componente, so it can be toggled/clicked to make it happen
-                let server_test = require("./Server/ServerMain");
-            };
+            // public startUpSignalingServerFile = (_serverFileUri: string): void => {
+            //     // TODO You can start the signaling server inside  the componente, so it can be toggled/clicked to make it happen
+            //     let server_test = require("./Server/ServerMain");
+            // }
             this.connectToSpecifiedSignalingServer = () => {
                 this.ws = new WebSocket(this.signalingServerUrl);
                 this.addWsEventListeners();
@@ -48,7 +49,7 @@ var FudgeNetwork;
                 }
             };
             this.createLoginRequestAndSendToServer = (_requestingUsername) => {
-                const loginMessage = new FudgeNetwork.LoginRequest(this.localId, this.localUserName);
+                const loginMessage = new FudgeNetwork.NetworkMessageLoginRequest(this.localId, this.localUserName);
                 this.sendMessage(loginMessage);
             };
             this.checkChosenUsernameAndCreateLoginRequest = () => {
@@ -110,7 +111,7 @@ var FudgeNetwork;
             };
             this.assignIdAndSendConfirmation = (_message) => {
                 this.localId = _message.assignedId;
-                this.sendMessage(new FudgeNetwork.IdAssigned(this.localId));
+                this.sendMessage(new FudgeNetwork.NetworkMessageIdAssigned(this.localId));
             };
             this.initiateConnectionByCreatingDataChannelAndCreatingOffer = (_userNameForOffer) => {
                 console.log("Creating Datachannel for connection and then creating offer");
@@ -136,7 +137,7 @@ var FudgeNetwork;
                 });
             };
             this.createOfferMessageAndSendToRemote = (_userNameForOffer) => {
-                const offerMessage = new FudgeNetwork.RtcOffer(this.localId, _userNameForOffer, this.connection.localDescription);
+                const offerMessage = new FudgeNetwork.NetworkMessageRtcOffer(this.localId, _userNameForOffer, this.connection.localDescription);
                 this.sendMessage(offerMessage);
                 console.log("Sent offer to remote peer, Expected 'have-local-offer', got:  ", this.connection.signalingState);
             };
@@ -150,7 +151,7 @@ var FudgeNetwork;
                     return await this.connection.setLocalDescription(ultimateAnswer);
                 }).then(async () => {
                     console.log("CreateAnswerFunction after setting local descp, Expected 'stable', got:  ", this.connection.signalingState);
-                    const answerMessage = new FudgeNetwork.RtcAnswer(this.localId, _remoteIdToAnswerTo, "", ultimateAnswer);
+                    const answerMessage = new FudgeNetwork.NetworkMessageRtcAnswer(this.localId, _remoteIdToAnswerTo, "", ultimateAnswer);
                     console.log("AnswerObject: ", answerMessage);
                     await this.sendMessage(answerMessage);
                 })
@@ -158,9 +159,10 @@ var FudgeNetwork;
                     console.error("Answer creation failed.");
                 });
             };
+            // tslint:disable-next-line: no-any
             this.sendNewIceCandidatesToPeer = ({ candidate }) => {
                 console.log("Sending ICECandidates from: ", this.localId);
-                let message = new FudgeNetwork.IceCandidate(this.localId, this.remoteClientId, candidate);
+                let message = new FudgeNetwork.NetworkMessageIceCandidate(this.localId, this.remoteClientId, candidate);
                 this.sendMessage(message);
             };
             this.loginValidAddUser = (_assignedId, _loginSuccess, _originatorUserName) => {

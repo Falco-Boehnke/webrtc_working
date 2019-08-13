@@ -3,11 +3,13 @@
 namespace FudgeNetwork {
     export class AuthoritativeServerEntity {
 
+        // tslint:disable-next-line: no-any
         public signalingServer: any;
         public notYetPeerConnectedClientCollection: Client[] = new Array();
         public peerConnectedClientCollection: Client[] = new Array();
         public peerConnectionBufferCollection: RTCDataChannel[] = new Array();
 
+        // tslint:disable-next-line: typedef
         public configuration = {
             iceServers: [
                 { urls: "stun:stun2.1.google.com:19302" },
@@ -34,7 +36,7 @@ namespace FudgeNetwork {
             // convert to base 36 and pick the first few digits after comma
             return "_" + Math.random().toString(36).substr(2, 7);
         }
-        public addIceCandidateToServerConnection = async (_receivedIceMessage: IceCandidate) => {
+        public addIceCandidateToServerConnection = async (_receivedIceMessage: NetworkMessageIceCandidate) => {
             if (_receivedIceMessage.candidate) {
                 let client: Client = this.searchUserByUserIdAndReturnUser(_receivedIceMessage.originatorId, this.notYetPeerConnectedClientCollection);
                 console.log("server received candidates from: ", client);
@@ -42,8 +44,8 @@ namespace FudgeNetwork {
             }
         }
 
-        public parseMessageToJson = (_messageToParse: string): FudgeNetwork.MessageBase => {
-            let parsedMessage: FudgeNetwork.MessageBase = { originatorId: " ", messageType: NetworkTypes.MESSAGE_TYPE.UNDEFINED };
+        public parseMessageToJson = (_messageToParse: string): FudgeNetwork.NetworkMessageMessageBase => {
+            let parsedMessage: FudgeNetwork.NetworkMessageMessageBase = { originatorId: " ", messageType: NetworkTypes.MESSAGE_TYPE.UNDEFINED };
 
             try {
                 parsedMessage = JSON.parse(_messageToParse);
@@ -53,7 +55,8 @@ namespace FudgeNetwork {
             return parsedMessage;
         }
 
-        public receiveAnswerAndSetRemoteDescription = (_websocketClient: any, _answer: FudgeNetwork.RtcAnswer) => {
+        // tslint:disable-next-line: no-any
+        public receiveAnswerAndSetRemoteDescription = (_websocketClient: any, _answer: FudgeNetwork.NetworkMessageRtcAnswer) => {
             console.log("Received answer");
             let clientToConnect: Client = this.searchUserByWebsocketConnectionAndReturnUser(_websocketClient, this.notYetPeerConnectedClientCollection);
             console.log(clientToConnect);
@@ -71,6 +74,7 @@ namespace FudgeNetwork {
         }
 
         // TODO Use or delete
+        // tslint:disable-next-line: no-any
         private sendNewIceCandidatesToPeer = ({ candidate }: any) => {
             console.log("Server wants to send ice candidates to peer.", candidate);
             // let message: NetworkMessages.IceCandidate = new NetworkMessages.IceCandidate("SERVER", this.remoteClientId, candidate);
@@ -78,6 +82,7 @@ namespace FudgeNetwork {
 
         }
 
+        // tslint:disable-next-line: no-any
         private dataChannelStatusChangeHandler = (event: any) => {
             console.log("Server Datachannel opened");
         }
@@ -112,7 +117,7 @@ namespace FudgeNetwork {
 
         private createOfferMessageAndSendToRemote = (_clientToConnect: Client) => {
             console.log("Sending offer now");
-            const offerMessage: FudgeNetwork.RtcOffer = new FudgeNetwork.RtcOffer("SERVER", _clientToConnect.id, _clientToConnect.peerConnection.localDescription);
+            const offerMessage: FudgeNetwork.NetworkMessageRtcOffer = new FudgeNetwork.NetworkMessageRtcOffer("SERVER", _clientToConnect.id, _clientToConnect.peerConnection.localDescription);
             this.signalingServer.sendToId(_clientToConnect.id, offerMessage);
         }
 

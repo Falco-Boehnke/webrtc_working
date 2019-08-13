@@ -12,6 +12,7 @@ namespace FudgeNetwork {
         public receivedDataChannelFromRemote: RTCDataChannel | undefined;
 
         // More info from here https://developer.mozilla.org/en-US/docs/Web/API/RTCConfiguration
+        // tslint:disable-next-line: typedef
         public configuration = {
             iceServers: [
                 { urls: "stun:stun2.1.google.com:19302" },
@@ -31,10 +32,10 @@ namespace FudgeNetwork {
             this.createRTCPeerConnectionAndAddListeners();
         }
 
-        public startUpSignalingServerFile = (_serverFileUri: string): void => {
-            // TODO You can start the signaling server inside  the componente, so it can be toggled/clicked to make it happen
-            let server_test = require("./Server/ServerMain");
-        }
+        // public startUpSignalingServerFile = (_serverFileUri: string): void => {
+        //     // TODO You can start the signaling server inside  the componente, so it can be toggled/clicked to make it happen
+        //     let server_test = require("./Server/ServerMain");
+        // }
 
         public connectToSpecifiedSignalingServer = () => {
             this.ws = new WebSocket(this.signalingServerUrl);
@@ -78,7 +79,7 @@ namespace FudgeNetwork {
         }
 
         public createLoginRequestAndSendToServer = (_requestingUsername: string) => {
-            const loginMessage: FudgeNetwork.LoginRequest = new FudgeNetwork.LoginRequest(this.localId, this.localUserName);
+            const loginMessage: FudgeNetwork.NetworkMessageLoginRequest = new FudgeNetwork.NetworkMessageLoginRequest(this.localId, this.localUserName);
             this.sendMessage(loginMessage);
         }
 
@@ -152,9 +153,9 @@ namespace FudgeNetwork {
             this.connection.addEventListener("icecandidate", this.sendNewIceCandidatesToPeer);
         }
 
-        private assignIdAndSendConfirmation = (_message: FudgeNetwork.IdAssigned) => {
+        private assignIdAndSendConfirmation = (_message: FudgeNetwork.NetworkMessageIdAssigned) => {
             this.localId = _message.assignedId;
-            this.sendMessage(new FudgeNetwork.IdAssigned(this.localId));
+            this.sendMessage(new FudgeNetwork.NetworkMessageIdAssigned(this.localId));
         }
 
 
@@ -184,7 +185,7 @@ namespace FudgeNetwork {
         }
 
         private createOfferMessageAndSendToRemote = (_userNameForOffer: string) => {
-            const offerMessage: FudgeNetwork.RtcOffer = new FudgeNetwork.RtcOffer(this.localId, _userNameForOffer, this.connection.localDescription);
+            const offerMessage: FudgeNetwork.NetworkMessageRtcOffer = new FudgeNetwork.NetworkMessageRtcOffer(this.localId, _userNameForOffer, this.connection.localDescription);
             this.sendMessage(offerMessage);
             console.log("Sent offer to remote peer, Expected 'have-local-offer', got:  ", this.connection.signalingState);
         }
@@ -200,8 +201,8 @@ namespace FudgeNetwork {
                 }).then(async () => {
                     console.log("CreateAnswerFunction after setting local descp, Expected 'stable', got:  ", this.connection.signalingState);
 
-                    const answerMessage: FudgeNetwork.RtcAnswer =
-                        new FudgeNetwork.RtcAnswer(this.localId, _remoteIdToAnswerTo, "", ultimateAnswer);
+                    const answerMessage: FudgeNetwork.NetworkMessageRtcAnswer =
+                        new FudgeNetwork.NetworkMessageRtcAnswer(this.localId, _remoteIdToAnswerTo, "", ultimateAnswer);
                     console.log("AnswerObject: ", answerMessage);
                     await this.sendMessage(answerMessage);
                 })
@@ -210,9 +211,10 @@ namespace FudgeNetwork {
                 });
         }
 
+        // tslint:disable-next-line: no-any
         private sendNewIceCandidatesToPeer = ({ candidate }: any) => {
             console.log("Sending ICECandidates from: ", this.localId);
-            let message: IceCandidate = new IceCandidate(this.localId, this.remoteClientId, candidate);
+            let message: NetworkMessageIceCandidate = new NetworkMessageIceCandidate(this.localId, this.remoteClientId, candidate);
             this.sendMessage(message);
 
         }
@@ -228,7 +230,7 @@ namespace FudgeNetwork {
 
         // TODO https://stackoverflow.com/questions/37787372/domexception-failed-to-set-remote-offer-sdp-called-in-wrong-state-state-sento/37787869
         // DOMException: Failed to set remote offer sdp: Called in wrong state: STATE_SENTOFFER
-        private receiveOfferAndSetRemoteDescriptionThenCreateAndSendAnswer = (_offerMessage: FudgeNetwork.RtcOffer): void => {
+        private receiveOfferAndSetRemoteDescriptionThenCreateAndSendAnswer = (_offerMessage: FudgeNetwork.NetworkMessageRtcOffer): void => {
             console.log("Setting description on offer and sending answer to username: ", _offerMessage.userNameToConnectTo);
             this.connection.addEventListener("datachannel", this.receiveDataChannel);
             this.remoteClientId = _offerMessage.originatorId;
@@ -257,7 +259,7 @@ namespace FudgeNetwork {
             // console.log("Signaling state:", this.connection.signalingState);
         }
 
-        private handleCandidate = async (_receivedIceMessage: IceCandidate) => {
+        private handleCandidate = async (_receivedIceMessage: NetworkMessageIceCandidate) => {
             if (_receivedIceMessage.candidate) {
                 // console.log("ASyncly adding candidates");
                 await this.connection.addIceCandidate(_receivedIceMessage.candidate);
@@ -275,11 +277,11 @@ namespace FudgeNetwork {
             }
         }
 
-        private handleCreateAnswerError = (err: any) => {
+        private handleCreateAnswerError = (err: Event) => {
             console.error(err);
         }
 
-        private dataChannelStatusChangeHandler = (event: any) => {
+        private dataChannelStatusChangeHandler = (event: Event) => {
             //TODO Reconnection logic
             console.log("Channel Event happened", event);
 

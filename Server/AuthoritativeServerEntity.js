@@ -8,6 +8,7 @@ var FudgeNetwork;
             this.notYetPeerConnectedClientCollection = new Array();
             this.peerConnectedClientCollection = new Array();
             this.peerConnectionBufferCollection = new Array();
+            // tslint:disable-next-line: typedef
             this.configuration = {
                 iceServers: [
                     { urls: "stun:stun2.1.google.com:19302" },
@@ -45,6 +46,7 @@ var FudgeNetwork;
                 }
                 return parsedMessage;
             };
+            // tslint:disable-next-line: no-any
             this.receiveAnswerAndSetRemoteDescription = (_websocketClient, _answer) => {
                 console.log("Received answer");
                 let clientToConnect = this.searchUserByWebsocketConnectionAndReturnUser(_websocketClient, this.notYetPeerConnectedClientCollection);
@@ -60,11 +62,13 @@ var FudgeNetwork;
                 });
             };
             // TODO Use or delete
+            // tslint:disable-next-line: no-any
             this.sendNewIceCandidatesToPeer = ({ candidate }) => {
                 console.log("Server wants to send ice candidates to peer.", candidate);
                 // let message: NetworkMessages.IceCandidate = new NetworkMessages.IceCandidate("SERVER", this.remoteClientId, candidate);
                 // this.sendMessage(message);
             };
+            // tslint:disable-next-line: no-any
             this.dataChannelStatusChangeHandler = (event) => {
                 console.log("Server Datachannel opened");
             };
@@ -96,7 +100,7 @@ var FudgeNetwork;
             };
             this.createOfferMessageAndSendToRemote = (_clientToConnect) => {
                 console.log("Sending offer now");
-                const offerMessage = new FudgeNetwork.RtcOffer("SERVER", _clientToConnect.id, _clientToConnect.peerConnection.localDescription);
+                const offerMessage = new FudgeNetwork.NetworkMessageRtcOffer("SERVER", _clientToConnect.id, _clientToConnect.peerConnection.localDescription);
                 this.signalingServer.sendToId(_clientToConnect.id, offerMessage);
             };
             // Helper function for searching through a collection, finding objects by key and value, returning

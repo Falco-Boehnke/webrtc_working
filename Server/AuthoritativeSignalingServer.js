@@ -4,20 +4,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const ws_1 = __importDefault(require("ws"));
-// import * as FudgeNetwork.from "../FudgeNetwork.;
-// import * as TYPES from "../DataCollectors/Enumerators/EnumeratorCollection";
-// import { FudgeNetwork.Client } from "../DataCollectors/FudgeNetwork.Client";
-// import { AuthoritativeServerEntity } from "./AuthoritativeServerEntity";
 class AuthoritativeSignalingServer {
     // TODO Check if event.type can be used for identification instead => It cannot
     static serverHandleMessageType(_message, _websocketClient) {
-        let parsedMessage;
+        let parsedMessage = { originatorId: " ", messageType: NetworkTypes.MESSAGE_TYPE.UNDEFINED };
         try {
             parsedMessage = JSON.parse(_message);
         }
         catch (error) {
             console.error("Invalid JSON", error);
         }
+        // tslint:disable-next-line: no-any
         const messageData = parsedMessage;
         if (parsedMessage != null) {
             switch (parsedMessage.messageType) {
@@ -46,11 +43,11 @@ class AuthoritativeSignalingServer {
             const clientBeingLoggedIn = AuthoritativeSignalingServer.searchUserByWebsocketConnectionAndReturnUser(_websocketConnection, AuthoritativeSignalingServer.connectedClientsCollection);
             if (clientBeingLoggedIn != null) {
                 clientBeingLoggedIn.userName = _messageData.loginUserName;
-                AuthoritativeSignalingServer.sendTo(_websocketConnection, new FudgeNetwork.LoginResponse(true, clientBeingLoggedIn.id, clientBeingLoggedIn.userName));
+                AuthoritativeSignalingServer.sendTo(_websocketConnection, new FudgeNetwork.NetworkMessageLoginResponse(true, clientBeingLoggedIn.id, clientBeingLoggedIn.userName));
             }
         }
         else {
-            AuthoritativeSignalingServer.sendTo(_websocketConnection, new FudgeNetwork.LoginResponse(false, "", ""));
+            AuthoritativeSignalingServer.sendTo(_websocketConnection, new FudgeNetwork.NetworkMessageLoginResponse(false, "", ""));
             usernameTaken = true;
             console.log("UsernameTaken");
         }
@@ -59,7 +56,7 @@ class AuthoritativeSignalingServer {
         console.log("Sending offer to: ", _messageData.userNameToConnectTo);
         const requestedClient = AuthoritativeSignalingServer.searchForPropertyValueInCollection(_messageData.userNameToConnectTo, "userName", AuthoritativeSignalingServer.connectedClientsCollection);
         if (requestedClient != null) {
-            const offerMessage = new FudgeNetwork.RtcOffer(_messageData.originatorId, requestedClient.userName, _messageData.offer);
+            const offerMessage = new FudgeNetwork.NetworkMessageRtcOffer(_messageData.originatorId, requestedClient.userName, _messageData.offer);
             AuthoritativeSignalingServer.sendTo(requestedClient.clientConnection, offerMessage);
         }
         else {
@@ -108,11 +105,12 @@ AuthoritativeSignalingServer.closeDownServer = () => {
     AuthoritativeSignalingServer.websocketServer.close();
 };
 AuthoritativeSignalingServer.serverEventHandler = () => {
+    // tslint:disable-next-line: no-any
     AuthoritativeSignalingServer.websocketServer.on("connection", (_websocketClient) => {
         console.log("User connected to autho-SignalingServer");
         const uniqueIdOnConnection = AuthoritativeSignalingServer.createID();
         const freshlyConnectedClient = new FudgeNetwork.Client(_websocketClient, uniqueIdOnConnection);
-        AuthoritativeSignalingServer.sendTo(_websocketClient, new FudgeNetwork.IdAssigned(uniqueIdOnConnection));
+        AuthoritativeSignalingServer.sendTo(_websocketClient, new FudgeNetwork.NetworkMessageIdAssigned(uniqueIdOnConnection));
         AuthoritativeSignalingServer.connectedClientsCollection.push(freshlyConnectedClient);
         AuthoritativeSignalingServer.authoritativeServerEntity.collectClientCreatePeerConnectionAndCreateOffer(freshlyConnectedClient);
         _websocketClient.on("message", (_message) => {
@@ -139,6 +137,7 @@ AuthoritativeSignalingServer.createID = () => {
     return "_" + Math.random().toString(36).substr(2, 7);
 };
 // TODO Type Websocket not assignable to type WebSocket ?!
+// tslint:disable-next-line: no-any
 AuthoritativeSignalingServer.sendTo = (_connection, _message) => {
     _connection.send(JSON.stringify(_message));
 };
