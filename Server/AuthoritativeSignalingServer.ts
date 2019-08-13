@@ -1,12 +1,12 @@
-import * as WebSocket from "ws";
-// import * as NetworkMessages from "../NetworkMessages";
+import WebSocket from "ws";
+// import * as FudgeNetwork.from "../FudgeNetwork.;
 // import * as TYPES from "../DataCollectors/Enumerators/EnumeratorCollection";
-import { Client } from "../DataCollectors/Client";
-import { AuthoritativeServerEntity } from "./AuthoritativeServerEntity";
+// import { FudgeNetwork.Client } from "../DataCollectors/FudgeNetwork.Client";
+// import { AuthoritativeServerEntity } from "./AuthoritativeServerEntity";
 export class AuthoritativeSignalingServer {
     public static websocketServer: WebSocket.Server;
-    public static connectedClientsCollection: Client[] = new Array();
-    public static authoritativeServerEntity: AuthoritativeServerEntity;
+    public static connectedClientsCollection: FudgeNetwork.Client[] = new Array();
+    public static authoritativeServerEntity: FudgeNetwork.AuthoritativeServerEntity;
 
     public static startUpServer = (_serverPort?: number) => {
         console.log(_serverPort);
@@ -17,7 +17,8 @@ export class AuthoritativeSignalingServer {
             AuthoritativeSignalingServer.websocketServer = new WebSocket.Server({ port: _serverPort });
 
         }
-        AuthoritativeSignalingServer.authoritativeServerEntity = new AuthoritativeServerEntity();
+        AuthoritativeSignalingServer.authoritativeServerEntity = new FudgeNetwork.AuthoritativeServerEntity();
+        AuthoritativeSignalingServer.authoritativeServerEntity.signalingServer = AuthoritativeSignalingServer;
         AuthoritativeSignalingServer.serverEventHandler();
     }
 
@@ -30,10 +31,10 @@ export class AuthoritativeSignalingServer {
             console.log("User connected to autho-SignalingServer");
 
             const uniqueIdOnConnection: string = AuthoritativeSignalingServer.createID();
-            const freshlyConnectedClient: Client = new Client(_websocketClient, uniqueIdOnConnection);
-            AuthoritativeSignalingServer.sendTo(_websocketClient, new NetworkMessages.IdAssigned(uniqueIdOnConnection));
+            const freshlyConnectedClient: FudgeNetwork.Client = new FudgeNetwork.Client(_websocketClient, uniqueIdOnConnection);
+            AuthoritativeSignalingServer.sendTo(_websocketClient, new FudgeNetwork.IdAssigned(uniqueIdOnConnection));
             AuthoritativeSignalingServer.connectedClientsCollection.push(freshlyConnectedClient);
-            
+
             AuthoritativeSignalingServer.authoritativeServerEntity.collectClientCreatePeerConnectionAndCreateOffer(freshlyConnectedClient);
 
 
@@ -45,7 +46,7 @@ export class AuthoritativeSignalingServer {
                 console.error("Error at connection", error);
                 for (let i: number = 0; i < AuthoritativeSignalingServer.connectedClientsCollection.length; i++) {
                     if (AuthoritativeSignalingServer.connectedClientsCollection[i].clientConnection === _websocketClient) {
-                        console.log("Client found, deleting");
+                        console.log("FudgeNetwork.Client found, deleting");
                         AuthoritativeSignalingServer.connectedClientsCollection.splice(i, 1);
                         console.log(AuthoritativeSignalingServer.connectedClientsCollection);
                     }
@@ -93,44 +94,44 @@ export class AuthoritativeSignalingServer {
     }
 
     //#region MessageHandler
-    public static addUserOnValidLoginRequest(_websocketConnection: WebSocket, _messageData: NetworkMessages.LoginRequest): void {
+    public static addUserOnValidLoginRequest(_websocketConnection: WebSocket, _messageData: FudgeNetwork.LoginRequest): void {
         console.log("User logged: ", _messageData.loginUserName);
         let usernameTaken: boolean = true;
         usernameTaken = AuthoritativeSignalingServer.searchUserByUserNameAndReturnUser(_messageData.loginUserName, AuthoritativeSignalingServer.connectedClientsCollection) != null;
 
         if (!usernameTaken) {
             console.log("Username available, logging in");
-            const clientBeingLoggedIn: Client = AuthoritativeSignalingServer.searchUserByWebsocketConnectionAndReturnUser(_websocketConnection, AuthoritativeSignalingServer.connectedClientsCollection);
+            const clientBeingLoggedIn: FudgeNetwork.Client = AuthoritativeSignalingServer.searchUserByWebsocketConnectionAndReturnUser(_websocketConnection, AuthoritativeSignalingServer.connectedClientsCollection);
 
             if (clientBeingLoggedIn != null) {
                 clientBeingLoggedIn.userName = _messageData.loginUserName;
-                AuthoritativeSignalingServer.sendTo(_websocketConnection, new NetworkMessages.LoginResponse(true, clientBeingLoggedIn.id, clientBeingLoggedIn.userName));
+                AuthoritativeSignalingServer.sendTo(_websocketConnection, new FudgeNetwork.LoginResponse(true, clientBeingLoggedIn.id, clientBeingLoggedIn.userName));
             }
         } else {
-            AuthoritativeSignalingServer.sendTo(_websocketConnection, new NetworkMessages.LoginResponse(false, "", ""));
+            AuthoritativeSignalingServer.sendTo(_websocketConnection, new FudgeNetwork.LoginResponse(false, "", ""));
             usernameTaken = true;
             console.log("UsernameTaken");
         }
     }
 
-    public static sendRtcOfferToRequestedClient(_websocketClient: WebSocket, _messageData: NetworkMessages.RtcOffer): void {
+    public static sendRtcOfferToRequestedClient(_websocketClient: WebSocket, _messageData: FudgeNetwork.RtcOffer): void {
         console.log("Sending offer to: ", _messageData.userNameToConnectTo);
-        const requestedClient: Client = AuthoritativeSignalingServer.searchForPropertyValueInCollection(_messageData.userNameToConnectTo, "userName", AuthoritativeSignalingServer.connectedClientsCollection);
+        const requestedClient: FudgeNetwork.Client = AuthoritativeSignalingServer.searchForPropertyValueInCollection(_messageData.userNameToConnectTo, "userName", AuthoritativeSignalingServer.connectedClientsCollection);
 
         if (requestedClient != null) {
-            const offerMessage: NetworkMessages.RtcOffer = new NetworkMessages.RtcOffer(_messageData.originatorId, requestedClient.userName, _messageData.offer);
+            const offerMessage: FudgeNetwork.RtcOffer = new FudgeNetwork.RtcOffer(_messageData.originatorId, requestedClient.userName, _messageData.offer);
             AuthoritativeSignalingServer.sendTo(requestedClient.clientConnection, offerMessage);
         } else { console.error("User to connect to doesn't exist under that Name"); }
     }
 
-    public static answerRtcOfferOfClient(_websocketClient: WebSocket, _messageData: NetworkMessages.RtcAnswer): void {
+    public static answerRtcOfferOfClient(_websocketClient: WebSocket, _messageData: FudgeNetwork.RtcAnswer): void {
         console.log("Sending answer to AS-Entity");
         AuthoritativeSignalingServer.authoritativeServerEntity.receiveAnswerAndSetRemoteDescription(_websocketClient, _messageData);
 
     }
 
-    public static sendIceCandidatesToRelevantPeers(_messageData: NetworkMessages.IceCandidate): void {
-        const clientToShareCandidatesWith: Client = AuthoritativeSignalingServer.searchUserByUserIdAndReturnUser(_messageData.targetId, AuthoritativeSignalingServer.connectedClientsCollection);
+    public static sendIceCandidatesToRelevantPeers(_messageData: FudgeNetwork.IceCandidate): void {
+        const clientToShareCandidatesWith: FudgeNetwork.Client = AuthoritativeSignalingServer.searchUserByUserIdAndReturnUser(_messageData.targetId, AuthoritativeSignalingServer.connectedClientsCollection);
         this.authoritativeServerEntity.addIceCandidateToServerConnection(_messageData);
     }
 
@@ -140,7 +141,7 @@ export class AuthoritativeSignalingServer {
 
 
 
-    public static searchForClientWithId(_idToFind: string): Client {
+    public static searchForClientWithId(_idToFind: string): FudgeNetwork.Client {
         return this.searchForPropertyValueInCollection(_idToFind, "id", this.connectedClientsCollection);
     }
 
@@ -152,8 +153,8 @@ export class AuthoritativeSignalingServer {
     //#endregion
 
 
-    public static parseMessageToJson(_messageToParse: string): NetworkMessages.MessageBase {
-        let parsedMessage: NetworkMessages.MessageBase = { originatorId: " ", messageType: NetworkTypes.MESSAGE_TYPE.UNDEFINED};
+    public static parseMessageToJson(_messageToParse: string): FudgeNetwork.MessageBase {
+        let parsedMessage: FudgeNetwork.MessageBase = { originatorId: " ", messageType: NetworkTypes.MESSAGE_TYPE.UNDEFINED };
 
         try {
             parsedMessage = JSON.parse(_messageToParse);
@@ -192,15 +193,15 @@ export class AuthoritativeSignalingServer {
         return null;
     }
 
-    private static searchUserByUserNameAndReturnUser = (_userNameToSearchFor: string, _collectionToSearch: Client[]): Client => {
+    private static searchUserByUserNameAndReturnUser = (_userNameToSearchFor: string, _collectionToSearch: FudgeNetwork.Client[]): FudgeNetwork.Client => {
         return AuthoritativeSignalingServer.searchForPropertyValueInCollection(_userNameToSearchFor, "userName", _collectionToSearch);
     }
-    private static searchUserByUserIdAndReturnUser = (_userIdToSearchFor: string, _collectionToSearch: Client[]): Client => {
+    private static searchUserByUserIdAndReturnUser = (_userIdToSearchFor: string, _collectionToSearch: FudgeNetwork.Client[]): FudgeNetwork.Client => {
         return AuthoritativeSignalingServer.searchForPropertyValueInCollection(_userIdToSearchFor, "id", _collectionToSearch);
     }
 
-    private static searchUserByWebsocketConnectionAndReturnUser = (_websocketConnectionToSearchFor: WebSocket, _collectionToSearch: Client[]) => {
+    private static searchUserByWebsocketConnectionAndReturnUser = (_websocketConnectionToSearchFor: WebSocket, _collectionToSearch: FudgeNetwork.Client[]) => {
         return AuthoritativeSignalingServer.searchForPropertyValueInCollection(_websocketConnectionToSearchFor, "clientConnection", _collectionToSearch);
     }
 }
-// AuthoritativeSignalingServer.startUpServer();
+    // AuthoritativeSignalingServer.startUpServer();

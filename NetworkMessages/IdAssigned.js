@@ -1,8 +1,8 @@
 "use strict";
 // import { MessageBase } from ".";
 // import * as TYPES from "./../DataCollectors/Enumerators/EnumeratorCollection";
-var NetworkMessages;
-(function (NetworkMessages) {
+var FudgeNetwork;
+(function (FudgeNetwork) {
     class IdAssigned {
         constructor(_assignedId) {
             this.originatorId = "Server";
@@ -10,5 +10,5 @@ var NetworkMessages;
             this.assignedId = _assignedId;
         }
     }
-    NetworkMessages.IdAssigned = IdAssigned;
-})(NetworkMessages || (NetworkMessages = {}));
+    FudgeNetwork.IdAssigned = IdAssigned;
+})(FudgeNetwork || (FudgeNetwork = {}));

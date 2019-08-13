@@ -1,8 +1,8 @@
 "use strict";
 // import { MessageBase } from ".";
 // import * as TYPES from "./../DataCollectors/Enumerators/EnumeratorCollection";
-var NetworkMessages;
-(function (NetworkMessages) {
+var FudgeNetwork;
+(function (FudgeNetwork) {
     class RtcOffer {
         constructor(_originatorId, _userNameToConnectTo, _offer) {
             this.messageType = NetworkTypes.MESSAGE_TYPE.RTC_OFFER;
@@ -11,5 +11,5 @@ var NetworkMessages;
             this.offer = _offer;
         }
     }
-    NetworkMessages.RtcOffer = RtcOffer;
-})(NetworkMessages || (NetworkMessages = {}));
+    FudgeNetwork.RtcOffer = RtcOffer;
+})(FudgeNetwork || (FudgeNetwork = {}));

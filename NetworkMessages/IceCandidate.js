@@ -1,8 +1,6 @@
 "use strict";
-// import { MessageBase } from ".";
-// import * as TYPES from "./../DataCollectors/Enumerators/EnumeratorCollection";
-var NetworkMessages;
-(function (NetworkMessages) {
+var FudgeNetwork;
+(function (FudgeNetwork) {
     class IceCandidate {
         constructor(_originatorId, _targetId, _candidate) {
             this.messageType = NetworkTypes.MESSAGE_TYPE.ICE_CANDIDATE;
@@ -11,5 +9,5 @@ var NetworkMessages;
             this.candidate = _candidate;
         }
     }
-    NetworkMessages.IceCandidate = IceCandidate;
-})(NetworkMessages || (NetworkMessages = {}));
+    FudgeNetwork.IceCandidate = IceCandidate;
+})(FudgeNetwork || (FudgeNetwork = {}));

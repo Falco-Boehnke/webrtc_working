@@ -1,35 +1,35 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const NetworkConnectionManager_1 = require("./NetworkConnectionManager");
-const UiElementHandler_1 = require("./DataCollectors/UiElementHandler");
+// import { NetworkConnectionManager } from "./NetworkConnectionManager";
+// import { FudgeNetwork.UiElementHandler } from "./DataCollectors/FudgeNetwork.UiElementHandler";
 const AuthoritativeSignalingServer_1 = require("./Server/AuthoritativeSignalingServer");
 const PeerToPeerSignalingServer_1 = require("./Server/PeerToPeerSignalingServer");
 let asMode = false;
-const test = new NetworkConnectionManager_1.NetworkConnectionManager();
-UiElementHandler_1.UiElementHandler.getAllUiElements();
-UiElementHandler_1.UiElementHandler.startSignalingButton.addEventListener("click", startingUpSignalingServer);
-UiElementHandler_1.UiElementHandler.signalingSubmit.addEventListener("click", connectToSignalingServer);
-UiElementHandler_1.UiElementHandler.loginButton.addEventListener("click", test.checkChosenUsernameAndCreateLoginRequest);
-UiElementHandler_1.UiElementHandler.connectToUserButton.addEventListener("click", test.checkUsernameToConnectToAndInitiateConnection);
-UiElementHandler_1.UiElementHandler.sendMsgButton.addEventListener("click", test.sendMessageViaDirectPeerConnection);
-UiElementHandler_1.UiElementHandler.switchModeButton.addEventListener("click", switchServerMode);
-UiElementHandler_1.UiElementHandler.stopSignalingServer.addEventListener("click", turnOffSignalingServer);
-UiElementHandler_1.UiElementHandler.broadcastButton.addEventListener("click", broadcastMessageToClients);
+const test = new FudgeNetwork.NetworkConnectionManager();
+FudgeNetwork.UiElementHandler.getAllUiElements();
+FudgeNetwork.UiElementHandler.startSignalingButton.addEventListener("click", startingUpSignalingServer);
+FudgeNetwork.UiElementHandler.signalingSubmit.addEventListener("click", connectToSignalingServer);
+FudgeNetwork.UiElementHandler.loginButton.addEventListener("click", test.checkChosenUsernameAndCreateLoginRequest);
+FudgeNetwork.UiElementHandler.connectToUserButton.addEventListener("click", test.checkUsernameToConnectToAndInitiateConnection);
+FudgeNetwork.UiElementHandler.sendMsgButton.addEventListener("click", test.sendMessageViaDirectPeerConnection);
+FudgeNetwork.UiElementHandler.switchModeButton.addEventListener("click", switchServerMode);
+FudgeNetwork.UiElementHandler.stopSignalingServer.addEventListener("click", turnOffSignalingServer);
+FudgeNetwork.UiElementHandler.broadcastButton.addEventListener("click", broadcastMessageToClients);
 function broadcastMessageToClients() {
     AuthoritativeSignalingServer_1.AuthoritativeSignalingServer.authoritativeServerEntity.broadcastMessageToAllConnectedClients("TEST");
 }
 function switchServerMode() {
-    let switchbutton = UiElementHandler_1.UiElementHandler.switchModeButton;
+    let switchbutton = FudgeNetwork.UiElementHandler.switchModeButton;
     if (!asMode) {
         switchbutton.textContent = "Switch To P2P Mode";
-        UiElementHandler_1.UiElementHandler.peerToPeerHtmlElements.style.display = "none";
-        UiElementHandler_1.UiElementHandler.authoritativeElements.style.display = "block";
+        FudgeNetwork.UiElementHandler.peerToPeerHtmlElements.style.display = "none";
+        FudgeNetwork.UiElementHandler.authoritativeElements.style.display = "block";
         asMode = true;
     }
     else {
         switchbutton.textContent = "Switch To Authoritative Mode";
-        UiElementHandler_1.UiElementHandler.peerToPeerHtmlElements.style.display = "block";
-        UiElementHandler_1.UiElementHandler.authoritativeElements.style.display = "none";
+        FudgeNetwork.UiElementHandler.peerToPeerHtmlElements.style.display = "block";
+        FudgeNetwork.UiElementHandler.authoritativeElements.style.display = "none";
         asMode = false;
     }
 }
@@ -41,11 +41,11 @@ function startingUpSignalingServer() {
     else {
         PeerToPeerSignalingServer_1.PeerToPeerSignalingServer.startUpServer(9090);
     }
-    let startSignalingButton = UiElementHandler_1.UiElementHandler.startSignalingButton;
+    let startSignalingButton = FudgeNetwork.UiElementHandler.startSignalingButton;
     startSignalingButton.disabled = true;
-    let stopSignalingButton = UiElementHandler_1.UiElementHandler.stopSignalingServer;
+    let stopSignalingButton = FudgeNetwork.UiElementHandler.stopSignalingServer;
     stopSignalingButton.disabled = false;
-    let switchButton = UiElementHandler_1.UiElementHandler.switchModeButton;
+    let switchButton = FudgeNetwork.UiElementHandler.switchModeButton;
     switchButton.disabled = true;
 }
 function turnOffSignalingServer() {
@@ -56,15 +56,15 @@ function turnOffSignalingServer() {
     else {
         PeerToPeerSignalingServer_1.PeerToPeerSignalingServer.closeDownServer();
     }
-    let startSignalingButton = UiElementHandler_1.UiElementHandler.startSignalingButton;
+    let startSignalingButton = FudgeNetwork.UiElementHandler.startSignalingButton;
     startSignalingButton.disabled = false;
-    let stopSignalingButton = UiElementHandler_1.UiElementHandler.stopSignalingServer;
+    let stopSignalingButton = FudgeNetwork.UiElementHandler.stopSignalingServer;
     stopSignalingButton.disabled = true;
-    let switchButton = UiElementHandler_1.UiElementHandler.switchModeButton;
+    let switchButton = FudgeNetwork.UiElementHandler.switchModeButton;
     switchButton.disabled = false;
 }
 function connectToSignalingServer() {
-    test.signalingServerUrl = "ws://" + UiElementHandler_1.UiElementHandler.signalingUrl.value;
+    test.signalingServerUrl = "ws://" + FudgeNetwork.UiElementHandler.signalingUrl.value;
     test.connectToSpecifiedSignalingServer();
 }
 // function test2 (){
@@ -77,4 +77,4 @@ function connectToSignalingServer() {
 // function testbutton () {
 //     remote.getCurrentWindow().loadURL('https://github.com')
 // }
-// UiElementHandler.signalingSubmit.addEventListener("click", testbutton);
+// FudgeNetwork.UiElementHandler.signalingSubmit.addEventListener("click", testbutton);

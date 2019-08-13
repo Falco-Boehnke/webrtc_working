@@ -1,8 +1,8 @@
 "use strict";
 // import { MessageBase } from ".";
 // import * as TYPES from "./../DataCollectors/Enumerators/EnumeratorCollection";
-var NetworkMessages;
-(function (NetworkMessages) {
+var FudgeNetwork;
+(function (FudgeNetwork) {
     class LoginRequest {
         constructor(_originatorId, _loginUserName) {
             this.messageType = NetworkTypes.MESSAGE_TYPE.LOGIN_REQUEST;
@@ -11,5 +11,5 @@ var NetworkMessages;
             this.originatorId = _originatorId;
         }
     }
-    NetworkMessages.LoginRequest = LoginRequest;
-})(NetworkMessages || (NetworkMessages = {}));
+    FudgeNetwork.LoginRequest = LoginRequest;
+})(FudgeNetwork || (FudgeNetwork = {}));

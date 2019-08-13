@@ -1,7 +1,5 @@
-// import { MessageBase } from ".";
-// import * as TYPES from "./../DataCollectors/Enumerators/EnumeratorCollection";
-namespace NetworkMessages {
-    export class IceCandidate implements NetworkMessages.MessageBase {
+namespace FudgeNetwork {
+    export class IceCandidate implements MessageBase {
 
         public originatorId: string;
         public targetId: string;

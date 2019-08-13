@@ -1,17 +1,13 @@
 "use strict";
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const WebSocket = __importStar(require("ws"));
-// import * as NetworkMessages from "../NetworkMessages";
+const ws_1 = __importDefault(require("ws"));
+// import * as FudgeNetwork.from "../FudgeNetwork.;
 // import * as TYPES from "../DataCollectors/Enumerators/EnumeratorCollection";
-const Client_1 = require("../DataCollectors/Client");
-const AuthoritativeServerEntity_1 = require("./AuthoritativeServerEntity");
+// import { FudgeNetwork.Client } from "../DataCollectors/FudgeNetwork.Client";
+// import { AuthoritativeServerEntity } from "./AuthoritativeServerEntity";
 class AuthoritativeSignalingServer {
     // TODO Check if event.type can be used for identification instead => It cannot
     static serverHandleMessageType(_message, _websocketClient) {
@@ -50,11 +46,11 @@ class AuthoritativeSignalingServer {
             const clientBeingLoggedIn = AuthoritativeSignalingServer.searchUserByWebsocketConnectionAndReturnUser(_websocketConnection, AuthoritativeSignalingServer.connectedClientsCollection);
             if (clientBeingLoggedIn != null) {
                 clientBeingLoggedIn.userName = _messageData.loginUserName;
-                AuthoritativeSignalingServer.sendTo(_websocketConnection, new NetworkMessages.LoginResponse(true, clientBeingLoggedIn.id, clientBeingLoggedIn.userName));
+                AuthoritativeSignalingServer.sendTo(_websocketConnection, new FudgeNetwork.LoginResponse(true, clientBeingLoggedIn.id, clientBeingLoggedIn.userName));
             }
         }
         else {
-            AuthoritativeSignalingServer.sendTo(_websocketConnection, new NetworkMessages.LoginResponse(false, "", ""));
+            AuthoritativeSignalingServer.sendTo(_websocketConnection, new FudgeNetwork.LoginResponse(false, "", ""));
             usernameTaken = true;
             console.log("UsernameTaken");
         }
@@ -63,7 +59,7 @@ class AuthoritativeSignalingServer {
         console.log("Sending offer to: ", _messageData.userNameToConnectTo);
         const requestedClient = AuthoritativeSignalingServer.searchForPropertyValueInCollection(_messageData.userNameToConnectTo, "userName", AuthoritativeSignalingServer.connectedClientsCollection);
         if (requestedClient != null) {
-            const offerMessage = new NetworkMessages.RtcOffer(_messageData.originatorId, requestedClient.userName, _messageData.offer);
+            const offerMessage = new FudgeNetwork.RtcOffer(_messageData.originatorId, requestedClient.userName, _messageData.offer);
             AuthoritativeSignalingServer.sendTo(requestedClient.clientConnection, offerMessage);
         }
         else {
@@ -99,12 +95,13 @@ AuthoritativeSignalingServer.connectedClientsCollection = new Array();
 AuthoritativeSignalingServer.startUpServer = (_serverPort) => {
     console.log(_serverPort);
     if (!_serverPort) {
-        AuthoritativeSignalingServer.websocketServer = new WebSocket.Server({ port: 8080 });
+        AuthoritativeSignalingServer.websocketServer = new ws_1.default.Server({ port: 8080 });
     }
     else {
-        AuthoritativeSignalingServer.websocketServer = new WebSocket.Server({ port: _serverPort });
+        AuthoritativeSignalingServer.websocketServer = new ws_1.default.Server({ port: _serverPort });
     }
-    AuthoritativeSignalingServer.authoritativeServerEntity = new AuthoritativeServerEntity_1.AuthoritativeServerEntity();
+    AuthoritativeSignalingServer.authoritativeServerEntity = new FudgeNetwork.AuthoritativeServerEntity();
+    AuthoritativeSignalingServer.authoritativeServerEntity.signalingServer = AuthoritativeSignalingServer;
     AuthoritativeSignalingServer.serverEventHandler();
 };
 AuthoritativeSignalingServer.closeDownServer = () => {
@@ -114,8 +111,8 @@ AuthoritativeSignalingServer.serverEventHandler = () => {
     AuthoritativeSignalingServer.websocketServer.on("connection", (_websocketClient) => {
         console.log("User connected to autho-SignalingServer");
         const uniqueIdOnConnection = AuthoritativeSignalingServer.createID();
-        const freshlyConnectedClient = new Client_1.Client(_websocketClient, uniqueIdOnConnection);
-        AuthoritativeSignalingServer.sendTo(_websocketClient, new NetworkMessages.IdAssigned(uniqueIdOnConnection));
+        const freshlyConnectedClient = new FudgeNetwork.Client(_websocketClient, uniqueIdOnConnection);
+        AuthoritativeSignalingServer.sendTo(_websocketClient, new FudgeNetwork.IdAssigned(uniqueIdOnConnection));
         AuthoritativeSignalingServer.connectedClientsCollection.push(freshlyConnectedClient);
         AuthoritativeSignalingServer.authoritativeServerEntity.collectClientCreatePeerConnectionAndCreateOffer(freshlyConnectedClient);
         _websocketClient.on("message", (_message) => {
@@ -125,7 +122,7 @@ AuthoritativeSignalingServer.serverEventHandler = () => {
             console.error("Error at connection", error);
             for (let i = 0; i < AuthoritativeSignalingServer.connectedClientsCollection.length; i++) {
                 if (AuthoritativeSignalingServer.connectedClientsCollection[i].clientConnection === _websocketClient) {
-                    console.log("Client found, deleting");
+                    console.log("FudgeNetwork.Client found, deleting");
                     AuthoritativeSignalingServer.connectedClientsCollection.splice(i, 1);
                     console.log(AuthoritativeSignalingServer.connectedClientsCollection);
                 }

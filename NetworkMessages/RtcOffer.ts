@@ -1,7 +1,7 @@
 // import { MessageBase } from ".";
 // import * as TYPES from "./../DataCollectors/Enumerators/EnumeratorCollection";
-namespace NetworkMessages {
-    export class RtcOffer implements NetworkMessages.MessageBase {
+namespace FudgeNetwork {
+    export class RtcOffer implements MessageBase {
 
         public originatorId: string;
         public messageType: NetworkTypes.MESSAGE_TYPE = NetworkTypes.MESSAGE_TYPE.RTC_OFFER;

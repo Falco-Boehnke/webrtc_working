@@ -1,7 +1,5 @@
-// import { MessageBase } from ".";
-// import * as TYPES from "./../DataCollectors/Enumerators/EnumeratorCollection";
-namespace NetworkMessages {
-    export class LoginResponse implements NetworkMessages.MessageBase {
+namespace FudgeNetwork {
+    export class LoginResponse implements MessageBase  {
         public originatorId: string;
         public originatorUsername: string;
         public messageType: NetworkTypes.MESSAGE_TYPE = NetworkTypes.MESSAGE_TYPE.LOGIN_RESPONSE;

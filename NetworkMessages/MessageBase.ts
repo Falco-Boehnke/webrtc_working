@@ -1,4 +1,4 @@
-namespace NetworkMessages{
+namespace FudgeNetwork{
 
 export interface MessageBase {
 
