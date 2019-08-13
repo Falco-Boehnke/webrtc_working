@@ -1,6 +1,6 @@
 import { UiElementHandler } from "./DataCollectors/UiElementHandler";
 
-import * as TYPES from "./DataCollectors/Enumerators/EnumeratorCollection";
+// import * as TYPES from "./DataCollectors/Enumerators/EnumeratorCollection";
 import * as NetworkMessages from "./NetworkMessages";
 
 export class NetworkConnectionManager {
