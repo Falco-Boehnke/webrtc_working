@@ -2,11 +2,16 @@
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const ws_1 = __importDefault(require("ws"));
-// import * as FudgeNetwork.from "../FudgeNetwork.;
-// import * as TYPES from "../DataCollectors/Enumerators/EnumeratorCollection";
-// import { FudgeNetwork.Client } from "../DataCollectors/FudgeNetwork.Client";
+const FudgeNetwork = __importStar(require("./../index"));
 class PeerToPeerSignalingServer {
     // TODO Check if event.type can be used for identification instead => It cannot
     static serverHandleMessageType(_message, _websocketClient) {
@@ -183,4 +188,13 @@ PeerToPeerSignalingServer.searchUserByWebsocketConnectionAndReturnUser = (_webso
 };
 exports.PeerToPeerSignalingServer = PeerToPeerSignalingServer;
 // TODO call this only when starting server via node
-// PeerToPeerSignalingServer.startUpServer();
+//   PeerToPeerSignalingServer.startUpServer();
+function initServerFromCommandLine() {
+    process.argv.forEach(function (val, index, array) {
+        if (val === "NodeServer") {
+            PeerToPeerSignalingServer.startUpServer();
+            return;
+        }
+    });
+}
+initServerFromCommandLine();

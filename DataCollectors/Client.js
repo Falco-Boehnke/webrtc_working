@@ -1,16 +1,14 @@
 "use strict";
-var FudgeNetwork;
-(function (FudgeNetwork) {
-    class Client {
-        // public connectedRoom: ServerRoom | null;
-        constructor(websocketConnection, uniqueClientId, loginName) {
-            this.clientConnection = websocketConnection || null;
-            this.peerConnection = new RTCPeerConnection();
-            this.dataChannel = this.peerConnection.createDataChannel("placeholder");
-            this.id = uniqueClientId || "";
-            this.userName = loginName || "";
-            // this.connectedRoom = connectedToRoom || null;
-        }
+Object.defineProperty(exports, "__esModule", { value: true });
+class Client {
+    // public connectedRoom: ServerRoom | null;
+    constructor(websocketConnection, uniqueClientId, loginName) {
+        this.clientConnection = websocketConnection || null;
+        this.peerConnection = null;
+        this.dataChannel = null;
+        this.id = uniqueClientId || "";
+        this.userName = loginName || "";
+        // this.connectedRoom = connectedToRoom || null;
     }
-    FudgeNetwork.Client = Client;
-})(FudgeNetwork || (FudgeNetwork = {}));
+}
+exports.Client = Client;

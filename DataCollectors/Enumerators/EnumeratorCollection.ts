@@ -1,5 +1,3 @@
-namespace FudgeNetwork {
-
     export enum MESSAGE_TYPE {
         UNDEFINED = "undefined",
         ID_ASSIGNED = "id_assigned",
@@ -25,5 +23,5 @@ namespace FudgeNetwork {
         MOVEMENT_VALUE = "movement_value"
        
     }
-}
+
 

@@ -1,12 +1,9 @@
 import WebSocket from "ws"; 
-// import * as FudgeNetwork.from "../FudgeNetwork.;
-// import * as TYPES from "../DataCollectors/Enumerators/EnumeratorCollection";
-// import { FudgeNetwork.Client } from "../DataCollectors/FudgeNetwork.Client";
+import * as FudgeNetwork from "./../index";
 
 export class PeerToPeerSignalingServer {
     public static websocketServer: WebSocket.Server;
     public static connectedClientsCollection: FudgeNetwork.Client[] = new Array();
-
 
     public static startUpServer = (_serverPort?: number) => {
         console.log(_serverPort);
@@ -214,4 +211,15 @@ export class PeerToPeerSignalingServer {
 }
 
 // TODO call this only when starting server via node
-// PeerToPeerSignalingServer.startUpServer();
+//   PeerToPeerSignalingServer.startUpServer();
+function initServerFromCommandLine(): void{
+    process.argv.forEach(function (val, index, array) {
+        if(val === "NodeServer")
+        {
+            PeerToPeerSignalingServer.startUpServer();
+            return;
+        }
+      });
+}
+
+initServerFromCommandLine();

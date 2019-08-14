@@ -1,4 +1,5 @@
 import WebSocket from "ws";
+import * as FudgeNetwork from "./../index";
 export class AuthoritativeSignalingServer {
     public static websocketServer: WebSocket.Server;
     public static connectedClientsCollection: FudgeNetwork.Client[] = new Array();
@@ -203,5 +204,4 @@ export class AuthoritativeSignalingServer {
         return AuthoritativeSignalingServer.searchForPropertyValueInCollection(_websocketConnectionToSearchFor, "clientConnection", _collectionToSearch);
     }
 }
-
-// AuthoritativeSignalingServer.startUpServer();
+//  AuthoritativeSignalingServer.startUpServer();

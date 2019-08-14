@@ -2,8 +2,16 @@
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const ws_1 = __importDefault(require("ws"));
+const FudgeNetwork = __importStar(require("./../index"));
 class AuthoritativeSignalingServer {
     // TODO Check if event.type can be used for identification instead => It cannot
     static serverHandleMessageType(_message, _websocketClient) {
@@ -172,4 +180,4 @@ AuthoritativeSignalingServer.searchUserByWebsocketConnectionAndReturnUser = (_we
     return AuthoritativeSignalingServer.searchForPropertyValueInCollection(_websocketConnectionToSearchFor, "clientConnection", _collectionToSearch);
 };
 exports.AuthoritativeSignalingServer = AuthoritativeSignalingServer;
-// AuthoritativeSignalingServer.startUpServer();
+//  AuthoritativeSignalingServer.startUpServer();

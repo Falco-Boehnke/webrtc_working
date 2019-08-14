@@ -1,4 +1,5 @@
-namespace FudgeNetwork {
+    import * as FudgeNetwork from "./../index";
+    
     export class NetworkConnectionManager {
         public ws!: WebSocket;
         public signalingServerUrl: string = "ws://localhost:8080";
@@ -62,8 +63,8 @@ namespace FudgeNetwork {
         }
 
         public sendMessageViaDirectPeerConnection = () => {
-            let message: PeerMessageSimpleText = new PeerMessageSimpleText(this.localId, UiElementHandler.msgInput.value);
-            UiElementHandler.chatbox.innerHTML += "\n" + this.localUserName + ": " + message;
+            let message: FudgeNetwork.PeerMessageSimpleText = new FudgeNetwork.PeerMessageSimpleText(this.localId, FudgeNetwork.UiElementHandler.msgInput.value);
+            FudgeNetwork.UiElementHandler.chatbox.innerHTML += "\n" + this.localUserName + ": " + message;
             let stringifiedMessage: string = JSON.stringify(message);
 
             if (this.isInitiator && this.localDataChannel) {
@@ -84,8 +85,8 @@ namespace FudgeNetwork {
         }
 
         public checkChosenUsernameAndCreateLoginRequest = (): void => {
-            if (UiElementHandler.loginNameInput != null) {
-                this.localUserName = UiElementHandler.loginNameInput.value;
+            if (FudgeNetwork.UiElementHandler.loginNameInput != null) {
+                this.localUserName = FudgeNetwork.UiElementHandler.loginNameInput.value;
             }
             else {
                 console.error("UI element missing: Loginname Input field");
@@ -100,7 +101,7 @@ namespace FudgeNetwork {
 
 
         public checkUsernameToConnectToAndInitiateConnection = (): void => {
-            const callToUsername: string = UiElementHandler.usernameToConnectTo.value;
+            const callToUsername: string = FudgeNetwork.UiElementHandler.usernameToConnectTo.value;
             if (callToUsername.length === 0) {
                 console.error("Enter a username 😉");
                 return;
@@ -214,7 +215,7 @@ namespace FudgeNetwork {
         // tslint:disable-next-line: no-any
         private sendNewIceCandidatesToPeer = ({ candidate }: any) => {
             console.log("Sending ICECandidates from: ", this.localId);
-            let message: NetworkMessageIceCandidate = new NetworkMessageIceCandidate(this.localId, this.remoteClientId, candidate);
+            let message: FudgeNetwork.NetworkMessageIceCandidate = new FudgeNetwork.NetworkMessageIceCandidate(this.localId, this.remoteClientId, candidate);
             this.sendMessage(message);
 
         }
@@ -259,7 +260,7 @@ namespace FudgeNetwork {
             // console.log("Signaling state:", this.connection.signalingState);
         }
 
-        private handleCandidate = async (_receivedIceMessage: NetworkMessageIceCandidate) => {
+        private handleCandidate = async (_receivedIceMessage: FudgeNetwork.NetworkMessageIceCandidate) => {
             if (_receivedIceMessage.candidate) {
                 // console.log("ASyncly adding candidates");
                 await this.connection.addIceCandidate(_receivedIceMessage.candidate);
@@ -282,7 +283,7 @@ namespace FudgeNetwork {
         }
 
         private enableKeyboardPressesForSending = () => {
-            let browser: Document = UiElementHandler.electronWindow;
+            let browser: Document = FudgeNetwork.UiElementHandler.electronWindow;
             browser.addEventListener("keydown", (event: KeyboardEvent) => {
                 if (event.keyCode == 27) {
                     this.sendDisconnectRequest();
@@ -294,12 +295,12 @@ namespace FudgeNetwork {
         }
 
         private sendDisconnectRequest = () => {
-            let dcRequest: PeerMessageDisconnectClient = new PeerMessageDisconnectClient(this.localId);
+            let dcRequest: FudgeNetwork.PeerMessageDisconnectClient = new FudgeNetwork.PeerMessageDisconnectClient(this.localId);
             this.sendPeerMessageToServer(dcRequest);
         }
         private sendKeyPress = (_keyCode: number) => {
             if (this.receivedDataChannelFromRemote != undefined) {
-                let keyPressMessage: PeerMessageKeysInput = new PeerMessageKeysInput(this.localId, _keyCode);
+                let keyPressMessage: FudgeNetwork.PeerMessageKeysInput = new FudgeNetwork.PeerMessageKeysInput(this.localId, _keyCode);
                 this.sendPeerMessageToServer(keyPressMessage);
             }
         }
@@ -340,7 +341,6 @@ namespace FudgeNetwork {
 
         private dataChannelMessageHandler = (_messageEvent: MessageEvent) => {
             // TODO Fix it so that both clients have names instead of IDs for usage
-            UiElementHandler.chatbox.innerHTML += "\n" + this.remoteClientId + ": " + _messageEvent.data;
+            FudgeNetwork.UiElementHandler.chatbox.innerHTML += "\n" + this.remoteClientId + ": " + _messageEvent.data;
         }
     }
-}

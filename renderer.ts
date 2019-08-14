@@ -1,7 +1,4 @@
-// import { NetworkConnectionManager } from "./NetworkConnectionManager";
-// import { FudgeNetwork.UiElementHandler } from "./DataCollectors/FudgeNetwork.UiElementHandler";
-import { AuthoritativeSignalingServer } from "./Server/AuthoritativeSignalingServer";
-import { PeerToPeerSignalingServer } from "./Server/PeerToPeerSignalingServer";
+import * as FudgeNetwork from "./index";
 
 
 
@@ -23,7 +20,7 @@ FudgeNetwork.UiElementHandler.broadcastButton.addEventListener("click", broadcas
 
 
 function broadcastMessageToClients(): void {
-    AuthoritativeSignalingServer.authoritativeServerEntity.broadcastMessageToAllConnectedClients("TEST");
+    FudgeNetwork.AuthoritativeSignalingServer.authoritativeServerEntity.broadcastMessageToAllConnectedClients("TEST");
 }
 
 
@@ -49,10 +46,10 @@ function switchServerMode(): void {
 function startingUpSignalingServer(): void {
     console.log("Turning server ONLINE");
     if (asMode) {
-        AuthoritativeSignalingServer.startUpServer(9090);
+        FudgeNetwork.AuthoritativeSignalingServer.startUpServer(9090);
     }
     else {
-        PeerToPeerSignalingServer.startUpServer(9090);
+        FudgeNetwork.PeerToPeerSignalingServer.startUpServer(9090);
     }
     let startSignalingButton: HTMLButtonElement = FudgeNetwork.UiElementHandler.startSignalingButton as HTMLButtonElement;
     startSignalingButton.hidden = true;
@@ -66,10 +63,10 @@ function turnOffSignalingServer(): void {
     console.log("Turning server offline");
     if (asMode) {
 
-        AuthoritativeSignalingServer.closeDownServer();
+        FudgeNetwork.AuthoritativeSignalingServer.closeDownServer();
     }
     else {
-        PeerToPeerSignalingServer.closeDownServer();
+        FudgeNetwork.PeerToPeerSignalingServer.closeDownServer();
     }
 
     let startSignalingButton: HTMLButtonElement = FudgeNetwork.UiElementHandler.startSignalingButton as HTMLButtonElement;
