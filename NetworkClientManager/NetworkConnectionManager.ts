@@ -89,7 +89,7 @@ export class NetworkConnectionManager {
         try {
             let dcRequest: FudgeNetwork.PeerMessageDisconnectClient = new FudgeNetwork.PeerMessageDisconnectClient(this.ownClientId);
             this.sendPeerMessageToServer(dcRequest);
-        } catch (error) { console.error("Unexpected Error: Disconnect Request", error) }
+        } catch (error) { console.error("Unexpected Error: Disconnect Request", error); }
 
     }
     public sendKeyPress = (_keyCode: number) => {
@@ -98,7 +98,7 @@ export class NetworkConnectionManager {
                 let keyPressMessage: FudgeNetwork.PeerMessageKeysInput = new FudgeNetwork.PeerMessageKeysInput(this.ownClientId, _keyCode);
                 this.sendPeerMessageToServer(keyPressMessage);
             }
-        } catch (error) { console.error("Unexpected Error: Send Key Press", error) };
+        } catch (error) { console.error("Unexpected Error: Send Key Press", error); }
     }
 
     public enableKeyboardPressesForSending = (_keyCode: number) => {
@@ -115,8 +115,7 @@ export class NetworkConnectionManager {
         try {
             const loginMessage: FudgeNetwork.NetworkMessageLoginRequest = new FudgeNetwork.NetworkMessageLoginRequest(this.ownClientId, _requestingUsername);
             this.sendMessage(loginMessage);
-        }
-        catch (error) {
+        } catch (error) {
             console.error("Unexpected error: Sending Login Request", error);
         }
     }
@@ -178,7 +177,7 @@ export class NetworkConnectionManager {
         try {
             this.ownPeerConnection = new RTCPeerConnection(this.configuration);
             this.ownPeerConnection.addEventListener("icecandidate", this.sendNewIceCandidatesToPeer);
-        } catch (error) { console.error("Unexpecte Error: Creating Client Peerconnection", error) }
+        } catch (error) { console.error("Unexpecte Error: Creating Client Peerconnection", error); }
     }
 
     private assignIdAndSendConfirmation = (_message: FudgeNetwork.NetworkMessageIdAssigned) => {
@@ -313,8 +312,7 @@ export class NetworkConnectionManager {
         if (_receivedIceMessage.candidate) {
             try {
                 await this.ownPeerConnection.addIceCandidate(_receivedIceMessage.candidate);
-            }
-            catch (error) {
+            } catch (error) {
                 console.error("Unexpected Error: Adding Ice Candidate", error);
             }
         }
@@ -328,7 +326,7 @@ export class NetworkConnectionManager {
             // this.remoteEventPeerDataChannel.addEventListener("open", this.enableKeyboardPressesForSending);
             this.remoteEventPeerDataChannel.addEventListener("close", this.dataChannelStatusChangeHandler);
         }
-        else{
+        else {
             console.error("Unexpected Error: RemoteDatachannel");
         }
     }
@@ -371,6 +369,7 @@ export class NetworkConnectionManager {
 
     private dataChannelMessageHandler = (_messageEvent: MessageEvent) => {
         if (_messageEvent.data) {
+            // tslint:disable-next-line: no-any
             let parsedObject: any = this.parseReceivedMessageAndReturnObject(_messageEvent.data);
             FudgeNetwork.UiElementHandler.chatbox.innerHTML += "\n" + this.remoteClientId + ": " + parsedObject.messageData;
         }
