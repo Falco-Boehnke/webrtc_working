@@ -284,19 +284,38 @@ namespace FudgeNetwork {
         private enableKeyboardPressesForSending = () => {
             let browser: Document = UiElementHandler.electronWindow;
             browser.addEventListener("keydown", (event: KeyboardEvent) => {
-                console.log("Key pressed");
-                let x: string = JSON.stringify(event.keyCode);
-                this.sendKeyPress(x);
+                if (event.keyCode == 27) {
+                    this.sendDisconnectRequest();
+                }
+                else {
+                    this.sendKeyPress(event.keyCode);
+                }
             });
         }
 
-        private sendKeyPress = (_keyCode: string) => {
+        private sendDisconnectRequest = () => {
+            let dcRequest: PeerMessageDisconnectClient = new PeerMessageDisconnectClient(this.localId);
+            this.sendPeerMessageToServer(dcRequest);
+        }
+        private sendKeyPress = (_keyCode: number) => {
             if (this.receivedDataChannelFromRemote != undefined) {
-                console.log("Sending message");
-                this.receivedDataChannelFromRemote.send(_keyCode);
+                let keyPressMessage: PeerMessageKeysInput = new PeerMessageKeysInput(this.localId, _keyCode);
+                this.sendPeerMessageToServer(keyPressMessage);
             }
         }
 
+        private sendPeerMessageToServer = (_messageToSend: Object) => {
+            try {
+                let stringifiedMessage: string = JSON.stringify(_messageToSend);
+                if (this.receivedDataChannelFromRemote) {
+                    this.receivedDataChannelFromRemote.send(stringifiedMessage);
+                }
+            } catch (error) {
+                console.error("Error occured when stringifying PeerMessage");
+                console.error(error);
+            }
+
+        }
         private dataChannelStatusChangeHandler = (event: Event) => {
             //TODO Reconnection logic
             console.log("Channel Event happened", event);

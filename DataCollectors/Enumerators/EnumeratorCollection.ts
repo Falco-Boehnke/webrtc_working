@@ -9,7 +9,7 @@ namespace FudgeNetwork {
         RTC_ANSWER = "answer",
         ICE_CANDIDATE = "candidate",
         SERVER_ASSIGNMENT_REQUEST = "server_assignment_request",
-        SERVER_COMMAND = "server_command",
+        PEER_TO_SERVER_COMMAND = "server_command",
         PEER_TEXT_MESSAGE = "peer_text_message",
         SERVER_TO_PEER_MESSAGE = "server_to_peer_message"
     }

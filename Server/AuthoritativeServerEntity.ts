@@ -86,18 +86,42 @@ namespace FudgeNetwork {
         private dataChannelMessageHandler = (_message: MessageEvent) => {
             console.log("Message received", _message);
             // tslint:disable-next-line: no-any
-            let parsedMessage: any = JSON.parse(_message.data);
+            let parsedMessage: PeerMessageTemplate = JSON.parse(_message.data);
 
-            let numberM: number = 40;
-            try {
-                numberM = +parsedMessage;
-            } catch (error) {
-                console.log(error);
+            switch (parsedMessage.messageType) {
+                case MESSAGE_TYPE.PEER_TO_SERVER_COMMAND:
+                    this.handleServerCommands(parsedMessage);
             }
-            console.log(numberM);
-            UiElementHandler.moveableBoxElement.textContent = numberM + "";
-
         }
+
+        private handleServerCommands = (_commandMessage: PeerMessageTemplate) => {
+            switch (_commandMessage.commandType) {
+                case SERVER_COMMAND_TYPE.DISCONNECT_CLIENT:
+                    this.disconnectClientByOwnCommand(_commandMessage);
+                    break;
+                case SERVER_COMMAND_TYPE.KEYS_INPUT:
+                    this.handleKeyInputFromClient(<PeerMessageKeysInput>_commandMessage);
+                    break;
+
+                default:
+                    console.log("No idea what message this is", _commandMessage);
+                    break;
+            }
+        }
+
+
+        private disconnectClientByOwnCommand = (_commandMessage: PeerMessageDisconnectClient) => { 
+            let clientToDisconnect: Client = this.searchUserByUserIdAndReturnUser(_commandMessage.originatorId, this.notYetPeerConnectedClientCollection);
+            clientToDisconnect.dataChannel.close();
+        }
+
+        private handleKeyInputFromClient = (_commandMessage: PeerMessageKeysInput) => {
+            console.log(_commandMessage);
+            if (UiElementHandler.moveableBoxElement) {
+                UiElementHandler.moveableBoxElement.textContent = _commandMessage.pressedKey + "";
+            }
+        }
+
 
         private initiateConnectionByCreatingDataChannelAndCreatingOffer = (_clientToConnect: Client): void => {
             console.log("Initiating connection to : " + _clientToConnect);

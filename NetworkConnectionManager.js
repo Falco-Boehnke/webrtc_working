@@ -223,15 +223,34 @@ var FudgeNetwork;
             this.enableKeyboardPressesForSending = () => {
                 let browser = FudgeNetwork.UiElementHandler.electronWindow;
                 browser.addEventListener("keydown", (event) => {
-                    console.log("Key pressed");
-                    let x = JSON.stringify(event.keyCode);
-                    this.sendKeyPress(x);
+                    if (event.keyCode == 27) {
+                        this.sendDisconnectRequest();
+                    }
+                    else {
+                        this.sendKeyPress(event.keyCode);
+                    }
                 });
+            };
+            this.sendDisconnectRequest = () => {
+                let dcRequest = new FudgeNetwork.PeerMessageDisconnectClient(this.localId);
+                this.sendPeerMessageToServer(dcRequest);
             };
             this.sendKeyPress = (_keyCode) => {
                 if (this.receivedDataChannelFromRemote != undefined) {
-                    console.log("Sending message");
-                    this.receivedDataChannelFromRemote.send(_keyCode);
+                    let keyPressMessage = new FudgeNetwork.PeerMessageKeysInput(this.localId, _keyCode);
+                    this.sendPeerMessageToServer(keyPressMessage);
+                }
+            };
+            this.sendPeerMessageToServer = (_messageToSend) => {
+                try {
+                    let stringifiedMessage = JSON.stringify(_messageToSend);
+                    if (this.receivedDataChannelFromRemote) {
+                        this.receivedDataChannelFromRemote.send(stringifiedMessage);
+                    }
+                }
+                catch (error) {
+                    console.error("Error occured when stringifying PeerMessage");
+                    console.error(error);
                 }
             };
             this.dataChannelStatusChangeHandler = (event) => {

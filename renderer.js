@@ -67,10 +67,6 @@ function connectToSignalingServer() {
     test.signalingServerUrl = "ws://" + FudgeNetwork.UiElementHandler.signalingUrl.value;
     test.connectToSpecifiedSignalingServer();
 }
-// function test2 (){
-//     let test2 = require("./Server/PeerToPeerSignalingServer");
-// }
-// test2();
 // Changing HTML pages restarts the renderer process, causing connection loss on networking
 // so not doable this way. Single page required or different way to change page (testing only so not that important)
 // const { remote } = require('electron')

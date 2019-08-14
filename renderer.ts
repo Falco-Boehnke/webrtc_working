@@ -5,7 +5,7 @@ import { PeerToPeerSignalingServer } from "./Server/PeerToPeerSignalingServer";
 
 
 
-let asMode = false;
+let asMode: boolean = false;
 const test: FudgeNetwork.NetworkConnectionManager = new FudgeNetwork.NetworkConnectionManager();
 
 
@@ -22,7 +22,7 @@ FudgeNetwork.UiElementHandler.broadcastButton.addEventListener("click", broadcas
 
 
 
-function broadcastMessageToClients(){
+function broadcastMessageToClients(): void {
     AuthoritativeSignalingServer.authoritativeServerEntity.broadcastMessageToAllConnectedClients("TEST");
 }
 
@@ -65,7 +65,7 @@ function startingUpSignalingServer(): void {
 function turnOffSignalingServer(): void {
     console.log("Turning server offline");
     if (asMode) {
-        
+
         AuthoritativeSignalingServer.closeDownServer();
     }
     else {
@@ -83,11 +83,6 @@ function connectToSignalingServer(): void {
     test.signalingServerUrl = "ws://" + FudgeNetwork.UiElementHandler.signalingUrl.value;
     test.connectToSpecifiedSignalingServer();
 }
-
-// function test2 (){
-//     let test2 = require("./Server/PeerToPeerSignalingServer");
-// }
-// test2();
 
 // Changing HTML pages restarts the renderer process, causing connection loss on networking
 // so not doable this way. Single page required or different way to change page (testing only so not that important)

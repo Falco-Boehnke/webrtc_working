@@ -72,15 +72,33 @@ var FudgeNetwork;
                 console.log("Message received", _message);
                 // tslint:disable-next-line: no-any
                 let parsedMessage = JSON.parse(_message.data);
-                let numberM = 40;
-                try {
-                    numberM = +parsedMessage;
+                switch (parsedMessage.messageType) {
+                    case FudgeNetwork.MESSAGE_TYPE.PEER_TO_SERVER_COMMAND:
+                        this.handleServerCommands(parsedMessage);
                 }
-                catch (error) {
-                    console.log(error);
+            };
+            this.handleServerCommands = (_commandMessage) => {
+                switch (_commandMessage.commandType) {
+                    case FudgeNetwork.SERVER_COMMAND_TYPE.DISCONNECT_CLIENT:
+                        this.disconnectClientByOwnCommand(_commandMessage);
+                        break;
+                    case FudgeNetwork.SERVER_COMMAND_TYPE.KEYS_INPUT:
+                        this.handleKeyInputFromClient(_commandMessage);
+                        break;
+                    default:
+                        console.log("No idea what message this is", _commandMessage);
+                        break;
                 }
-                console.log(numberM);
-                FudgeNetwork.UiElementHandler.moveableBoxElement.textContent = numberM + "";
+            };
+            this.disconnectClientByOwnCommand = (_commandMessage) => {
+                let clientToDisconnect = this.searchUserByUserIdAndReturnUser(_commandMessage.originatorId, this.notYetPeerConnectedClientCollection);
+                clientToDisconnect.dataChannel.close();
+            };
+            this.handleKeyInputFromClient = (_commandMessage) => {
+                console.log(_commandMessage);
+                if (FudgeNetwork.UiElementHandler.moveableBoxElement) {
+                    FudgeNetwork.UiElementHandler.moveableBoxElement.textContent = _commandMessage.pressedKey + "";
+                }
             };
             this.initiateConnectionByCreatingDataChannelAndCreatingOffer = (_clientToConnect) => {
                 console.log("Initiating connection to : " + _clientToConnect);
