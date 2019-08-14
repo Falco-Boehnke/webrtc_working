@@ -97,7 +97,7 @@ export class NetworkConnectionManager {
         try {
             if (this.remoteEventPeerDataChannel != undefined) {
                 let keyPressMessage: FudgeNetwork.PeerMessageKeysInput = new FudgeNetwork.PeerMessageKeysInput(this.ownClientId, _keyCode);
-                let stringifiedObject: string = this.stringifyObjectForNetworkSending(keyPressMessage)
+                let stringifiedObject: string = this.stringifyObjectForNetworkSending(keyPressMessage);
                 this.sendPeerMessageToServer(stringifiedObject);
             }
         } catch (error) { console.error("Unexpected Error: Send Key Press", error); }
