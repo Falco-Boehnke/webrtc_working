@@ -24,54 +24,57 @@ class NetworkConnectionManager {
         //     let server_test = require("./Server/ServerMain");
         // }
         this.connectToSpecifiedSignalingServer = () => {
-            this.ws = new WebSocket(this.signalingServerUrl);
-            this.addWsEventListeners();
+            try {
+                this.webSocketConnectionToSignalingServer = new WebSocket(this.signalingServerUrl);
+                this.addWsEventListeners();
+            }
+            catch (error) {
+                console.log("Websocket Generation gescheitert");
+            }
         };
-        this.addWsEventListeners = () => {
-            this.ws.addEventListener("open", (_connOpen) => {
-                console.log("Conneced to the signaling server", _connOpen);
-            });
-            this.ws.addEventListener("error", (_err) => {
-                console.error(_err);
-            });
-            this.ws.addEventListener("message", (_receivedMessage) => {
-                this.parseMessageAndCallCorrespondingMessageHandler(_receivedMessage);
-            });
-        };
-        this.sendMessage = (message) => {
-            this.ws.send(JSON.stringify(message));
+        this.sendMessage = (_message) => {
+            let stringifiedObject = "";
+            try {
+                stringifiedObject = JSON.stringify(_message);
+            }
+            catch (error) {
+                console.error("JSON Parse failed", error);
+            }
+            if (this.webSocketConnectionToSignalingServer.readyState == 1) {
+                console.log("Message sennnnnnnnnnnnnnnnnnnnnnt");
+                this.webSocketConnectionToSignalingServer.send(stringifiedObject);
+            }
+            else {
+                console.error("Websocket Connection closed unexpectedly");
+            }
         };
         this.sendMessageViaDirectPeerConnection = () => {
-            let message = new FudgeNetwork.PeerMessageSimpleText(this.localId, FudgeNetwork.UiElementHandler.msgInput.value);
-            FudgeNetwork.UiElementHandler.chatbox.innerHTML += "\n" + this.localUserName + ": " + message;
+            let message = new FudgeNetwork.PeerMessageSimpleText(this.ownClientId, FudgeNetwork.UiElementHandler.msgInput.value);
+            FudgeNetwork.UiElementHandler.chatbox.innerHTML += "\n" + this.ownUserName + ": " + message;
             let stringifiedMessage = JSON.stringify(message);
-            if (this.isInitiator && this.localDataChannel) {
-                this.localDataChannel.send(stringifiedMessage);
+            if (this.isInitiator && this.ownPeerDataChannel) {
+                this.ownPeerDataChannel.send(stringifiedMessage);
             }
-            else if (!this.isInitiator && this.receivedDataChannelFromRemote) {
+            else if (!this.isInitiator && this.remoteEventPeerDataChannel) {
                 console.log("Sending Message via received Datachannel");
-                this.receivedDataChannelFromRemote.send(stringifiedMessage);
+                this.remoteEventPeerDataChannel.send(stringifiedMessage);
             }
             else {
                 console.error("Peer Connection undefined, connection likely lost");
             }
         };
-        this.createLoginRequestAndSendToServer = (_requestingUsername) => {
-            const loginMessage = new FudgeNetwork.NetworkMessageLoginRequest(this.localId, this.localUserName);
-            this.sendMessage(loginMessage);
-        };
         this.checkChosenUsernameAndCreateLoginRequest = () => {
             if (FudgeNetwork.UiElementHandler.loginNameInput != null) {
-                this.localUserName = FudgeNetwork.UiElementHandler.loginNameInput.value;
+                this.ownUserName = FudgeNetwork.UiElementHandler.loginNameInput.value;
             }
             else {
                 console.error("UI element missing: Loginname Input field");
             }
-            if (this.localUserName.length <= 0) {
+            if (this.ownUserName.length <= 0) {
                 console.log("Please enter username");
                 return;
             }
-            this.createLoginRequestAndSendToServer(this.localUserName);
+            this.createLoginRequestAndSendToServer(this.ownUserName);
         };
         this.checkUsernameToConnectToAndInitiateConnection = () => {
             const callToUsername = FudgeNetwork.UiElementHandler.usernameToConnectTo.value;
@@ -79,12 +82,24 @@ class NetworkConnectionManager {
                 console.error("Enter a username 😉");
                 return;
             }
-            // TODO Fehler ist das sich der answerer selbst die message schickt weil der
-            // Username zu dem es connected ist nicht richtig gepeichert wird
-            // Muss umwandeln zu IDs
             this.remoteClientId = callToUsername;
             console.log("Username to connect to: " + this.remoteClientId);
             this.initiateConnectionByCreatingDataChannelAndCreatingOffer(this.remoteClientId);
+        };
+        this.addWsEventListeners = () => {
+            this.webSocketConnectionToSignalingServer.addEventListener("open", (_connOpen) => {
+                console.log("Conneced to the signaling server", _connOpen);
+            });
+            this.webSocketConnectionToSignalingServer.addEventListener("error", (_err) => {
+                console.error(_err);
+            });
+            this.webSocketConnectionToSignalingServer.addEventListener("message", (_receivedMessage) => {
+                this.parseMessageAndCallCorrespondingMessageHandler(_receivedMessage);
+            });
+        };
+        this.createLoginRequestAndSendToServer = (_requestingUsername) => {
+            const loginMessage = new FudgeNetwork.NetworkMessageLoginRequest(this.ownClientId, this.ownUserName);
+            this.sendMessage(loginMessage);
         };
         this.parseMessageAndCallCorrespondingMessageHandler = (_receivedMessage) => {
             // tslint:disable-next-line: typedef
@@ -114,28 +129,28 @@ class NetworkConnectionManager {
         };
         this.createRTCPeerConnectionAndAddListeners = () => {
             console.log("Creating RTC Connection");
-            this.connection = new RTCPeerConnection(this.configuration);
-            this.connection.addEventListener("icecandidate", this.sendNewIceCandidatesToPeer);
+            this.ownPeerConnection = new RTCPeerConnection(this.configuration);
+            this.ownPeerConnection.addEventListener("icecandidate", this.sendNewIceCandidatesToPeer);
         };
         this.assignIdAndSendConfirmation = (_message) => {
-            this.localId = _message.assignedId;
-            this.sendMessage(new FudgeNetwork.NetworkMessageIdAssigned(this.localId));
+            this.ownClientId = _message.assignedId;
+            this.sendMessage(new FudgeNetwork.NetworkMessageIdAssigned(this.ownClientId));
         };
         this.initiateConnectionByCreatingDataChannelAndCreatingOffer = (_userNameForOffer) => {
             console.log("Creating Datachannel for connection and then creating offer");
             this.isInitiator = true;
-            this.localDataChannel = this.connection.createDataChannel("localDataChannel");
-            this.localDataChannel.addEventListener("open", this.dataChannelStatusChangeHandler);
-            this.localDataChannel.addEventListener("close", this.dataChannelStatusChangeHandler);
-            this.localDataChannel.addEventListener("message", this.dataChannelMessageHandler);
-            this.connection.createOffer()
+            this.ownPeerDataChannel = this.ownPeerConnection.createDataChannel("localDataChannel");
+            this.ownPeerDataChannel.addEventListener("open", this.dataChannelStatusChangeHandler);
+            this.ownPeerDataChannel.addEventListener("close", this.dataChannelStatusChangeHandler);
+            this.ownPeerDataChannel.addEventListener("message", this.dataChannelMessageHandler);
+            this.ownPeerConnection.createOffer()
                 .then(async (offer) => {
-                console.log("Beginning of createOffer in InitiateConnection, Expected 'stable', got:  ", this.connection.signalingState);
+                console.log("Beginning of createOffer in InitiateConnection, Expected 'stable', got:  ", this.ownPeerConnection.signalingState);
                 return offer;
             })
                 .then(async (offer) => {
-                await this.connection.setLocalDescription(offer);
-                console.log("Setting LocalDesc, Expected 'have-local-offer', got:  ", this.connection.signalingState);
+                await this.ownPeerConnection.setLocalDescription(offer);
+                console.log("Setting LocalDesc, Expected 'have-local-offer', got:  ", this.ownPeerConnection.signalingState);
             })
                 .then(() => {
                 this.createOfferMessageAndSendToRemote(_userNameForOffer);
@@ -145,21 +160,21 @@ class NetworkConnectionManager {
             });
         };
         this.createOfferMessageAndSendToRemote = (_userNameForOffer) => {
-            const offerMessage = new FudgeNetwork.NetworkMessageRtcOffer(this.localId, _userNameForOffer, this.connection.localDescription);
+            const offerMessage = new FudgeNetwork.NetworkMessageRtcOffer(this.ownClientId, _userNameForOffer, this.ownPeerConnection.localDescription);
             this.sendMessage(offerMessage);
-            console.log("Sent offer to remote peer, Expected 'have-local-offer', got:  ", this.connection.signalingState);
+            console.log("Sent offer to remote peer, Expected 'have-local-offer', got:  ", this.ownPeerConnection.signalingState);
         };
         this.createAnswerAndSendToRemote = (_remoteIdToAnswerTo) => {
             let ultimateAnswer;
             // Signaling example from here https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/createAnswer
-            this.connection.createAnswer()
+            this.ownPeerConnection.createAnswer()
                 .then(async (answer) => {
-                console.log("Create Answer before settign local desc: Expected 'have-remote-offer', got:  ", this.connection.signalingState);
+                console.log("Create Answer before settign local desc: Expected 'have-remote-offer', got:  ", this.ownPeerConnection.signalingState);
                 ultimateAnswer = new RTCSessionDescription(answer);
-                return await this.connection.setLocalDescription(ultimateAnswer);
+                return await this.ownPeerConnection.setLocalDescription(ultimateAnswer);
             }).then(async () => {
-                console.log("CreateAnswerFunction after setting local descp, Expected 'stable', got:  ", this.connection.signalingState);
-                const answerMessage = new FudgeNetwork.NetworkMessageRtcAnswer(this.localId, _remoteIdToAnswerTo, "", ultimateAnswer);
+                console.log("CreateAnswerFunction after setting local descp, Expected 'stable', got:  ", this.ownPeerConnection.signalingState);
+                const answerMessage = new FudgeNetwork.NetworkMessageRtcAnswer(this.ownClientId, _remoteIdToAnswerTo, "", ultimateAnswer);
                 console.log("AnswerObject: ", answerMessage);
                 await this.sendMessage(answerMessage);
             })
@@ -169,14 +184,14 @@ class NetworkConnectionManager {
         };
         // tslint:disable-next-line: no-any
         this.sendNewIceCandidatesToPeer = ({ candidate }) => {
-            console.log("Sending ICECandidates from: ", this.localId);
-            let message = new FudgeNetwork.NetworkMessageIceCandidate(this.localId, this.remoteClientId, candidate);
+            console.log("Sending ICECandidates from: ", this.ownClientId);
+            let message = new FudgeNetwork.NetworkMessageIceCandidate(this.ownClientId, this.remoteClientId, candidate);
             this.sendMessage(message);
         };
         this.loginValidAddUser = (_assignedId, _loginSuccess, _originatorUserName) => {
             if (_loginSuccess) {
-                this.localUserName = _originatorUserName;
-                console.log("Local Username: " + this.localUserName);
+                this.ownUserName = _originatorUserName;
+                console.log("Local Username: " + this.ownUserName);
             }
             else {
                 console.log("Login failed, username taken");
@@ -186,42 +201,42 @@ class NetworkConnectionManager {
         // DOMException: Failed to set remote offer sdp: Called in wrong state: STATE_SENTOFFER
         this.receiveOfferAndSetRemoteDescriptionThenCreateAndSendAnswer = (_offerMessage) => {
             console.log("Setting description on offer and sending answer to username: ", _offerMessage.userNameToConnectTo);
-            this.connection.addEventListener("datachannel", this.receiveDataChannel);
+            this.ownPeerConnection.addEventListener("datachannel", this.receiveDataChannel);
             this.remoteClientId = _offerMessage.originatorId;
             console.log("UserID to send answer to ", this.remoteClientId);
             let offerToSet = _offerMessage.offer;
             if (!offerToSet) {
                 return;
             }
-            this.connection.setRemoteDescription(new RTCSessionDescription(offerToSet))
+            this.ownPeerConnection.setRemoteDescription(new RTCSessionDescription(offerToSet))
                 .then(async () => {
-                console.log("Received Offer and Set Descirpton, Expected 'have-remote-offer', got:  ", this.connection.signalingState);
+                console.log("Received Offer and Set Descirpton, Expected 'have-remote-offer', got:  ", this.ownPeerConnection.signalingState);
                 await this.createAnswerAndSendToRemote(_offerMessage.originatorId);
             })
                 .catch(this.handleCreateAnswerError);
-            console.log("End of Function Receive offer, Expected 'stable', got:  ", this.connection.signalingState);
+            console.log("End of Function Receive offer, Expected 'stable', got:  ", this.ownPeerConnection.signalingState);
         };
         this.receiveAnswerAndSetRemoteDescription = (_localhostId, _answer) => {
             // console.log("Setting description as answer");
             let descriptionAnswer = new RTCSessionDescription(_answer);
             // console.log("Receiving Answer, setting remote desc Expected 'have-local-offer'|'have-remote-offer, got:  ", this.connection.signalingState);
-            this.connection.setRemoteDescription(descriptionAnswer);
+            this.ownPeerConnection.setRemoteDescription(descriptionAnswer);
             // console.log("Remote Description set");
             // console.log("Signaling state:", this.connection.signalingState);
         };
         this.handleCandidate = async (_receivedIceMessage) => {
             if (_receivedIceMessage.candidate) {
                 // console.log("ASyncly adding candidates");
-                await this.connection.addIceCandidate(_receivedIceMessage.candidate);
+                await this.ownPeerConnection.addIceCandidate(_receivedIceMessage.candidate);
             }
         };
         this.receiveDataChannel = (event) => {
             console.log("Receice Datachannel event");
-            this.receivedDataChannelFromRemote = event.channel;
-            if (this.receivedDataChannelFromRemote) {
-                this.receivedDataChannelFromRemote.addEventListener("message", this.dataChannelMessageHandler);
-                this.receivedDataChannelFromRemote.addEventListener("open", this.enableKeyboardPressesForSending);
-                this.receivedDataChannelFromRemote.addEventListener("close", this.dataChannelStatusChangeHandler);
+            this.remoteEventPeerDataChannel = event.channel;
+            if (this.remoteEventPeerDataChannel) {
+                this.remoteEventPeerDataChannel.addEventListener("message", this.dataChannelMessageHandler);
+                this.remoteEventPeerDataChannel.addEventListener("open", this.enableKeyboardPressesForSending);
+                this.remoteEventPeerDataChannel.addEventListener("close", this.dataChannelStatusChangeHandler);
             }
         };
         this.handleCreateAnswerError = (err) => {
@@ -239,20 +254,20 @@ class NetworkConnectionManager {
             });
         };
         this.sendDisconnectRequest = () => {
-            let dcRequest = new FudgeNetwork.PeerMessageDisconnectClient(this.localId);
+            let dcRequest = new FudgeNetwork.PeerMessageDisconnectClient(this.ownClientId);
             this.sendPeerMessageToServer(dcRequest);
         };
         this.sendKeyPress = (_keyCode) => {
-            if (this.receivedDataChannelFromRemote != undefined) {
-                let keyPressMessage = new FudgeNetwork.PeerMessageKeysInput(this.localId, _keyCode);
+            if (this.remoteEventPeerDataChannel != undefined) {
+                let keyPressMessage = new FudgeNetwork.PeerMessageKeysInput(this.ownClientId, _keyCode);
                 this.sendPeerMessageToServer(keyPressMessage);
             }
         };
         this.sendPeerMessageToServer = (_messageToSend) => {
             try {
                 let stringifiedMessage = JSON.stringify(_messageToSend);
-                if (this.receivedDataChannelFromRemote) {
-                    this.receivedDataChannelFromRemote.send(stringifiedMessage);
+                if (this.remoteEventPeerDataChannel) {
+                    this.remoteEventPeerDataChannel.send(stringifiedMessage);
                 }
             }
             catch (error) {
@@ -281,12 +296,11 @@ class NetworkConnectionManager {
             // TODO Fix it so that both clients have names instead of IDs for usage
             FudgeNetwork.UiElementHandler.chatbox.innerHTML += "\n" + this.remoteClientId + ": " + _messageEvent.data;
         };
-        this.localUserName = "";
-        this.localId = "undefined";
-        this.remoteConnection = null;
+        this.ownUserName = "";
+        this.ownClientId = "undefined";
         this.remoteClientId = "";
         this.isInitiator = false;
-        this.receivedDataChannelFromRemote = undefined;
+        this.remoteEventPeerDataChannel = undefined;
         this.createRTCPeerConnectionAndAddListeners();
     }
 }

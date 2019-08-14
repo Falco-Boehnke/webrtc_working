@@ -180,4 +180,4 @@ AuthoritativeSignalingServer.searchUserByWebsocketConnectionAndReturnUser = (_we
     return AuthoritativeSignalingServer.searchForPropertyValueInCollection(_websocketConnectionToSearchFor, "clientConnection", _collectionToSearch);
 };
 exports.AuthoritativeSignalingServer = AuthoritativeSignalingServer;
-//  AuthoritativeSignalingServer.startUpServer();
+// AuthoritativeSignalingServer.startUpServer();

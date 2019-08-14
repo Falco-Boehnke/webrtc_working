@@ -204,4 +204,5 @@ export class AuthoritativeSignalingServer {
         return AuthoritativeSignalingServer.searchForPropertyValueInCollection(_websocketConnectionToSearchFor, "clientConnection", _collectionToSearch);
     }
 }
-//  AuthoritativeSignalingServer.startUpServer();
+
+// AuthoritativeSignalingServer.startUpServer();

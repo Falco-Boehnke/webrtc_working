@@ -1,7 +1,5 @@
 import * as FudgeNetwork from "./index";
 
-
-
 let asMode: boolean = false;
 const test: FudgeNetwork.NetworkConnectionManager = new FudgeNetwork.NetworkConnectionManager();
 

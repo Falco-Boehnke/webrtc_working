@@ -8,8 +8,8 @@ export class Client {
     // public connectedRoom: ServerRoom | null;
 
     constructor(websocketConnection?: WebSocket,
-        uniqueClientId?: string,
-        loginName?: string) {
+                uniqueClientId?: string,
+                loginName?: string) {
 
         this.clientConnection = websocketConnection || null;
         this.peerConnection = null;
