@@ -33,34 +33,27 @@ class NetworkConnectionManager {
             }
         };
         this.sendMessage = (_message) => {
-            let stringifiedObject = "";
-            try {
-                stringifiedObject = JSON.stringify(_message);
-            }
-            catch (error) {
-                console.error("JSON Parse failed", error);
-            }
+            let stringifiedMessage = this.stringifyObjectForNetworkSending(_message);
             if (this.webSocketConnectionToSignalingServer.readyState == 1) {
-                console.log("Message sennnnnnnnnnnnnnnnnnnnnnt");
-                this.webSocketConnectionToSignalingServer.send(stringifiedObject);
+                this.webSocketConnectionToSignalingServer.send(stringifiedMessage);
             }
             else {
                 console.error("Websocket Connection closed unexpectedly");
             }
         };
         this.sendMessageViaDirectPeerConnection = () => {
-            let message = new FudgeNetwork.PeerMessageSimpleText(this.ownClientId, FudgeNetwork.UiElementHandler.msgInput.value);
-            FudgeNetwork.UiElementHandler.chatbox.innerHTML += "\n" + this.ownUserName + ": " + message;
-            let stringifiedMessage = JSON.stringify(message);
+            let messageObject = new FudgeNetwork.PeerMessageSimpleText(this.ownClientId, FudgeNetwork.UiElementHandler.msgInput.value);
+            FudgeNetwork.UiElementHandler.chatbox.innerHTML += "\n" + this.ownUserName + ": " + messageObject.messageData;
+            let stringifiedMessage = this.stringifyObjectForNetworkSending(messageObject);
             if (this.isInitiator && this.ownPeerDataChannel) {
                 this.ownPeerDataChannel.send(stringifiedMessage);
             }
-            else if (!this.isInitiator && this.remoteEventPeerDataChannel) {
+            else if (!this.isInitiator && this.remoteEventPeerDataChannel && this.remoteEventPeerDataChannel.readyState === "open") {
                 console.log("Sending Message via received Datachannel");
                 this.remoteEventPeerDataChannel.send(stringifiedMessage);
             }
             else {
-                console.error("Peer Connection undefined, connection likely lost");
+                console.error("Datachannel: Connection unexpectedly lost");
             }
         };
         this.checkChosenUsernameAndCreateLoginRequest = () => {
@@ -75,6 +68,10 @@ class NetworkConnectionManager {
                 return;
             }
             this.createLoginRequestAndSendToServer(this.ownUserName);
+        };
+        this.createLoginRequestAndSendToServer = (_requestingUsername) => {
+            const loginMessage = new FudgeNetwork.NetworkMessageLoginRequest(this.ownClientId, this.ownUserName);
+            this.sendMessage(loginMessage);
         };
         this.checkUsernameToConnectToAndInitiateConnection = () => {
             const callToUsername = FudgeNetwork.UiElementHandler.usernameToConnectTo.value;
@@ -96,10 +93,6 @@ class NetworkConnectionManager {
             this.webSocketConnectionToSignalingServer.addEventListener("message", (_receivedMessage) => {
                 this.parseMessageAndCallCorrespondingMessageHandler(_receivedMessage);
             });
-        };
-        this.createLoginRequestAndSendToServer = (_requestingUsername) => {
-            const loginMessage = new FudgeNetwork.NetworkMessageLoginRequest(this.ownClientId, this.ownUserName);
-            this.sendMessage(loginMessage);
         };
         this.parseMessageAndCallCorrespondingMessageHandler = (_receivedMessage) => {
             // tslint:disable-next-line: typedef
@@ -295,6 +288,16 @@ class NetworkConnectionManager {
         this.dataChannelMessageHandler = (_messageEvent) => {
             // TODO Fix it so that both clients have names instead of IDs for usage
             FudgeNetwork.UiElementHandler.chatbox.innerHTML += "\n" + this.remoteClientId + ": " + _messageEvent.data;
+        };
+        this.stringifyObjectForNetworkSending = (_objectToStringify) => {
+            let stringifiedObject = "";
+            try {
+                stringifiedObject = JSON.stringify(_objectToStringify);
+            }
+            catch (error) {
+                console.error("JSON Parse failed", error);
+            }
+            return stringifiedObject;
         };
         this.ownUserName = "";
         this.ownClientId = "undefined";
