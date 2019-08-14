@@ -15,7 +15,7 @@ FudgeNetwork.UiElementHandler.stopSignalingServer.addEventListener("click", turn
 FudgeNetwork.UiElementHandler.broadcastButton.addEventListener("click", broadcastMessageToClients);
 
 
-function addKeypressListener(){
+function addKeypressListener(): void {
     let browser: Document = FudgeNetwork.UiElementHandler.electronWindow;
     browser.addEventListener("keydown", (event: KeyboardEvent) => {
         if (event.keyCode == 27) {
@@ -27,7 +27,7 @@ function addKeypressListener(){
     });
 }
 
-function createLoginRequestWithUsername(): void{
+function createLoginRequestWithUsername(): void {
     let chosenUserName: string = "";
     if (FudgeNetwork.UiElementHandler.loginNameInput) {
         chosenUserName = FudgeNetwork.UiElementHandler.loginNameInput.value;
@@ -45,7 +45,7 @@ function connectToOtherPeer(): void {
         userNameToConnectTo = FudgeNetwork.UiElementHandler.usernameToConnectTo.value;
         test.checkUsernameToConnectToAndInitiateConnection(userNameToConnectTo);
     }
-    else{
+    else {
         console.error("Missing Ui Element: Username to connect to");
     }
 }

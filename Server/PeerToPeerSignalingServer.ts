@@ -1,4 +1,4 @@
-import WebSocket from "ws"; 
+import WebSocket from "ws";
 import * as FudgeNetwork from "./../index";
 
 export class PeerToPeerSignalingServer {
@@ -53,7 +53,7 @@ export class PeerToPeerSignalingServer {
 
     // TODO Check if event.type can be used for identification instead => It cannot
     public static serverHandleMessageType(_message: string, _websocketClient: WebSocket): void {
-        let parsedMessage: FudgeNetwork.NetworkMessageMessageBase = { originatorId: " ", messageType: FudgeNetwork.MESSAGE_TYPE.UNDEFINED};
+        let parsedMessage: FudgeNetwork.NetworkMessageMessageBase = { originatorId: " ", messageType: FudgeNetwork.MESSAGE_TYPE.UNDEFINED };
         try {
             parsedMessage = JSON.parse(_message);
 
@@ -166,7 +166,7 @@ export class PeerToPeerSignalingServer {
 
 
     public static parseMessageToJson(_messageToParse: string): FudgeNetwork.NetworkMessageMessageBase {
-        let parsedMessage: FudgeNetwork.NetworkMessageMessageBase = { originatorId: " ", messageType: FudgeNetwork.MESSAGE_TYPE.UNDEFINED};
+        let parsedMessage: FudgeNetwork.NetworkMessageMessageBase = { originatorId: " ", messageType: FudgeNetwork.MESSAGE_TYPE.UNDEFINED };
 
         try {
             parsedMessage = JSON.parse(_messageToParse);
@@ -212,14 +212,14 @@ export class PeerToPeerSignalingServer {
 
 // TODO call this only when starting server via node
 //   PeerToPeerSignalingServer.startUpServer();
-function initServerFromCommandLine(): void{
-    process.argv.forEach(function (val, index, array) {
-        if(val === "NodeServer")
-        {
+function initServerFromCommandLine(): void {
+    // tslint:disable-next-line: no-any
+    process.argv.forEach(function (val: any, index: any, array: any): void {
+        if (val === "NodeServer") {
             PeerToPeerSignalingServer.startUpServer();
             return;
         }
-      });
+    });
 }
 
 initServerFromCommandLine();
