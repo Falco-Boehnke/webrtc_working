@@ -7,15 +7,54 @@ const test: FudgeNetwork.NetworkConnectionManager = new FudgeNetwork.NetworkConn
 FudgeNetwork.UiElementHandler.getAllUiElements();
 FudgeNetwork.UiElementHandler.startSignalingButton.addEventListener("click", startingUpSignalingServer);
 FudgeNetwork.UiElementHandler.signalingSubmit.addEventListener("click", connectToSignalingServer);
-FudgeNetwork.UiElementHandler.loginButton.addEventListener("click", test.checkChosenUsernameAndCreateLoginRequest);
-FudgeNetwork.UiElementHandler.connectToUserButton.addEventListener("click", test.checkUsernameToConnectToAndInitiateConnection);
-FudgeNetwork.UiElementHandler.sendMsgButton.addEventListener("click", test.sendMessageViaDirectPeerConnection);
+FudgeNetwork.UiElementHandler.loginButton.addEventListener("click", createLoginRequestWithUsername);
+FudgeNetwork.UiElementHandler.connectToUserButton.addEventListener("click", connectToOtherPeer);
+FudgeNetwork.UiElementHandler.sendMsgButton.addEventListener("click", sendMessageViaPeerConnectionChannel);
 FudgeNetwork.UiElementHandler.switchModeButton.addEventListener("click", switchServerMode);
 FudgeNetwork.UiElementHandler.stopSignalingServer.addEventListener("click", turnOffSignalingServer);
 FudgeNetwork.UiElementHandler.broadcastButton.addEventListener("click", broadcastMessageToClients);
 
 
+function addKeypressListener(){
+    let browser: Document = FudgeNetwork.UiElementHandler.electronWindow;
+    browser.addEventListener("keydown", (event: KeyboardEvent) => {
+        if (event.keyCode == 27) {
+            test.sendDisconnectRequest();
+        }
+        else {
+            test.sendKeyPress(event.keyCode);
+        }
+    });
+}
 
+function createLoginRequestWithUsername(): void{
+    let chosenUserName: string = "";
+    if (FudgeNetwork.UiElementHandler.loginNameInput) {
+        chosenUserName = FudgeNetwork.UiElementHandler.loginNameInput.value;
+        console.log("Username:" + chosenUserName);
+        test.checkChosenUsernameAndCreateLoginRequest(chosenUserName);
+    }
+    else {
+        console.error("UI element missing: Loginname Input field");
+    }
+}
+
+function connectToOtherPeer(): void {
+    let userNameToConnectTo: string = "";
+    if (FudgeNetwork.UiElementHandler.usernameToConnectTo) {
+        userNameToConnectTo = FudgeNetwork.UiElementHandler.usernameToConnectTo.value;
+        test.checkUsernameToConnectToAndInitiateConnection(userNameToConnectTo);
+    }
+    else{
+        console.error("Missing Ui Element: Username to connect to");
+    }
+}
+
+function sendMessageViaPeerConnectionChannel(): void {
+    let messageToSend: string = FudgeNetwork.UiElementHandler.msgInput.value;
+    FudgeNetwork.UiElementHandler.chatbox.innerHTML += "\n" + test.ownUserName + ": " + messageToSend;
+    test.sendMessageViaDirectPeerConnection(messageToSend);
+}
 
 function broadcastMessageToClients(): void {
     FudgeNetwork.AuthoritativeSignalingServer.authoritativeServerEntity.broadcastMessageToAllConnectedClients("TEST");
@@ -77,7 +116,11 @@ function turnOffSignalingServer(): void {
 function connectToSignalingServer(): void {
     test.signalingServerUrl = "ws://" + FudgeNetwork.UiElementHandler.signalingUrl.value;
     test.connectToSpecifiedSignalingServer();
+
+    addKeypressListener();
 }
+
+
 
 // Changing HTML pages restarts the renderer process, causing connection loss on networking
 // so not doable this way. Single page required or different way to change page (testing only so not that important)
