@@ -14,32 +14,28 @@ const ws_1 = __importDefault(require("ws"));
 const FudgeNetwork = __importStar(require("./../index"));
 class PeerToPeerSignalingServer {
     // TODO Check if event.type can be used for identification instead => It cannot
-    static serverHandleMessageType(_message, _websocketClient) {
-        let parsedMessage = { originatorId: " ", messageType: FudgeNetwork.MESSAGE_TYPE.UNDEFINED };
-        try {
-            parsedMessage = JSON.parse(_message);
+    static serverDistributeMessageToAppropriateMethod(_message, _websocketClient) {
+        let objectifiedMessage = this.parseMessageAndReturnObject(_message);
+        if (!objectifiedMessage.messageType) {
+            console.error("Unhandled Exception: Invalid Message Object received. Does it implement MessageBase?");
+            return;
         }
-        catch (error) {
-            console.error("Invalid JSON", error);
-        }
-        // tslint:disable-next-line: no-any
-        const messageData = parsedMessage;
-        if (parsedMessage != null) {
-            switch (parsedMessage.messageType) {
+        if (objectifiedMessage != null) {
+            switch (objectifiedMessage.messageType) {
                 case FudgeNetwork.MESSAGE_TYPE.ID_ASSIGNED:
-                    console.log("Id confirmation received for client: " + parsedMessage.originatorId);
+                    console.log("Id confirmation received for client: " + objectifiedMessage.originatorId);
                     break;
                 case FudgeNetwork.MESSAGE_TYPE.LOGIN_REQUEST:
-                    PeerToPeerSignalingServer.addUserOnValidLoginRequest(_websocketClient, messageData);
+                    PeerToPeerSignalingServer.addUserOnValidLoginRequest(_websocketClient, objectifiedMessage);
                     break;
                 case FudgeNetwork.MESSAGE_TYPE.RTC_OFFER:
-                    PeerToPeerSignalingServer.sendRtcOfferToRequestedClient(_websocketClient, messageData);
+                    PeerToPeerSignalingServer.sendRtcOfferToRequestedClient(_websocketClient, objectifiedMessage);
                     break;
                 case FudgeNetwork.MESSAGE_TYPE.RTC_ANSWER:
-                    PeerToPeerSignalingServer.answerRtcOfferOfClient(_websocketClient, messageData);
+                    PeerToPeerSignalingServer.answerRtcOfferOfClient(_websocketClient, objectifiedMessage);
                     break;
                 case FudgeNetwork.MESSAGE_TYPE.ICE_CANDIDATE:
-                    PeerToPeerSignalingServer.sendIceCandidatesToRelevantPeers(_websocketClient, messageData);
+                    PeerToPeerSignalingServer.sendIceCandidatesToRelevantPeers(_websocketClient, objectifiedMessage);
                     break;
                 default:
                     console.log("Message type not recognized");
@@ -49,21 +45,24 @@ class PeerToPeerSignalingServer {
     }
     //#region MessageHandler
     static addUserOnValidLoginRequest(_websocketConnection, _messageData) {
-        console.log("User logged: ", _messageData.loginUserName);
         let usernameTaken = true;
         usernameTaken = PeerToPeerSignalingServer.searchUserByUserNameAndReturnUser(_messageData.loginUserName, PeerToPeerSignalingServer.connectedClientsCollection) != null;
-        if (!usernameTaken) {
-            console.log("Username available, logging in");
-            const clientBeingLoggedIn = PeerToPeerSignalingServer.searchUserByWebsocketConnectionAndReturnUser(_websocketConnection, PeerToPeerSignalingServer.connectedClientsCollection);
-            if (clientBeingLoggedIn != null) {
-                clientBeingLoggedIn.userName = _messageData.loginUserName;
-                PeerToPeerSignalingServer.sendTo(_websocketConnection, new FudgeNetwork.NetworkMessageLoginResponse(true, clientBeingLoggedIn.id, clientBeingLoggedIn.userName));
+        try {
+            if (!usernameTaken) {
+                const clientBeingLoggedIn = PeerToPeerSignalingServer.searchUserByWebsocketConnectionAndReturnUser(_websocketConnection, PeerToPeerSignalingServer.connectedClientsCollection);
+                if (clientBeingLoggedIn != null) {
+                    clientBeingLoggedIn.userName = _messageData.loginUserName;
+                    PeerToPeerSignalingServer.sendTo(_websocketConnection, new FudgeNetwork.NetworkMessageLoginResponse(true, clientBeingLoggedIn.id, clientBeingLoggedIn.userName));
+                }
+            }
+            else {
+                PeerToPeerSignalingServer.sendTo(_websocketConnection, new FudgeNetwork.NetworkMessageLoginResponse(false, "", ""));
+                usernameTaken = true;
+                console.log("UsernameTaken");
             }
         }
-        else {
-            PeerToPeerSignalingServer.sendTo(_websocketConnection, new FudgeNetwork.NetworkMessageLoginResponse(false, "", ""));
-            usernameTaken = true;
-            console.log("UsernameTaken");
+        catch (error) {
+            console.error("Unhandled Exception: Unable to create or send LoginResponse", error);
         }
     }
     static sendRtcOfferToRequestedClient(_websocketClient, _messageData) {
@@ -71,7 +70,12 @@ class PeerToPeerSignalingServer {
         const requestedClient = PeerToPeerSignalingServer.searchForPropertyValueInCollection(_messageData.userNameToConnectTo, "userName", PeerToPeerSignalingServer.connectedClientsCollection);
         if (requestedClient != null) {
             const offerMessage = new FudgeNetwork.NetworkMessageRtcOffer(_messageData.originatorId, requestedClient.userName, _messageData.offer);
-            PeerToPeerSignalingServer.sendTo(requestedClient.clientConnection, offerMessage);
+            try {
+                PeerToPeerSignalingServer.sendTo(requestedClient.clientConnection, offerMessage);
+            }
+            catch (error) {
+                console.error("Unhandled Exception: Unable to relay Offer to Client", error);
+            }
         }
         else {
             console.error("User to connect to doesn't exist under that Name");
@@ -82,8 +86,6 @@ class PeerToPeerSignalingServer {
         const clientToSendAnswerTo = PeerToPeerSignalingServer.searchUserByUserIdAndReturnUser(_messageData.targetId, PeerToPeerSignalingServer.connectedClientsCollection);
         if (clientToSendAnswerTo != null) {
             // TODO Probable source of error, need to test
-            // clientToSendAnswerTo.clientConnection.otherUsername = clientToSendAnswerTo.userName;
-            // const answerToSend: FudgeNetwork.RtcAnswer = new FudgeNetwork.RtcAnswer(_messageData.originatorId, clientToSendAnswerTo.userName, _messageData.answer);
             if (clientToSendAnswerTo.clientConnection != null)
                 PeerToPeerSignalingServer.sendTo(clientToSendAnswerTo.clientConnection, _messageData);
         }
@@ -130,12 +132,17 @@ PeerToPeerSignalingServer.serverEventHandler = () => {
     // tslint:disable-next-line: no-any
     PeerToPeerSignalingServer.websocketServer.on("connection", (_websocketClient) => {
         console.log("User connected to P2P SignalingServer");
-        const uniqueIdOnConnection = PeerToPeerSignalingServer.createID();
-        PeerToPeerSignalingServer.sendTo(_websocketClient, new FudgeNetwork.NetworkMessageIdAssigned(uniqueIdOnConnection));
-        const freshlyConnectedClient = new FudgeNetwork.Client(_websocketClient, uniqueIdOnConnection);
-        PeerToPeerSignalingServer.connectedClientsCollection.push(freshlyConnectedClient);
+        try {
+            const uniqueIdOnConnection = PeerToPeerSignalingServer.createID();
+            PeerToPeerSignalingServer.sendTo(_websocketClient, new FudgeNetwork.NetworkMessageIdAssigned(uniqueIdOnConnection));
+            const freshlyConnectedClient = new FudgeNetwork.Client(_websocketClient, uniqueIdOnConnection);
+            PeerToPeerSignalingServer.connectedClientsCollection.push(freshlyConnectedClient);
+        }
+        catch (error) {
+            console.error("Unhandled Exception SERVER: Sending ID to Client", error);
+        }
         _websocketClient.on("message", (_message) => {
-            PeerToPeerSignalingServer.serverHandleMessageType(_message, _websocketClient);
+            PeerToPeerSignalingServer.serverDistributeMessageToAppropriateMethod(_message, _websocketClient);
         });
         _websocketClient.addEventListener("close", () => {
             console.error("Error at connection");
@@ -151,6 +158,17 @@ PeerToPeerSignalingServer.serverEventHandler = () => {
             }
         });
     });
+};
+PeerToPeerSignalingServer.parseMessageAndReturnObject = (_stringifiedMessage) => {
+    let parsedMessage = { originatorId: " ", messageType: FudgeNetwork.MESSAGE_TYPE.UNDEFINED };
+    try {
+        parsedMessage = JSON.parse(_stringifiedMessage);
+        return parsedMessage;
+    }
+    catch (error) {
+        console.error("Invalid JSON", error);
+    }
+    return parsedMessage;
 };
 PeerToPeerSignalingServer.createID = () => {
     // Math.random should be random enough because of it's seed
@@ -190,6 +208,7 @@ exports.PeerToPeerSignalingServer = PeerToPeerSignalingServer;
 // TODO call this only when starting server via node
 //   PeerToPeerSignalingServer.startUpServer();
 function initServerFromCommandLine() {
+    // tslint:disable-next-line: no-any
     process.argv.forEach(function (val, index, array) {
         if (val === "NodeServer") {
             PeerToPeerSignalingServer.startUpServer();

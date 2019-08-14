@@ -56,7 +56,7 @@ export class NetworkConnectionManager {
         let messageObject: FudgeNetwork.PeerMessageSimpleText = new FudgeNetwork.PeerMessageSimpleText(this.ownClientId, _messageToSend);
 
         let stringifiedMessage: string = this.stringifyObjectForNetworkSending(messageObject);
-
+        console.log(stringifiedMessage);
         if (this.isInitiator && this.ownPeerDataChannel) {
             this.ownPeerDataChannel.send(stringifiedMessage);
         }
@@ -88,7 +88,8 @@ export class NetworkConnectionManager {
     public sendDisconnectRequest = () => {
         try {
             let dcRequest: FudgeNetwork.PeerMessageDisconnectClient = new FudgeNetwork.PeerMessageDisconnectClient(this.ownClientId);
-            this.sendPeerMessageToServer(dcRequest);
+            let stringifiedObject: string = this.stringifyObjectForNetworkSending(dcRequest);
+            this.sendPeerMessageToServer(stringifiedObject);
         } catch (error) { console.error("Unexpected Error: Disconnect Request", error); }
 
     }
@@ -96,7 +97,8 @@ export class NetworkConnectionManager {
         try {
             if (this.remoteEventPeerDataChannel != undefined) {
                 let keyPressMessage: FudgeNetwork.PeerMessageKeysInput = new FudgeNetwork.PeerMessageKeysInput(this.ownClientId, _keyCode);
-                this.sendPeerMessageToServer(keyPressMessage);
+                let stringifiedObject: string = this.stringifyObjectForNetworkSending(keyPressMessage)
+                this.sendPeerMessageToServer(stringifiedObject);
             }
         } catch (error) { console.error("Unexpected Error: Send Key Press", error); }
     }
@@ -335,11 +337,10 @@ export class NetworkConnectionManager {
  
 
 
-    private sendPeerMessageToServer = (_messageToSend: Object) => {
+    private sendPeerMessageToServer = (_messageToSend: string) => {
         try {
-            let stringifiedMessage: string = JSON.stringify(_messageToSend);
             if (this.remoteEventPeerDataChannel) {
-                this.remoteEventPeerDataChannel.send(stringifiedMessage);
+                this.remoteEventPeerDataChannel.send(_messageToSend);
             }
         } catch (error) {
             console.error("Error occured when stringifying PeerMessage");
@@ -368,9 +369,9 @@ export class NetworkConnectionManager {
     }
 
     private dataChannelMessageHandler = (_messageEvent: MessageEvent) => {
-        if (_messageEvent.data) {
+        if (_messageEvent) {
             // tslint:disable-next-line: no-any
-            let parsedObject: any = this.parseReceivedMessageAndReturnObject(_messageEvent.data);
+            let parsedObject: any = this.parseReceivedMessageAndReturnObject(_messageEvent);
             FudgeNetwork.UiElementHandler.chatbox.innerHTML += "\n" + this.remoteClientId + ": " + parsedObject.messageData;
         }
 

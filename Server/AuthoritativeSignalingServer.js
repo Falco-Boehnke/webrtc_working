@@ -147,12 +147,14 @@ AuthoritativeSignalingServer.createID = () => {
 // TODO Type Websocket not assignable to type WebSocket ?!
 // tslint:disable-next-line: no-any
 AuthoritativeSignalingServer.sendTo = (_connection, _message) => {
-    _connection.send(JSON.stringify(_message));
+    let stringifiedObject = AuthoritativeSignalingServer.stringifyObjectAndReturnJson(_message);
+    _connection.send(stringifiedObject);
 };
 AuthoritativeSignalingServer.sendToId = (_clientId, _message) => {
     let client = AuthoritativeSignalingServer.searchForClientWithId(_clientId);
+    let stringifiedObject = AuthoritativeSignalingServer.stringifyObjectAndReturnJson(_message);
     if (client.clientConnection) {
-        client.clientConnection.send(JSON.stringify(_message));
+        client.clientConnection.send(stringifiedObject);
     }
 };
 // Helper function for searching through a collection, finding objects by key and value, returning
@@ -178,6 +180,16 @@ AuthoritativeSignalingServer.searchUserByUserIdAndReturnUser = (_userIdToSearchF
 };
 AuthoritativeSignalingServer.searchUserByWebsocketConnectionAndReturnUser = (_websocketConnectionToSearchFor, _collectionToSearch) => {
     return AuthoritativeSignalingServer.searchForPropertyValueInCollection(_websocketConnectionToSearchFor, "clientConnection", _collectionToSearch);
+};
+AuthoritativeSignalingServer.stringifyObjectAndReturnJson = (_objectToStringify) => {
+    let stringifiedObject = "";
+    try {
+        stringifiedObject = JSON.stringify(_objectToStringify);
+    }
+    catch (error) {
+        console.error("Unhandled Exception: Unable to stringify Object", error);
+    }
+    return stringifiedObject;
 };
 exports.AuthoritativeSignalingServer = AuthoritativeSignalingServer;
 // AuthoritativeSignalingServer.startUpServer();

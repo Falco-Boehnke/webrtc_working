@@ -166,13 +166,16 @@ export class AuthoritativeSignalingServer {
     // TODO Type Websocket not assignable to type WebSocket ?!
     // tslint:disable-next-line: no-any
     public static sendTo = (_connection: any, _message: Object) => {
-        _connection.send(JSON.stringify(_message));
+        let stringifiedObject: string = AuthoritativeSignalingServer.stringifyObjectAndReturnJson(_message);
+        _connection.send(stringifiedObject);
     }
 
     public static sendToId = (_clientId: string, _message: Object) => {
         let client: FudgeNetwork.Client = AuthoritativeSignalingServer.searchForClientWithId(_clientId);
+        let stringifiedObject: string = AuthoritativeSignalingServer.stringifyObjectAndReturnJson(_message);
+
         if (client.clientConnection) {
-            client.clientConnection.send(JSON.stringify(_message));
+            client.clientConnection.send(stringifiedObject);
         }
 
     }
@@ -202,6 +205,16 @@ export class AuthoritativeSignalingServer {
 
     private static searchUserByWebsocketConnectionAndReturnUser = (_websocketConnectionToSearchFor: WebSocket, _collectionToSearch: FudgeNetwork.Client[]) => {
         return AuthoritativeSignalingServer.searchForPropertyValueInCollection(_websocketConnectionToSearchFor, "clientConnection", _collectionToSearch);
+    }
+
+    private static stringifyObjectAndReturnJson = (_objectToStringify: Object): string => {
+        let stringifiedObject: string = "";
+        try {
+            stringifiedObject = JSON.stringify(_objectToStringify);
+        } catch (error) {
+            console.error("Unhandled Exception: Unable to stringify Object", error);
+        }
+        return stringifiedObject;
     }
 }
 
