@@ -17,6 +17,7 @@ declare namespace FudgeNetwork {
         static switchModeButton: HTMLElement;
         static stopSignalingServer: HTMLElement;
         static broadcastButton: HTMLElement;
+        static moveableBoxElement: HTMLElement;
         static getAllUiElements(): void;
     }
 }

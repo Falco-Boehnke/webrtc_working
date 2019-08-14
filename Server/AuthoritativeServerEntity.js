@@ -70,13 +70,17 @@ var FudgeNetwork;
             };
             this.dataChannelMessageHandler = (_message) => {
                 console.log("Message received", _message);
+                // tslint:disable-next-line: no-any
                 let parsedMessage = JSON.parse(_message.data);
-                console.log("Keycode: " + parsedMessage);
-                console.log(".");
-                console.log("ID: " + parsedMessage.originatorId);
-                console.log("MessageType: " + parsedMessage.messageType);
-                console.log("MessageData: " + parsedMessage.messageData);
-                console.log(".");
+                let numberM = 40;
+                try {
+                    numberM = +parsedMessage;
+                }
+                catch (error) {
+                    console.log(error);
+                }
+                console.log(numberM);
+                FudgeNetwork.UiElementHandler.moveableBoxElement.textContent = numberM + "";
             };
             this.initiateConnectionByCreatingDataChannelAndCreatingOffer = (_clientToConnect) => {
                 console.log("Initiating connection to : " + _clientToConnect);

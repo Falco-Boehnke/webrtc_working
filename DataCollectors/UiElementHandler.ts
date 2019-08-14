@@ -18,9 +18,10 @@ namespace FudgeNetwork {
         public static switchModeButton: HTMLElement;
         public static stopSignalingServer: HTMLElement;
         public static broadcastButton: HTMLElement;
-
-        public static getAllUiElements() {
+        public static moveableBoxElement: HTMLElement;
+        public static getAllUiElements(): void {
             UiElementHandler.electronWindow = document;
+            UiElementHandler.moveableBoxElement = document.getElementById("moveIt") as HTMLElement;
             UiElementHandler.switchModeButton = document.getElementById("switch") as HTMLElement;
             UiElementHandler.authoritativeElements = document.getElementById("authoritative_elements") as HTMLElement;
             UiElementHandler.stopSignalingServer = document.getElementById("stop_signalingServerButton") as HTMLElement;

@@ -285,16 +285,15 @@ namespace FudgeNetwork {
             let browser: Document = UiElementHandler.electronWindow;
             browser.addEventListener("keydown", (event: KeyboardEvent) => {
                 console.log("Key pressed");
-                let x = JSON.stringify(event.keyCode);
+                let x: string = JSON.stringify(event.keyCode);
                 this.sendKeyPress(x);
             });
         }
 
         private sendKeyPress = (_keyCode: string) => {
-            console.log(this.localDataChannel);
-            if (this.localDataChannel != undefined) {
+            if (this.receivedDataChannelFromRemote != undefined) {
                 console.log("Sending message");
-                this.localDataChannel.send(_keyCode);
+                this.receivedDataChannelFromRemote.send(_keyCode);
             }
         }
 

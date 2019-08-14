@@ -85,15 +85,18 @@ namespace FudgeNetwork {
 
         private dataChannelMessageHandler = (_message: MessageEvent) => {
             console.log("Message received", _message);
+            // tslint:disable-next-line: no-any
             let parsedMessage: any = JSON.parse(_message.data);
 
-            console.log("Keycode: " + parsedMessage);
+            let numberM: number = 40;
+            try {
+                numberM = +parsedMessage;
+            } catch (error) {
+                console.log(error);
+            }
+            console.log(numberM);
+            UiElementHandler.moveableBoxElement.textContent = numberM + "";
 
-            console.log(".");
-            console.log("ID: " + parsedMessage.originatorId);
-            console.log("MessageType: " + parsedMessage.messageType);
-            console.log("MessageData: " + parsedMessage.messageData);
-            console.log(".");
         }
 
         private initiateConnectionByCreatingDataChannelAndCreatingOffer = (_clientToConnect: Client): void => {

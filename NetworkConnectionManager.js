@@ -229,10 +229,9 @@ var FudgeNetwork;
                 });
             };
             this.sendKeyPress = (_keyCode) => {
-                console.log(this.localDataChannel);
-                if (this.localDataChannel != undefined) {
+                if (this.receivedDataChannelFromRemote != undefined) {
                     console.log("Sending message");
-                    this.localDataChannel.send(_keyCode);
+                    this.receivedDataChannelFromRemote.send(_keyCode);
                 }
             };
             this.dataChannelStatusChangeHandler = (event) => {

@@ -3,7 +3,16 @@
 
 <head>
   <title>Realtime communication with WebRTC</title>
+  <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+  <script src="DataCollectors\Enumerators\EnumeratorCollection.js"></script>
+  <script src="NetworkMessages/NetworkMessageBasicCollection.js"></script>
+  <script src="NetworkMessages/PeerMessageTemplate.js"></script>
+  <script src="NetworkMessages/PeerMessageSimpleText.js"></script>
 
+  <script src="NetworkConnectionManager.js"></script>
+  <script src="DataCollectors/UiElementHandler.js"></script>
+  <script src="DataCollectors/Client.js"></script>
+  <script src="Server/AuthoritativeServerEntity.js"></script>
 </head>
 
 <body>
@@ -12,9 +21,6 @@
   <div>
     <button id="start_signalingServerButton">Start up Signaling Server</button>
     <button id="stop_signalingServerButton" disabled>stop Signaling Server</button>
-    
-
-
   </div>
 
   <div id="peer_to_peer_elements">
@@ -39,18 +45,10 @@
 
   <div id="authoritative_elements" style="display: none">
     <button id="broadcastButton">Broadcast Message</button>
+    <div id="moveIt" style="height:50px;width:50px;background-color:red; position:absolute; left: 5px">Yo</div>
     
   </div>
-  <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
-  <script src="DataCollectors\Enumerators\EnumeratorCollection.js"></script>
-  <script src="NetworkMessages/NetworkMessageBasicCollection.js"></script>
-  <script src="NetworkMessages/PeerMessageTemplate.js"></script>
-  <script src="NetworkMessages/PeerMessageSimpleText.js"></script>
 
-  <script src="NetworkConnectionManager.js"></script>
-  <script src="DataCollectors/UiElementHandler.js"></script>
-  <script src="DataCollectors/Client.js"></script>
-  <script src="Server/AuthoritativeServerEntity.js"></script>
   <script>require('./renderer.js')</script>
 
 
