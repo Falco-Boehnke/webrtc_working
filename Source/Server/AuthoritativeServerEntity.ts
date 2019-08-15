@@ -63,7 +63,7 @@ export class AuthoritativeServerEntity {
 
     public broadcastMessageToAllConnectedClients = (_messageToBroadcast: string) => {
         this.authServerPeerConnectedClientCollection.forEach(client => {
-            if (client.dataChannel.readyState == 'open') {
+            if (client.dataChannel.readyState == "open") {
                 client.dataChannel.send(_messageToBroadcast);
             }
             else {
@@ -135,11 +135,11 @@ export class AuthoritativeServerEntity {
         // newDataChannel.addEventListener("close", this.dataChannelStatusChangeHandler);
         newDataChannel.addEventListener("message", this.dataChannelMessageHandler);
         _clientToConnect.peerConnection.createOffer()
-            .then(async (offer: any) => {
+            .then(async (offer: string) => {
                 console.log("Beginning of createOffer in InitiateConnection, Expected 'stable', got:  ", _clientToConnect.peerConnection.signalingState);
                 return offer;
             })
-            .then(async (offer: any) => {
+            .then(async (offer: string) => {
                 await _clientToConnect.peerConnection.setLocalDescription(offer);
                 console.log("Setting LocalDesc, Expected 'have-local-offer', got:  ", _clientToConnect.peerConnection.signalingState);
             })

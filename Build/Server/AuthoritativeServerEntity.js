@@ -59,7 +59,7 @@ class AuthoritativeServerEntity {
         };
         this.broadcastMessageToAllConnectedClients = (_messageToBroadcast) => {
             this.authServerPeerConnectedClientCollection.forEach(client => {
-                if (client.dataChannel.readyState == 'open') {
+                if (client.dataChannel.readyState == "open") {
                     client.dataChannel.send(_messageToBroadcast);
                 }
                 else {
