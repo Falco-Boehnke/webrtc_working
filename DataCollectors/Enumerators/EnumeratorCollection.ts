@@ -1,3 +1,4 @@
+
     export enum MESSAGE_TYPE {
         UNDEFINED = "undefined",
         ID_ASSIGNED = "id_assigned",

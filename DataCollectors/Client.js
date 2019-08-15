@@ -8,6 +8,7 @@ class Client {
         this.dataChannel = null;
         this.id = uniqueClientId || "";
         this.userName = loginName || "";
+        this.peerMeshReadyFlag = false;
         // this.connectedRoom = connectedToRoom || null;
     }
 }

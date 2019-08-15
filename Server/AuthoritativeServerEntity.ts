@@ -7,6 +7,7 @@ export class AuthoritativeServerEntity {
     public peerConnectedClientCollection: FudgeNetwork.Client[] = new Array();
     public peerConnectionBufferCollection: RTCDataChannel[] = new Array();
 
+
     // tslint:disable-next-line: typedef
     public configuration = {
         iceServers: [

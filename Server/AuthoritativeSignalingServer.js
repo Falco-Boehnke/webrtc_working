@@ -192,4 +192,4 @@ AuthoritativeSignalingServer.stringifyObjectAndReturnJson = (_objectToStringify)
     return stringifiedObject;
 };
 exports.AuthoritativeSignalingServer = AuthoritativeSignalingServer;
-// AuthoritativeSignalingServer.startUpServer();
+AuthoritativeSignalingServer.startUpServer();

@@ -5,6 +5,7 @@ export class Client {
     public userName: string;
     public peerConnection: any;
     public dataChannel: any;
+    public peerMeshReadyFlag: boolean;
     // public connectedRoom: ServerRoom | null;
 
     constructor(websocketConnection?: WebSocket,
@@ -16,6 +17,7 @@ export class Client {
         this.dataChannel = null;
         this.id = uniqueClientId || "";
         this.userName = loginName || "";
+        this.peerMeshReadyFlag = false;
         // this.connectedRoom = connectedToRoom || null;
     }
 }

@@ -4,7 +4,6 @@ export class AuthoritativeSignalingServer {
     public static websocketServer: WebSocket.Server;
     public static connectedClientsCollection: FudgeNetwork.Client[] = new Array();
     public static authoritativeServerEntity: FudgeNetwork.AuthoritativeServerEntity;
-
     public static startUpServer = (_serverPort?: number) => {
         console.log(_serverPort);
         if (!_serverPort) {
@@ -218,4 +217,4 @@ export class AuthoritativeSignalingServer {
     }
 }
 
-// AuthoritativeSignalingServer.startUpServer();
+AuthoritativeSignalingServer.startUpServer();
